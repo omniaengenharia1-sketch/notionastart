@@ -93,38 +93,40 @@ def generate_ideas(client: dict, trends: str, reddit_posts: str) -> dict:
 
     prompt = f"""Você é um estrategista de conteúdo sênior especializado em redes sociais brasileiras, trabalhando para a agência Astart Studio em São Paulo.
 
-**Cliente:** {client["name"]}
-**Nicho:** {client["niche"]}
-**Tom de voz:** {client["tone"]}
-**Data:** {today_str}
+Cliente: {client["name"]}
+Nicho: {client["niche"]}
+Tom de voz: {client["tone"]}
+Data: {today_str}
 
 ---
-**TENDÊNCIAS DO GOOGLE BRASIL (últimas 24h):**
+TENDÊNCIAS DO GOOGLE BRASIL (últimas 24h):
 {trends}
 
-**POSTS EM ALTA NO REDDIT (referência de assuntos quentes):**
+POSTS EM ALTA NO REDDIT (referência de assuntos quentes):
 {reddit_posts}
 ---
 
-Com base nessas tendências reais de hoje, crie 3 ideias de conteúdo completas para o Instagram desse cliente.
+Com base nessas tendências reais de hoje, crie um pacote de conteúdo para Instagram com 3 formatos diferentes (CARROSSEL, ESTÁTICO, REELS) sobre o MESMO tema/tendência, e uma legenda única que serve para os três.
 
-Cada ideia deve:
-- Aproveitar uma tendência ou assunto quente do dia
-- Ser relevante para o nicho específico do cliente
-- Incluir: título chamativo, legenda completa pronta para postar, hashtags relevantes e sugestão visual
-- Estar em português brasileiro natural
-- Refletir o tom de voz do cliente
+REGRAS DE FORMATAÇÃO — MUITO IMPORTANTE:
+- NÃO use asteriscos, NÃO use **, NÃO use markdown de nenhum tipo
+- NÃO use #, _, ` ou qualquer caractere de formatação
+- Use apenas texto limpo e quebras de linha
+- Para destacar, use CAIXA ALTA (ex: TEMA:, IDEIA:, etc)
+- Português brasileiro natural
 
-Responda APENAS com um objeto JSON válido, sem nenhum texto antes ou depois:
+A LEGENDA deve ter NO MÁXIMO 5 hashtags, colocadas no final.
+
+Responda APENAS com um objeto JSON válido:
 
 {{
   "titulo": "Ideias de Conteúdo — {today_str}",
-  "tipo": "Carrossel",
-  "tendencias_resumo": "Resumo em 2-3 frases das tendências identificadas hoje e como se conectam ao nicho do cliente.",
-  "ideia_1": "**[TÍTULO DO POST]**\\n\\n[Legenda completa pronta para postar, com gancho, desenvolvimento e CTA]\\n\\n📌 Sugestão visual: [descrição do que mostrar na arte]\\n\\n#hashtag1 #hashtag2 #hashtag3 #hashtag4 #hashtag5",
-  "ideia_2": "**[TÍTULO DO POST]**\\n\\n[Legenda completa pronta para postar, com gancho, desenvolvimento e CTA]\\n\\n📌 Sugestão visual: [descrição do que mostrar na arte]\\n\\n#hashtag1 #hashtag2 #hashtag3 #hashtag4 #hashtag5",
-  "ideia_3": "**[TÍTULO DO POST]**\\n\\n[Legenda completa pronta para postar, com gancho, desenvolvimento e CTA]\\n\\n📌 Sugestão visual: [descrição do que mostrar na arte]\\n\\n#hashtag1 #hashtag2 #hashtag3 #hashtag4 #hashtag5",
-  "roteiro_reel": "**REEL — [TEMA]**\\n\\nDuração: 30-45 segundos\\n\\n🎬 CENA 1 (0-3s): [hook visual + texto na tela]\\n🎬 CENA 2 (3-10s): [desenvolvimento]\\n🎬 CENA 3 (10-20s): [ponto principal]\\n🎬 CENA 4 (20-30s): [virada / insight]\\n🎬 CENA 5 (30-45s): [CTA direto]\\n\\n🎵 Música sugerida: [estilo]\\n📝 Legenda: [legenda + hashtags]"
+  "tipo": "Carrossel + Estático + Reels",
+  "tendencias_resumo": "Resumo em 2-3 frases das tendências identificadas hoje e como se conectam ao nicho do cliente. Texto limpo.",
+  "ideia_1": "CONTEÚDO PARA CARROSSEL\\n\\nTEMA:\\n[tema do carrossel]\\n\\nESTRUTURA (8 slides):\\n\\nSlide 1 — Capa:\\n[texto da capa, frase de impacto]\\n\\nSlide 2:\\n[conteúdo]\\n\\nSlide 3:\\n[conteúdo]\\n\\nSlide 4:\\n[conteúdo]\\n\\nSlide 5:\\n[conteúdo]\\n\\nSlide 6:\\n[conteúdo]\\n\\nSlide 7:\\n[conteúdo]\\n\\nSlide 8 — CTA:\\n[chamada final]\\n\\nSUGESTÃO VISUAL:\\n[cores, estilo e elementos da identidade]",
+  "ideia_2": "CONTEÚDO PARA ESTÁTICO\\n\\nTEMA:\\n[tema do post estático]\\n\\nTEXTO DA ARTE:\\n[frase principal que vai na imagem, curta e impactante]\\n\\nTEXTO DE APOIO (se houver):\\n[subtítulo ou complemento opcional]\\n\\nSUGESTÃO VISUAL:\\n[descrição da arte: cores, elementos, composição]",
+  "ideia_3": "CONTEÚDO PARA REELS\\n\\nTEMA:\\n[tema do reel]\\n\\nCONCEITO:\\n[gancho principal e o que torna o reel viralizável]\\n\\nDURAÇÃO: 30 a 45 segundos\\n\\nROTEIRO:\\n\\nCena 1 (0 a 3s):\\nVisual: [o que aparece]\\nTexto na tela: [texto curto]\\nÁudio/Fala: [o que é dito ou som]\\n\\nCena 2 (3 a 10s):\\nVisual: [...]\\nTexto na tela: [...]\\nÁudio/Fala: [...]\\n\\nCena 3 (10 a 20s):\\nVisual: [...]\\nTexto na tela: [...]\\nÁudio/Fala: [...]\\n\\nCena 4 (20 a 30s):\\nVisual: [...]\\nTexto na tela: [...]\\nÁudio/Fala: [...]\\n\\nCena 5 (30 a 45s — CTA):\\nVisual: [...]\\nTexto na tela: [...]\\nÁudio/Fala: [CTA direto]\\n\\nMÚSICA SUGERIDA:\\n[estilo de áudio ou trend]",
+  "legenda": "[Legenda completa pronta pra postar — com gancho, desenvolvimento, CTA, em tom natural e brasileiro]\\n\\n#hashtag1 #hashtag2 #hashtag3 #hashtag4 #hashtag5"
 }}"""
 
     resp = requests.post(
@@ -139,7 +141,26 @@ Responda APENAS com um objeto JSON válido, sem nenhum texto antes ou depois:
     resp.raise_for_status()
 
     raw = resp.json()["candidates"][0]["content"]["parts"][0]["text"].strip()
-    return json.loads(raw)
+    parsed = json.loads(raw)
+
+    # Remove qualquer markdown que tenha escapado das instruções
+    return {k: strip_markdown(v) if isinstance(v, str) else v for k, v in parsed.items()}
+
+
+def strip_markdown(text: str) -> str:
+    """Remove markdown bold/italic/code markers but keep content readable."""
+    import re
+    # Remove **bold** e *italic*
+    text = re.sub(r"\*\*(.+?)\*\*", r"\1", text)
+    text = re.sub(r"\*(.+?)\*", r"\1", text)
+    # Remove __bold__ e _italic_
+    text = re.sub(r"__(.+?)__", r"\1", text)
+    text = re.sub(r"(?<!\w)_(.+?)_(?!\w)", r"\1", text)
+    # Remove `code`
+    text = re.sub(r"`(.+?)`", r"\1", text)
+    # Remove headings markdown (# Título)
+    text = re.sub(r"^#+\s+", "", text, flags=re.MULTILINE)
+    return text
 
 
 def rich_text_blocks(content: str) -> list[dict]:
@@ -170,7 +191,7 @@ def post_to_notion(db_id: str, ideas: dict) -> bool:
             "Ideia 1": {"rich_text": rich_text_blocks(ideas["ideia_1"])},
             "Ideia 2": {"rich_text": rich_text_blocks(ideas["ideia_2"])},
             "Ideia 3": {"rich_text": rich_text_blocks(ideas["ideia_3"])},
-            "Roteiro de Reel": {"rich_text": rich_text_blocks(ideas["roteiro_reel"])},
+            "Legenda": {"rich_text": rich_text_blocks(ideas["legenda"])},
         },
     }
 
