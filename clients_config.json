@@ -2,34 +2,34 @@
   "clients": [
     {
       "name": "Mor Marcas",
-      "niche": "registro de marca no INPI, proteção de marca, branding, identidade visual, design de logo, propriedade intelectual para empreendedores e PMEs brasileiras",
-      "tone": "educativo, inspirador e acessível — linguagem simples para empreendedores que estão começando ou querendo proteger sua marca",
-      "keywords": ["registro de marca", "INPI", "identidade visual", "branding", "logo", "propriedade intelectual"],
-      "subreddits": ["empreendedorismo", "marketing", "branding"],
+      "niche": "marcas e patentes, registro de marcas e patentes no INPI, blockchain aplicado a marcas e propriedade intelectual, avaliação de marca, proteção de ativos intangíveis para empreendedores e empresas brasileiras",
+      "tone": "educativo e acessível — traduz assuntos jurídicos e técnicos (INPI, patentes, blockchain) em linguagem simples para donos de negócio",
+      "keywords": ["registro de marca", "INPI", "patente", "blockchain marca", "avaliação de marca", "propriedade intelectual"],
+      "subreddits": ["patents", "legaladvice", "entrepreneur", "blockchain"],
       "notion_db_id": "91f6eb54-7e9b-4fa8-9f5a-021c1798d785"
     },
     {
-      "name": "Publika",
-      "niche": "marketing digital, gestão de redes sociais, tráfego pago, criação de conteúdo, estratégia digital para empresas brasileiras",
-      "tone": "profissional e dinâmico — voltado para empreendedores e empresas que querem crescer no digital",
-      "keywords": ["marketing digital", "instagram", "trafego pago", "gestao de redes sociais", "conteudo digital", "meta ads"],
-      "subreddits": ["marketing", "socialmedia", "empreendedorismo"],
+      "name": "Publika.ai",
+      "niche": "assessoria de imprensa, gestão de crise, produção de conteúdo, relações públicas, cross marketing — comunicação estratégica para marcas e empresas",
+      "tone": "profissional e estratégico — fala com gestores e empreendedores que precisam proteger e projetar a reputação da sua marca",
+      "keywords": ["assessoria de imprensa", "gestão de crise", "relações públicas", "produção de conteúdo", "cross marketing", "comunicação corporativa"],
+      "subreddits": ["PublicRelations", "marketing", "socialmedia", "journalism"],
       "notion_db_id": "b922ae0a-e441-4c01-852d-c20a93dfe4db"
     },
     {
-      "name": "Pamela",
-      "niche": "beleza, estética, skincare, cuidados pessoais, salão de beleza, tratamentos estéticos",
-      "tone": "descontraído, inspirador e próximo — como uma amiga especialista em beleza falando com outras mulheres",
-      "keywords": ["beleza", "estetica", "skincare", "cuidados pessoais", "salão de beleza", "tratamento estético"],
-      "subreddits": ["beauty", "SkincareAddiction", "brasil"],
+      "name": "Pamela Dantas",
+      "niche": "prótese capilar — soluções de cabelo para pessoas com alopecia, queda de cabelo, calvície, quimioterapia e outros tratamentos; autoestima e transformação",
+      "tone": "acolhedor, empático e transformador — fala diretamente com quem enfrenta a queda de cabelo e busca se sentir bonita e confiante novamente",
+      "keywords": ["prótese capilar", "alopecia", "queda de cabelo", "peruca realista", "calvície feminina", "autoestima cabelo"],
+      "subreddits": ["alopecia", "Wigs", "HairLoss", "beauty"],
       "notion_db_id": "b3cda19a-2cb9-4a90-860a-1733669dd508"
     },
     {
       "name": "Gustavo",
-      "niche": "empreendedorismo, negócios, vendas, crescimento profissional, mentalidade empreendedora",
-      "tone": "direto ao ponto, motivacional e prático — fala com quem quer empreender ou já empreende e busca crescer",
-      "keywords": ["empreendedorismo", "negocios", "vendas", "crescimento profissional", "startups", "liderança"],
-      "subreddits": ["empreendedorismo", "marketing", "brasil"],
+      "niche": "empreendedorismo, gestão de empresas, cultura empresarial, liderança, construção de times de alta performance, mindset e estratégia para donos de negócio",
+      "tone": "direto ao ponto, motivacional e prático — fala com empreendedores e gestores que querem crescer como líderes e escalar seus negócios",
+      "keywords": ["empreendedorismo", "gestão de empresas", "cultura empresarial", "liderança", "gestão de equipes", "alta performance"],
+      "subreddits": ["Entrepreneur", "smallbusiness", "Leadership", "business"],
       "notion_db_id": "e6a21a01-33db-46e4-a52a-f7b8c6211932"
     }
   ]
