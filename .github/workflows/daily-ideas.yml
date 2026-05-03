@@ -34,7 +34,7 @@ jobs:
 
       - name: Gerar ideias de conteúdo
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
           DRY_RUN: ${{ inputs.dry_run || 'false' }}
         run: python scripts/generate_ideas.py

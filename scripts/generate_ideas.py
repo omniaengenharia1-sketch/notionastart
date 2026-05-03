@@ -4,8 +4,8 @@ Daily content idea generator for Astart Studio clients.
 Runs at 09:00 BRT via GitHub Actions cron (0 12 * * *).
 
 Required env vars:
-  ANTHROPIC_API_KEY — Anthropic API key
-  NOTION_API_KEY    — Notion integration token
+  GEMINI_API_KEY  — Google Gemini API key
+  NOTION_API_KEY  — Notion integration token
 """
 
 import json
@@ -15,7 +15,6 @@ import time
 from datetime import date
 from pathlib import Path
 
-import anthropic
 import requests
 
 CONFIG_PATH = Path(__file__).parent.parent / "clients_config.json"
@@ -74,7 +73,7 @@ def fetch_reddit_posts(subreddits: list[str]) -> str:
                 if len(posts) >= 12:
                     break
 
-            time.sleep(1.2)  # Reddit rate limit
+            time.sleep(1.2)
 
         except Exception as e:
             print(f"  [reddit/{subreddit}] Aviso: {e}")
@@ -82,10 +81,14 @@ def fetch_reddit_posts(subreddits: list[str]) -> str:
     return "\n- ".join([""] + posts[:12]).strip() if posts else "sem posts recentes"
 
 
-def generate_ideas(client: dict, trends: str, reddit_posts: str) -> dict:
-    """Ask Claude to generate structured content ideas for the client."""
-    client_obj = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
+GEMINI_URL = (
+    "https://generativelanguage.googleapis.com/v1beta/models/"
+    "gemini-2.5-flash:generateContent"
+)
 
+
+def generate_ideas(client: dict, trends: str, reddit_posts: str) -> dict:
+    """Ask Gemini to generate structured content ideas for the client."""
     today_str = date.today().strftime("%d/%m/%Y")
 
     prompt = f"""Você é um estrategista de conteúdo sênior especializado em redes sociais brasileiras, trabalhando para a agência Astart Studio em São Paulo.
@@ -124,20 +127,18 @@ Responda APENAS com um objeto JSON válido, sem nenhum texto antes ou depois:
   "roteiro_reel": "**REEL — [TEMA]**\\n\\nDuração: 30-45 segundos\\n\\n🎬 CENA 1 (0-3s): [hook visual + texto na tela]\\n🎬 CENA 2 (3-10s): [desenvolvimento]\\n🎬 CENA 3 (10-20s): [ponto principal]\\n🎬 CENA 4 (20-30s): [virada / insight]\\n🎬 CENA 5 (30-45s): [CTA direto]\\n\\n🎵 Música sugerida: [estilo]\\n📝 Legenda: [legenda + hashtags]"
 }}"""
 
-    message = client_obj.messages.create(
-        model="claude-opus-4-7",
-        max_tokens=4096,
-        messages=[{"role": "user", "content": prompt}],
+    resp = requests.post(
+        GEMINI_URL,
+        params={"key": os.environ["GEMINI_API_KEY"]},
+        json={
+            "contents": [{"parts": [{"text": prompt}]}],
+            "generationConfig": {"responseMimeType": "application/json"},
+        },
+        timeout=60,
     )
+    resp.raise_for_status()
 
-    raw = message.content[0].text.strip()
-
-    # Strip markdown code fences if present
-    if "```json" in raw:
-        raw = raw.split("```json", 1)[1].split("```", 1)[0].strip()
-    elif "```" in raw:
-        raw = raw.split("```", 1)[1].split("```", 1)[0].strip()
-
+    raw = resp.json()["candidates"][0]["content"]["parts"][0]["text"].strip()
     return json.loads(raw)
 
 
@@ -184,7 +185,7 @@ def post_to_notion(db_id: str, ideas: dict) -> bool:
 
 
 def main() -> None:
-    missing = [k for k in ("ANTHROPIC_API_KEY", "NOTION_API_KEY") if not os.environ.get(k)]
+    missing = [k for k in ("GEMINI_API_KEY", "NOTION_API_KEY") if not os.environ.get(k)]
     if missing:
         print(f"❌ Variáveis de ambiente faltando: {', '.join(missing)}")
         sys.exit(1)
@@ -207,11 +208,11 @@ def main() -> None:
         print("  → Buscando posts Reddit...")
         reddit_posts = fetch_reddit_posts(client["subreddits"])
 
-        print("  → Gerando ideias com Claude...")
+        print("  → Gerando ideias com Gemini...")
         try:
             ideas = generate_ideas(client, trends, reddit_posts)
         except json.JSONDecodeError as e:
-            print(f"  ❌ JSON inválido do Claude: {e}")
+            print(f"  ❌ JSON inválido do Gemini: {e}")
             continue
         except Exception as e:
             print(f"  ❌ Erro ao gerar ideias: {e}")
