@@ -1,0 +1,36 @@
+{
+  "clients": [
+    {
+      "name": "Mor Marcas",
+      "niche": "registro de marca no INPI, proteção de marca, branding, identidade visual, design de logo, propriedade intelectual para empreendedores e PMEs brasileiras",
+      "tone": "educativo, inspirador e acessível — linguagem simples para empreendedores que estão começando ou querendo proteger sua marca",
+      "keywords": ["registro de marca", "INPI", "identidade visual", "branding", "logo", "propriedade intelectual"],
+      "subreddits": ["empreendedorismo", "marketing", "branding"],
+      "notion_db_id": "91f6eb54-7e9b-4fa8-9f5a-021c1798d785"
+    },
+    {
+      "name": "Publika",
+      "niche": "marketing digital, gestão de redes sociais, tráfego pago, criação de conteúdo, estratégia digital para empresas brasileiras",
+      "tone": "profissional e dinâmico — voltado para empreendedores e empresas que querem crescer no digital",
+      "keywords": ["marketing digital", "instagram", "trafego pago", "gestao de redes sociais", "conteudo digital", "meta ads"],
+      "subreddits": ["marketing", "socialmedia", "empreendedorismo"],
+      "notion_db_id": "b922ae0a-e441-4c01-852d-c20a93dfe4db"
+    },
+    {
+      "name": "Pamela",
+      "niche": "beleza, estética, skincare, cuidados pessoais, salão de beleza, tratamentos estéticos",
+      "tone": "descontraído, inspirador e próximo — como uma amiga especialista em beleza falando com outras mulheres",
+      "keywords": ["beleza", "estetica", "skincare", "cuidados pessoais", "salão de beleza", "tratamento estético"],
+      "subreddits": ["beauty", "SkincareAddiction", "brasil"],
+      "notion_db_id": "b3cda19a-2cb9-4a90-860a-1733669dd508"
+    },
+    {
+      "name": "Gustavo",
+      "niche": "empreendedorismo, negócios, vendas, crescimento profissional, mentalidade empreendedora",
+      "tone": "direto ao ponto, motivacional e prático — fala com quem quer empreender ou já empreende e busca crescer",
+      "keywords": ["empreendedorismo", "negocios", "vendas", "crescimento profissional", "startups", "liderança"],
+      "subreddits": ["empreendedorismo", "marketing", "brasil"],
+      "notion_db_id": "e6a21a01-33db-46e4-a52a-f7b8c6211932"
+    }
+  ]
+}
