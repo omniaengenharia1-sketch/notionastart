@@ -10,6 +10,7 @@ Required env vars:
 
 import json
 import os
+import random
 import sys
 import time
 from datetime import date
@@ -87,9 +88,85 @@ GEMINI_URL = (
 )
 
 
-def generate_ideas(client: dict, trends: str, reddit_posts: str) -> dict:
+def fetch_recent_themes(db_id: str, limit: int = 15) -> list[str]:
+    """Fetch recent idea themes from Notion to avoid repetition."""
+    token = os.environ["NOTION_API_KEY"]
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Notion-Version": NOTION_VERSION,
+        "Content-Type": "application/json",
+    }
+
+    url = f"https://api.notion.com/v1/databases/{db_id}/query"
+    try:
+        resp = requests.post(
+            url,
+            headers=headers,
+            json={
+                "sorts": [{"timestamp": "created_time", "direction": "descending"}],
+                "page_size": limit,
+            },
+            timeout=20,
+        )
+        if resp.status_code != 200:
+            print(f"  [recent] Aviso: {resp.status_code} {resp.text[:120]}")
+            return []
+
+        themes = []
+        for page in resp.json().get("results", []):
+            props = page.get("properties", {})
+            ideia_1 = props.get("Ideia 1", {}).get("rich_text", [])
+            if not ideia_1:
+                continue
+            text = ideia_1[0].get("text", {}).get("content", "")
+            # Extrai a linha após "TEMA:"
+            if "TEMA:" in text:
+                after = text.split("TEMA:", 1)[1].lstrip("\n ")
+                tema = after.split("\n", 1)[0].strip()
+                if tema:
+                    themes.append(tema)
+        return themes
+    except Exception as e:
+        print(f"  [recent] Erro: {e}")
+        return []
+
+
+def pick_subtopic(subtopics: list[str], recent_themes: list[str]) -> str:
+    """Pick a subtopic that doesn't overlap with recent themes."""
+    if not subtopics:
+        return ""
+
+    def score(sub: str) -> int:
+        sub_words = {w for w in sub.lower().split() if len(w) > 3}
+        worst = 0
+        for theme in recent_themes:
+            theme_words = {w for w in theme.lower().split() if len(w) > 3}
+            common = len(sub_words & theme_words)
+            worst = max(worst, common)
+        return worst
+
+    # Ordena por menos sobreposição com temas recentes
+    ranked = sorted(subtopics, key=score)
+    # Pega os 5 mais "novos" e escolhe um aleatório (pra variar)
+    pool = ranked[: max(5, len(ranked) // 3)]
+    return random.choice(pool)
+
+
+def generate_ideas(
+    client: dict,
+    trends: str,
+    reddit_posts: str,
+    subtopic: str,
+    recent_themes: list[str],
+) -> dict:
     """Ask Gemini to generate structured content ideas for the client."""
     today_str = date.today().strftime("%d/%m/%Y")
+
+    avoid_block = (
+        "\n".join(f"- {t}" for t in recent_themes[:10])
+        if recent_themes
+        else "(nenhum tema recente — você está livre para escolher)"
+    )
 
     prompt = f"""Você é um estrategista de conteúdo sênior especializado em redes sociais brasileiras, trabalhando para a agência Astart Studio em São Paulo.
 
@@ -99,6 +176,12 @@ Tom de voz: {client["tone"]}
 Data: {today_str}
 
 ---
+SUBTEMA OBRIGATÓRIO DE HOJE (use exatamente esse ângulo):
+{subtopic}
+
+TEMAS JÁ COBERTOS RECENTEMENTE — NÃO REPITA NENHUM DESSES ÂNGULOS:
+{avoid_block}
+
 TENDÊNCIAS DO GOOGLE BRASIL (últimas 24h):
 {trends}
 
@@ -106,7 +189,7 @@ POSTS EM ALTA NO REDDIT (referência de assuntos quentes):
 {reddit_posts}
 ---
 
-Com base nessas tendências reais de hoje, crie um pacote de conteúdo para Instagram com 3 formatos diferentes (CARROSSEL, ESTÁTICO, REELS) sobre o MESMO tema/tendência, e uma legenda única que serve para os três.
+Com base no SUBTEMA OBRIGATÓRIO de hoje, crie um pacote de conteúdo para Instagram com 3 formatos diferentes (CARROSSEL, ESTÁTICO, REELS) sobre esse subtema específico, e uma legenda única que serve para os três. Se possível, conecte com alguma tendência do dia — mas o foco principal é o subtema obrigatório.
 
 REGRAS DE FORMATAÇÃO — MUITO IMPORTANTE:
 - NÃO use asteriscos, NÃO use **, NÃO use markdown de nenhum tipo
@@ -222,6 +305,14 @@ def main() -> None:
     for client in clients:
         print(f"─── {client['name']} ───")
 
+        print("  → Buscando ideias recentes no Notion...")
+        recent_themes = fetch_recent_themes(client["notion_db_id"])
+        print(f"     {len(recent_themes)} temas recentes encontrados")
+
+        print("  → Escolhendo subtema do dia...")
+        subtopic = pick_subtopic(client.get("subtopics", []), recent_themes)
+        print(f"     SUBTEMA: {subtopic}")
+
         print("  → Buscando tendências Google...")
         trends = fetch_google_trends(client["keywords"])
         print(f"     {trends[:100]}...")
@@ -231,7 +322,7 @@ def main() -> None:
 
         print("  → Gerando ideias com Gemini...")
         try:
-            ideas = generate_ideas(client, trends, reddit_posts)
+            ideas = generate_ideas(client, trends, reddit_posts, subtopic, recent_themes)
         except json.JSONDecodeError as e:
             print(f"  ❌ JSON inválido do Gemini: {e}")
             continue
