@@ -101,40 +101,6 @@
         "Tricologia — entendendo a saúde do seu couro cabeludo",
         "Como contar para família e amigos sobre a prótese"
       ]
-    },
-    {
-      "name": "Gustavo",
-      "niche": "empreendedorismo, gestão de empresas, cultura empresarial, liderança, construção de times de alta performance, mindset e estratégia para donos de negócio",
-      "tone": "direto ao ponto, motivacional e prático — fala com empreendedores e gestores que querem crescer como líderes e escalar seus negócios",
-      "keywords": ["empreendedorismo", "gestão de empresas", "cultura empresarial", "liderança", "gestão de equipes", "alta performance"],
-      "subreddits": ["Entrepreneur", "smallbusiness", "Leadership", "business"],
-      "notion_db_id": "e6a21a01-33db-46e4-a52a-f7b8c6211932",
-      "subtopics": [
-        "Como construir uma cultura forte do zero",
-        "Recrutamento por valores — vale a pena ou não",
-        "Liderança situacional — adapte o estilo ao momento",
-        "OKRs — como implementar do jeito certo",
-        "Feedback construtivo — o método que realmente funciona",
-        "Demissão consciente — fazendo de forma humana",
-        "Bonificação e remuneração variável que motiva",
-        "Trabalho remoto, presencial ou híbrido — escolhendo",
-        "Onboarding — os primeiros 30 dias mudam tudo",
-        "Reuniões eficientes — menos sempre é mais",
-        "Tomada de decisão sob pressão",
-        "Escalando vendas — do 1º ao 100º cliente",
-        "Pricing — quanto cobrar pelos seus serviços",
-        "Inovação interna — programas que dão resultado",
-        "Customer success — transformando cliente em fã",
-        "People analytics — dados na gestão de pessoas",
-        "Burnout do empreendedor — sinais e prevenção",
-        "Sucessão em empresas familiares",
-        "M&A — quando faz sentido vender ou comprar",
-        "Gestão financeira para pequenas empresas",
-        "Construindo o seu primeiro board de conselheiros",
-        "Networking estratégico vs networking superficial",
-        "Quando contratar o primeiro funcionário",
-        "Erros mais comuns de quem está escalando"
-      ]
     }
   ]
 }
