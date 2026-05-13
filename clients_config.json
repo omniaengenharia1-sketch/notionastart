@@ -145,6 +145,52 @@
         "Tricologia — entendendo a saúde do seu couro cabeludo",
         "Como contar para família e amigos sobre a prótese"
       ]
+    },
+    {
+      "name": "Astart Studio",
+      "niche": "studio de marketing, branding e audiovisual — atende founders e CEOs de PMEs brasileiras (R$1-20M faturamento) com branding completo (naming, identidade visual, manuais), audiovisual (vídeo institucional, conteúdo pra redes, fotografia) e gestão de marketing recorrente (social media, campanhas, conteúdo)",
+      "tone": "confiante mas não arrogante, criativo mas não infantil, estratégico mas acessível — fala de igual pra igual com founders, sem jargão de agência, sem clichês de cold outreach",
+      "keywords": ["branding", "identidade visual", "audiovisual", "marketing estratégico", "rebrand", "produção de vídeo", "social media para empresas"],
+      "subreddits": ["branding", "marketing", "smallbusiness", "entrepreneur"],
+      "notion_db_id": null,
+      "sdr": {
+        "enabled": true,
+        "icp": {
+          "decisor": "Founder/CEO de PME",
+          "faturamento": "R$1-20M",
+          "setores_alvo": ["tech", "varejo", "serviços", "food", "saúde", "educação"],
+          "gatilhos_priorizados": [
+            "lançou produto/serviço novo",
+            "rebrand visível em curso (IG/site inconsistente)",
+            "captação ou rodada anunciada",
+            "troca de cargo / nova empresa",
+            "post relevante no LinkedIn",
+            "indicação de cliente atual"
+          ]
+        },
+        "diferenciais": [
+          "estratégia antes de estética — marca com posicionamento, não só design bonito",
+          "time multidisciplinar (design + vídeo + estratégia) num só lugar",
+          "ágil e com preço competitivo vs. agências grandes"
+        ],
+        "canais": ["whatsapp"],
+        "modo_autonomia": "copiloto_com_envio_automatico",
+        "aprovacao": {
+          "canal": "whatsapp_pessoal",
+          "provider": "meta_cloud_api",
+          "numero": "ops"
+        },
+        "envio": {
+          "provider": "meta_cloud_api",
+          "numero": "sdr"
+        },
+        "notion_leads_db_id": null,
+        "prompts": {
+          "system": "sdr/prompts/system_sdr_astart.md",
+          "templates_primeiro_contato": "sdr/prompts/templates_primeiro_contato.md",
+          "regras_followup": "sdr/prompts/regras_followup.md"
+        }
+      }
     }
   ]
 }
