@@ -227,12 +227,13 @@
         "aprovacao": {
           "canal": "whatsapp_pessoal",
           "provider": "meta_cloud_api",
-          "numero": "ops"
+          "numero": "sdr_compartilhado"
         },
         "envio": {
           "provider": "meta_cloud_api",
           "numero": "sdr"
         },
+        "arquitetura": "numero_unico_sdr_faz_tudo",
         "notion_leads_db_id": "ff29e8a2-84a2-4f94-978b-e486c4310281",
         "notion_leads_db_url": "https://www.notion.so/ff29e8a284a24f94978be486c4310281",
         "prompts": {

@@ -1,0 +1,427 @@
+{
+  "name": "SDR Astart — 2. Callback Unificado (aprovação OU resposta de lead)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "wa-callback",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "webhook-unified",
+      "name": "Webhook Meta (SDR)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 400]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse universal: extrai a mensagem e decide se é do operador ou de um lead\nconst body = $input.item.json.body || $input.item.json;\nconst entries = body.entry || [];\n\nlet fromNumber = null;\nlet messageType = null;\nlet messageText = null;\nlet buttonAction = null;\nlet buttonLeadId = null;\nlet contactName = null;\n\nfor (const entry of entries) {\n  for (const change of (entry.changes || [])) {\n    const value = change.value || {};\n    const contacts = value.contacts || [];\n    if (contacts[0]) contactName = contacts[0].profile?.name || null;\n    for (const msg of (value.messages || [])) {\n      fromNumber = msg.from;\n      messageType = msg.type;\n      if (msg.type === 'text') {\n        messageText = msg.text?.body || '';\n      } else if (msg.type === 'interactive' && msg.interactive?.button_reply) {\n        const buttonId = msg.interactive.button_reply.id;\n        const [act, ...idParts] = buttonId.split('_');\n        buttonAction = act; // approve | edit | skip\n        buttonLeadId = idParts.join('_');\n        messageText = msg.interactive.button_reply.title;\n      } else {\n        messageText = `[${msg.type}]`;\n      }\n    }\n  }\n}\n\nif (!fromNumber) {\n  // Status update (delivered/read) — ignora\n  return { json: { skip: true } };\n}\n\nconst operatorNumber = $env.OPERATOR_PERSONAL_NUMBER;\nconst isFromOperator = fromNumber === operatorNumber;\n\nreturn {\n  json: {\n    skip: false,\n    fromNumber,\n    contactName,\n    messageType,\n    messageText,\n    buttonAction,\n    buttonLeadId,\n    isFromOperator,\n    route: isFromOperator ? (buttonAction || 'edit_text') : 'lead_reply'\n  }\n};"
+      },
+      "id": "parse-universal",
+      "name": "Parse + identifica remetente",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 400]
+    },
+    {
+      "parameters": {
+        "conditions": { "boolean": [{ "value1": "={{ $json.skip }}", "value2": false }] }
+      },
+      "id": "if-not-skip",
+      "name": "Não é status update?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [680, 400]
+    },
+    {
+      "parameters": {
+        "dataType": "string",
+        "value1": "={{ $json.route }}",
+        "rules": {
+          "rules": [
+            { "operation": "equal", "value2": "approve", "output": 0 },
+            { "operation": "equal", "value2": "skip", "output": 1 },
+            { "operation": "equal", "value2": "edit", "output": 2 },
+            { "operation": "equal", "value2": "edit_text", "output": 3 },
+            { "operation": "equal", "value2": "lead_reply", "output": 4 }
+          ]
+        },
+        "fallbackOutput": 5
+      },
+      "id": "route",
+      "name": "Roteia",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [900, 400]
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "get",
+        "pageId": "={{ $json.buttonLeadId }}"
+      },
+      "id": "notion-fetch-lead-approve",
+      "name": "Notion: pega lead (aprovar)",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [1120, 100],
+      "credentials": { "notionApi": { "id": "notion-cred", "name": "Notion API" } }
+    },
+    {
+      "parameters": {
+        "jsCode": "const lead = $input.item.json;\nconst props = lead.property || lead.properties || {};\nconst getText = (key) => {\n  const p = props[key];\n  if (!p) return '';\n  if (p.title) return p.title.map(t => t.plain_text).join('');\n  if (p.rich_text) return p.rich_text.map(t => t.plain_text).join('');\n  if (p.phone_number) return p.phone_number;\n  return '';\n};\nconst whatsapp = getText('WhatsApp').replace(/\\D/g, '');\nconst mensagem = getText('Mensagem proposta');\nconst historicoExistente = getText('Histórico');\nconst now = new Date().toISOString().replace('T', ' ').slice(0, 16);\nconst novaLinha = `[${now} SDR] ${mensagem}`;\nconst historicoAtualizado = historicoExistente ? `${historicoExistente}\\n${novaLinha}` : novaLinha;\nreturn { json: { lead_id: lead.id, whatsapp, mensagem, historicoAtualizado } };"
+      },
+      "id": "prepare-send",
+      "name": "Prepara envio pro lead",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1340, 100]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v21.0/{{ $env.WA_SDR_PHONE_ID }}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer {{ $env.WA_SDR_TOKEN }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"messaging_product\": \"whatsapp\",\n  \"recipient_type\": \"individual\",\n  \"to\": \"{{ $json.whatsapp }}\",\n  \"type\": \"text\",\n  \"text\": { \"preview_url\": false, \"body\": {{ JSON.stringify($json.mensagem) }} }\n}",
+        "options": {}
+      },
+      "id": "wa-send-lead",
+      "name": "SDR → Lead: envia",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1560, 100]
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "update",
+        "pageId": "={{ $('Prepara envio pro lead').item.json.lead_id }}",
+        "propertiesUi": {
+          "propertyValues": [
+            { "key": "Etapa|select", "selectValue": "Contato Feito" },
+            { "key": "Mensagem aprovada|rich_text", "textContent": "={{ $('Prepara envio pro lead').item.json.mensagem }}" },
+            { "key": "Histórico|rich_text", "textContent": "={{ $('Prepara envio pro lead').item.json.historicoAtualizado }}" },
+            { "key": "Última interação em|date", "date": "={{ $now.toISO() }}" }
+          ]
+        }
+      },
+      "id": "notion-mark-sent",
+      "name": "Notion: marca como enviada",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [1780, 100],
+      "credentials": { "notionApi": { "id": "notion-cred", "name": "Notion API" } }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v21.0/{{ $env.WA_SDR_PHONE_ID }}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer {{ $env.WA_SDR_TOKEN }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"messaging_product\": \"whatsapp\",\n  \"to\": \"{{ $env.OPERATOR_PERSONAL_NUMBER }}\",\n  \"type\": \"text\",\n  \"text\": { \"body\": \"✅ Enviado pro lead.\" }\n}",
+        "options": {}
+      },
+      "id": "wa-confirm-ops",
+      "name": "Confirma no seu WA",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2000, 100]
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "update",
+        "pageId": "={{ $json.buttonLeadId }}",
+        "propertiesUi": {
+          "propertyValues": [
+            { "key": "Etapa|select", "selectValue": "Descartado" },
+            { "key": "Motivo desqualificação|rich_text", "textContent": "Operador pulou na aprovação" }
+          ]
+        }
+      },
+      "id": "notion-skip",
+      "name": "Notion: descartado",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [1120, 280],
+      "credentials": { "notionApi": { "id": "notion-cred", "name": "Notion API" } }
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "update",
+        "pageId": "={{ $json.buttonLeadId }}",
+        "propertiesUi": {
+          "propertyValues": [
+            { "key": "Etapa|select", "selectValue": "Aguardando edição" }
+          ]
+        }
+      },
+      "id": "notion-mark-editing",
+      "name": "Notion: aguardando edição",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [1120, 440],
+      "credentials": { "notionApi": { "id": "notion-cred", "name": "Notion API" } }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v21.0/{{ $env.WA_SDR_PHONE_ID }}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer {{ $env.WA_SDR_TOKEN }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"messaging_product\": \"whatsapp\",\n  \"to\": \"{{ $env.OPERATOR_PERSONAL_NUMBER }}\",\n  \"type\": \"text\",\n  \"text\": { \"body\": \"✏️ Manda aqui o novo texto pra enviar pro lead. Sua próxima mensagem vai virar a mensagem aprovada.\" }\n}",
+        "options": {}
+      },
+      "id": "wa-ask-edit",
+      "name": "Pede texto editado",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1340, 440]
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "getAll",
+        "databaseId": "={{ $env.NOTION_LEADS_DB_ID }}",
+        "returnAll": false,
+        "limit": 1,
+        "filterType": "manual",
+        "matchType": "anyFilter",
+        "filters": {
+          "conditions": [
+            { "key": "Etapa|select", "condition": "equals", "selectValue": "Aguardando edição" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "notion-find-editing",
+      "name": "Notion: acha lead em edição",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [1120, 600],
+      "credentials": { "notionApi": { "id": "notion-cred", "name": "Notion API" } }
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "update",
+        "pageId": "={{ $json.id }}",
+        "propertiesUi": {
+          "propertyValues": [
+            { "key": "Mensagem proposta|rich_text", "textContent": "={{ $('Parse + identifica remetente').item.json.messageText }}" },
+            { "key": "Etapa|select", "selectValue": "Aguardando aprovação" }
+          ]
+        }
+      },
+      "id": "notion-save-edit",
+      "name": "Notion: salva texto editado",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [1340, 600],
+      "credentials": { "notionApi": { "id": "notion-cred", "name": "Notion API" } }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v21.0/{{ $env.WA_SDR_PHONE_ID }}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer {{ $env.WA_SDR_TOKEN }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"messaging_product\": \"whatsapp\",\n  \"to\": \"{{ $env.OPERATOR_PERSONAL_NUMBER }}\",\n  \"type\": \"interactive\",\n  \"interactive\": {\n    \"type\": \"button\",\n    \"body\": { \"text\": \"📝 Texto atualizado. Reconfirma o envio?\\n\\n{{ $('Parse + identifica remetente').item.json.messageText }}\" },\n    \"action\": {\n      \"buttons\": [\n        { \"type\": \"reply\", \"reply\": { \"id\": \"approve_{{ $json.id }}\", \"title\": \"✅ Enviar\" } },\n        { \"type\": \"reply\", \"reply\": { \"id\": \"skip_{{ $json.id }}\", \"title\": \"❌ Cancelar\" } }\n      ]\n    }\n  }\n}",
+        "options": {}
+      },
+      "id": "wa-reconfirm",
+      "name": "Pede reconfirmação",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1560, 600]
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "getAll",
+        "databaseId": "={{ $env.NOTION_LEADS_DB_ID }}",
+        "returnAll": false,
+        "limit": 1,
+        "filterType": "manual",
+        "matchType": "anyFilter",
+        "filters": {
+          "conditions": [
+            { "key": "WhatsApp|phone_number", "condition": "contains", "value": "={{ $json.fromNumber }}" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "notion-find-lead",
+      "name": "Notion: acha o lead",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [1120, 760],
+      "credentials": { "notionApi": { "id": "notion-cred", "name": "Notion API" } }
+    },
+    {
+      "parameters": {
+        "jsCode": "const lead = $input.item.json;\nconst inbound = $('Parse + identifica remetente').item.json;\nconst props = lead.property || lead.properties || {};\nconst getText = (key) => {\n  const p = props[key];\n  if (!p) return '';\n  if (p.title) return p.title.map(t => t.plain_text).join('');\n  if (p.rich_text) return p.rich_text.map(t => t.plain_text).join('');\n  if (p.select) return p.select?.name || '';\n  if (p.phone_number) return p.phone_number;\n  if (p.url) return p.url;\n  return '';\n};\nconst historicoExistente = getText('Histórico');\nconst now = new Date().toISOString().replace('T', ' ').slice(0, 16);\nconst novaLinha = `[${now} LEAD] ${inbound.messageText}`;\nconst historicoAtualizado = historicoExistente ? `${historicoExistente}\\n${novaLinha}` : novaLinha;\nreturn { json: { lead_id: lead.id, nome: getText('Nome'), empresa: getText('Empresa'), cargo: getText('Cargo'), whatsapp: getText('WhatsApp'), gatilho: getText('Gatilho de prospecção'), setor: getText('Setor'), instagram: getText('Instagram'), site: getText('Site da empresa'), ultima_msg_lead: inbound.messageText, historico: historicoAtualizado, is_first_touch: false } };"
+      },
+      "id": "build-context",
+      "name": "Monta contexto + histórico",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1340, 760]
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "update",
+        "pageId": "={{ $json.lead_id }}",
+        "propertiesUi": {
+          "propertyValues": [
+            { "key": "Etapa|select", "selectValue": "Em conversa" },
+            { "key": "Histórico|rich_text", "textContent": "={{ $json.historico }}" },
+            { "key": "Última interação em|date", "date": "={{ $now.toISO() }}" }
+          ]
+        }
+      },
+      "id": "notion-log-reply",
+      "name": "Notion: loga resposta",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [1560, 760],
+      "credentials": { "notionApi": { "id": "notion-cred", "name": "Notion API" } }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "x-api-key", "value": "={{ $env.ANTHROPIC_API_KEY }}" },
+            { "name": "anthropic-version", "value": "2023-06-01" },
+            { "name": "content-type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"claude-sonnet-4-6\",\n  \"max_tokens\": 1024,\n  \"system\": {{ JSON.stringify($env.SDR_SYSTEM_PROMPT + '\\n\\n--- REGRAS DE FOLLOW-UP ---\\n' + $env.SDR_FOLLOWUP_RULES) }},\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": {{ JSON.stringify('Lead respondeu. Dados completos + histórico:\\n' + JSON.stringify($json, null, 2) + '\\n\\nGere a próxima resposta seguindo o system prompt e as regras de follow-up. Retorne APENAS o JSON especificado.') }}\n    }\n  ]\n}",
+        "options": {}
+      },
+      "id": "claude-followup",
+      "name": "Claude: gera follow-up",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1780, 760]
+    },
+    {
+      "parameters": {
+        "jsCode": "const claudeResp = $input.item.json;\nconst ctx = $('Monta contexto + histórico').item.json;\nlet parsed;\ntry {\n  const text = claudeResp.content[0].text.trim();\n  const cleaned = text.replace(/^```json\\s*/i, '').replace(/```\\s*$/, '');\n  parsed = JSON.parse(cleaned);\n} catch (e) {\n  parsed = { mensagem_proposta: '[ERRO de parsing — revisar]', raciocinio: 'Falha no parsing: ' + e.message, score_sugerido: '🟡 Warm', proxima_etapa_sugerida: 'Em conversa', alerta_humano: 'Claude retornou JSON inválido em follow-up' };\n}\nreturn { json: { ...ctx, ...parsed } };"
+      },
+      "id": "parse-followup",
+      "name": "Parse follow-up",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2000, 760]
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "update",
+        "pageId": "={{ $json.lead_id }}",
+        "propertiesUi": {
+          "propertyValues": [
+            { "key": "Etapa|select", "selectValue": "Aguardando aprovação" },
+            { "key": "Mensagem proposta|rich_text", "textContent": "={{ $json.mensagem_proposta }}" },
+            { "key": "Score de qualificação|select", "selectValue": "={{ $json.score_sugerido }}" }
+          ]
+        }
+      },
+      "id": "notion-save-followup",
+      "name": "Notion: salva follow-up",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [2220, 760],
+      "credentials": { "notionApi": { "id": "notion-cred", "name": "Notion API" } }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v21.0/{{ $env.WA_SDR_PHONE_ID }}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer {{ $env.WA_SDR_TOKEN }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"messaging_product\": \"whatsapp\",\n  \"to\": \"{{ $env.OPERATOR_PERSONAL_NUMBER }}\",\n  \"type\": \"interactive\",\n  \"interactive\": {\n    \"type\": \"button\",\n    \"body\": {\n      \"text\": \"💬 *Lead respondeu*\\n\\n*{{ $json.nome }}* ({{ $json.empresa }}) disse:\\n_{{ $json.ultima_msg_lead }}_\\n\\n*Resposta proposta:*\\n━━━━━━━━━━━━━━\\n{{ $json.mensagem_proposta }}\\n━━━━━━━━━━━━━━\\n\\n*Score:* {{ $json.score_sugerido }}\\n_{{ $json.raciocinio }}_{{ $json.alerta_humano ? '\\n\\n⚠️ ' + $json.alerta_humano : '' }}\"\n    },\n    \"action\": {\n      \"buttons\": [\n        { \"type\": \"reply\", \"reply\": { \"id\": \"approve_{{ $json.lead_id }}\", \"title\": \"✅ Aprovar\" } },\n        { \"type\": \"reply\", \"reply\": { \"id\": \"edit_{{ $json.lead_id }}\", \"title\": \"✏️ Editar\" } },\n        { \"type\": \"reply\", \"reply\": { \"id\": \"skip_{{ $json.lead_id }}\", \"title\": \"❌ Pular\" } }\n      ]\n    }\n  }\n}",
+        "options": {}
+      },
+      "id": "wa-ask-approval-followup",
+      "name": "Pede aprovação do follow-up",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2440, 760]
+    }
+  ],
+  "connections": {
+    "Webhook Meta (SDR)": { "main": [[{ "node": "Parse + identifica remetente", "type": "main", "index": 0 }]] },
+    "Parse + identifica remetente": { "main": [[{ "node": "Não é status update?", "type": "main", "index": 0 }]] },
+    "Não é status update?": { "main": [[{ "node": "Roteia", "type": "main", "index": 0 }], []] },
+    "Roteia": {
+      "main": [
+        [{ "node": "Notion: pega lead (aprovar)", "type": "main", "index": 0 }],
+        [{ "node": "Notion: descartado", "type": "main", "index": 0 }],
+        [{ "node": "Notion: aguardando edição", "type": "main", "index": 0 }],
+        [{ "node": "Notion: acha lead em edição", "type": "main", "index": 0 }],
+        [{ "node": "Notion: acha o lead", "type": "main", "index": 0 }],
+        []
+      ]
+    },
+    "Notion: pega lead (aprovar)": { "main": [[{ "node": "Prepara envio pro lead", "type": "main", "index": 0 }]] },
+    "Prepara envio pro lead": { "main": [[{ "node": "SDR → Lead: envia", "type": "main", "index": 0 }]] },
+    "SDR → Lead: envia": { "main": [[{ "node": "Notion: marca como enviada", "type": "main", "index": 0 }]] },
+    "Notion: marca como enviada": { "main": [[{ "node": "Confirma no seu WA", "type": "main", "index": 0 }]] },
+    "Notion: aguardando edição": { "main": [[{ "node": "Pede texto editado", "type": "main", "index": 0 }]] },
+    "Notion: acha lead em edição": { "main": [[{ "node": "Notion: salva texto editado", "type": "main", "index": 0 }]] },
+    "Notion: salva texto editado": { "main": [[{ "node": "Pede reconfirmação", "type": "main", "index": 0 }]] },
+    "Notion: acha o lead": { "main": [[{ "node": "Monta contexto + histórico", "type": "main", "index": 0 }]] },
+    "Monta contexto + histórico": { "main": [[{ "node": "Notion: loga resposta", "type": "main", "index": 0 }]] },
+    "Notion: loga resposta": { "main": [[{ "node": "Claude: gera follow-up", "type": "main", "index": 0 }]] },
+    "Claude: gera follow-up": { "main": [[{ "node": "Parse follow-up", "type": "main", "index": 0 }]] },
+    "Parse follow-up": { "main": [[{ "node": "Notion: salva follow-up", "type": "main", "index": 0 }]] },
+    "Notion: salva follow-up": { "main": [[{ "node": "Pede aprovação do follow-up", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" }
+}

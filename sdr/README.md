@@ -7,18 +7,26 @@ Assistente de prospecção (Sales Development Representative) humanizado para a 
 ```
 ┌──────────────┐    ┌─────────────────┐    ┌──────────────┐
 │   Notion     │◄──►│  n8n workflows  │◄──►│ Claude API   │
-│ (leads DB)   │    │                 │    │  (Sonnet)    │
+│ (leads DB)   │    │                 │    │  (Sonnet 4.6)│
 └──────────────┘    └────────┬────────┘    └──────────────┘
                              │
-                ┌────────────┴────────────┐
-                ▼                         ▼
-       ┌──────────────────┐      ┌──────────────────┐
-       │ WhatsApp Cloud   │      │ WhatsApp Cloud   │
-       │ #Ops (aprovação) │      │ #SDR (leads)     │
-       └──────────────────┘      └──────────────────┘
-                ▲                         │
-                │     webhook  ◄──────────┘
-                │   (respostas dos leads)
+                             ▼
+                  ┌────────────────────────┐
+                  │  WhatsApp Cloud API    │
+                  │  #SDR (número único)   │
+                  └─────┬────────────┬─────┘
+                        │            │
+              envia mensagens     envia aprovações
+                pros leads        pro seu pessoal
+                        │            │
+                        ▼            ▼
+              ┌──────────────┐   ┌──────────────┐
+              │   Leads      │   │ Seu WhatsApp │
+              │              │   │  Pessoal     │
+              └──────┬───────┘   └──────┬───────┘
+                     │ respostas        │ ✅ ✏️ ❌
+                     └──────► webhook ◄─┘
+                     (roteia por remetente)
 ```
 
 ## Componentes
@@ -36,9 +44,11 @@ Dois workflows:
 - **WF1 — Outbound**: cron → busca leads "Pronto pra abordar" → Claude drafta → manda aprovação no Ops → recebe aprovação → envia via SDR → atualiza Notion
 - **WF2 — Inbound**: webhook Meta → recebe resposta do lead → loga no Notion → Claude drafta follow-up → loop volta pra WF1
 
-### 4. WhatsApp Cloud API — 2 números
-- **Número SDR** → conversa com leads (templates Meta pra 1º toque, texto livre na janela 24h)
-- **Número Ops** → manda aprovações pro WhatsApp pessoal da operadora
+### 4. WhatsApp Cloud API — 1 número (SDR)
+O mesmo chip dedicado faz tudo:
+- Envia mensagens pros leads (templates Meta pra 1º toque, texto livre na janela 24h)
+- Manda aprovações no WhatsApp pessoal da operadora
+- O webhook unificado distingue entre "operador clicou em botão" e "lead respondeu" pelo número remetente
 
 ## Fluxo de aprovação
 
@@ -90,8 +100,7 @@ sdr/
 │   └── regras_followup.md                 # mapa de resposta → ação
 └── n8n/
     ├── workflow_1_outbound.json           # cron → busca lead → Claude → pede aprovação
-    ├── workflow_2_approval.json           # webhook Ops → envia pelo SDR → atualiza Notion
-    └── workflow_3_inbound.json            # webhook SDR → lead respondeu → gera follow-up
+    └── workflow_2_callback.json           # webhook único → roteia: aprovação do operador OU resposta de lead
 ```
 
 ## Setup (será detalhado na Fase 2)

@@ -141,11 +141,11 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "=https://graph.facebook.com/v21.0/{{ $env.WA_OPS_PHONE_ID }}/messages",
+        "url": "=https://graph.facebook.com/v21.0/{{ $env.WA_SDR_PHONE_ID }}/messages",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "Authorization", "value": "=Bearer {{ $env.WA_OPS_TOKEN }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.WA_SDR_TOKEN }}" },
             { "name": "Content-Type", "value": "application/json" }
           ]
         },
