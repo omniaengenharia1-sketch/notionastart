@@ -1,77 +1,87 @@
 # Templates de 1º Contato — Submeter à Meta Cloud API
 
-A Meta exige templates pré-aprovados pra **iniciar conversa** com um número (cold outreach). Abaixo, **5 variações** cobrindo os principais gatilhos. Submeta TODAS no Meta Business Manager (categoria **MARKETING**, idioma **pt_BR**).
+A Meta exige templates pré-aprovados pra **iniciar conversa** com um número (cold outreach). Abaixo, **6 variações** com a voz real da Astart Studio. Submeta TODAS no Meta Business Manager (categoria **MARKETING**, idioma **pt_BR**).
 
-Cada template usa variáveis `{{1}}`, `{{2}}`, etc. — o agente preenche dinamicamente. **A Meta aprova templates com variáveis desde que o "corpo de exemplo" mostre uso plausível.**
+Cada template usa variáveis `{{1}}`, `{{2}}`, etc. — o agente preenche dinamicamente.
 
 ---
 
-## Template 1 — `astart_sdr_gatilho_lancamento`
-**Categoria**: MARKETING
-**Gatilho**: lead lançou produto / nova fase / captação / prêmio recentemente
+## Template 1 — `astart_sdr_lancamento`
+**Gatilho**: lead lançou produto / serviço / nova fase / captação recentemente
 
 ```
-Oi, {{1}}! Vi que vocês lançaram {{2}} — parabéns, sacada boa.
+Oi {{1}}, vi que vocês lançaram {{2}} — sacada boa.
 
-Dei uma olhada no posicionamento de vocês e fiquei curioso com uma coisa que percebi. Posso te falar?
+Dei uma olhada rápida no posicionamento de vocês e fiquei com uma observação. Posso falar?
 ```
 
 **Exemplo preenchido**:
-> Oi, João! Vi que vocês lançaram o app de gestão pra clínicas — parabéns, sacada boa.
-> Dei uma olhada no posicionamento de vocês e fiquei curioso com uma coisa que percebi. Posso te falar?
+> Oi João, vi que vocês lançaram o app de gestão pra clínicas — sacada boa.
+> Dei uma olhada rápida no posicionamento de vocês e fiquei com uma observação. Posso falar?
 
 ---
 
-## Template 2 — `astart_sdr_gatilho_rebrand_visual`
-**Categoria**: MARKETING
-**Gatilho**: marca está numa transição visual evidente (IG inconsistente, site antigo, identidade datada)
+## Template 2 — `astart_sdr_marca_desalinhada`
+**Gatilho**: marca em transição visível — IG inconsistente, site datado, identidade que não acompanha o tamanho da empresa
 
 ```
-{{1}}, tudo certo? Caí no perfil da {{2}} e queria te perguntar uma coisa, sem agenda comercial nenhuma.
+{{1}}, tudo certo? Caí no perfil da {{2}} e queria te perguntar uma coisa, sem agenda comercial.
 
 Tem 2 minutos pra trocar uma ideia rápida?
 ```
 
 **Exemplo preenchido**:
-> Marina, tudo certo? Caí no perfil da Doce&Cia e queria te perguntar uma coisa, sem agenda comercial nenhuma.
+> Marina, tudo certo? Caí no perfil da Doce&Cia e queria te perguntar uma coisa, sem agenda comercial.
 > Tem 2 minutos pra trocar uma ideia rápida?
 
 ---
 
-## Template 3 — `astart_sdr_gatilho_conteudo`
-**Categoria**: MARKETING
+## Template 3 — `astart_sdr_conteudo`
 **Gatilho**: lead publicou conteúdo relevante (post no LinkedIn, vídeo, artigo)
 
 ```
-{{1}}, li seu post sobre {{2}} — gostei muito de {{3}}.
+{{1}}, li seu post sobre {{2}}. Curti o ponto sobre {{3}}.
 
 Faz sentido te mandar uma reflexão rápida sobre isso aplicado à marca de vocês?
 ```
 
 **Exemplo preenchido**:
-> Carlos, li seu post sobre o desafio de escalar time mantendo cultura — gostei muito do ponto sobre rituais.
+> Carlos, li seu post sobre o desafio de escalar time mantendo cultura. Curti o ponto sobre rituais.
 > Faz sentido te mandar uma reflexão rápida sobre isso aplicado à marca de vocês?
 
 ---
 
-## Template 4 — `astart_sdr_gatilho_cargo_mudanca`
-**Categoria**: MARKETING
-**Gatilho**: lead trocou de cargo, abriu empresa, virou sócio
+## Template 4 — `astart_sdr_novo_cargo`
+**Gatilho**: lead trocou de cargo, abriu empresa nova, virou sócio, fez captação
 
 ```
-Oi {{1}}, vi a mudança recente {{2}} — parabéns!
+Oi {{1}}, vi a mudança recente — {{2}}. Parabéns.
 
-Costumo falar com founders nesse momento porque marca e comunicação geralmente entram em revisão. Aí na {{3}} já tá no radar?
+Costumo falar com founder nesse momento porque marca e comunicação entram em revisão quase sempre. Aí na {{3}} já tá no radar?
 ```
 
 **Exemplo preenchido**:
-> Oi Bruno, vi a mudança recente — agora à frente da Mello Bebidas, parabéns!
-> Costumo falar com founders nesse momento porque marca e comunicação geralmente entram em revisão. Aí na Mello já tá no radar?
+> Oi Bruno, vi a mudança recente — agora à frente da Mello Bebidas. Parabéns.
+> Costumo falar com founder nesse momento porque marca e comunicação entram em revisão quase sempre. Aí na Mello já tá no radar?
 
 ---
 
-## Template 5 — `astart_sdr_indicacao`
-**Categoria**: MARKETING (ou UTILITY, conforme caso)
+## Template 5 — `astart_sdr_local_grandesp`
+**Gatilho**: lead é de Arujá, Mogi das Cruzes, Guarulhos ou Grande SP — usa proximidade geográfica como gancho
+
+```
+Oi {{1}}, tô vendo aqui que vocês são de {{2}} — a gente também (Astart Studio, estúdio de branding e audiovisual).
+
+Andei olhando o trabalho de vocês e fiquei com uma observação. Posso te mandar?
+```
+
+**Exemplo preenchido**:
+> Oi Camila, tô vendo aqui que vocês são de Mogi — a gente também (Astart Studio, estúdio de branding e audiovisual).
+> Andei olhando o trabalho de vocês e fiquei com uma observação. Posso te mandar?
+
+---
+
+## Template 6 — `astart_sdr_indicacao`
 **Gatilho**: lead chegou por indicação de alguém
 
 ```
@@ -88,13 +98,16 @@ Quando der, me avisa que te conto o contexto.
 
 ## Notas pra submissão na Meta
 
-- **Footer (opcional)** que pode ajudar na aprovação: `Astart Studio · Para sair desta conversa, responda PARAR.` — Meta gosta de templates com opt-out claro pra categoria MARKETING.
-- **Header**: pode deixar vazio ou usar texto curto tipo `Astart Studio`.
-- **Botões**: a Meta permite incluir **Quick Reply buttons** ("Pode falar", "Agora não"). Recomendo incluir — aumenta taxa de resposta e ajuda a Meta aprovar.
-- **Tempo de aprovação**: normalmente <1h, pode levar até 24-48h em casos complexos.
-- **Rejeição comum**: mensagens que parecem genéricas demais ou que "vendem" explicitamente. Os templates acima foram escritos pra parecer 1:1, não broadcast.
+- **Header (opcional)**: texto curto tipo `Astart Studio`
+- **Footer (recomendado)**: `Astart Studio · Responda PARAR pra sair desta conversa.` — a Meta gosta de opt-out claro pra categoria MARKETING
+- **Botões Quick Reply (recomendado, 3 botões)**:
+  - `Pode falar`
+  - `Agora não`
+  - `Não tenho interesse`
+- **Tempo de aprovação**: normalmente <1h, até 48h em casos complexos
+- **Rejeição comum**: mensagens que parecem broadcast genérico. Os templates acima foram escritos pra parecer 1:1.
 
-## Template extra: aprovação interna (número Ops → seu WhatsApp pessoal)
+## Template de aprovação interna — número Ops → WhatsApp pessoal
 
 Este é pro **número Ops** te mandar pedidos de aprovação. Submeta também:
 

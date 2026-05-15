@@ -148,30 +148,71 @@
     },
     {
       "name": "Astart Studio",
-      "niche": "studio de marketing, branding e audiovisual — atende founders e CEOs de PMEs brasileiras (R$1-20M faturamento) com branding completo (naming, identidade visual, manuais), audiovisual (vídeo institucional, conteúdo pra redes, fotografia) e gestão de marketing recorrente (social media, campanhas, conteúdo)",
-      "tone": "confiante mas não arrogante, criativo mas não infantil, estratégico mas acessível — fala de igual pra igual com founders, sem jargão de agência, sem clichês de cold outreach",
-      "keywords": ["branding", "identidade visual", "audiovisual", "marketing estratégico", "rebrand", "produção de vídeo", "social media para empresas"],
+      "site": "https://astartstudio.com.br/",
+      "instagram": "https://www.instagram.com/astartstudio_",
+      "linkedin": "https://linkedin.com/company/astartstudio",
+      "whatsapp_comercial": "+5511989384452",
+      "localizacao": "Arujá, Mogi das Cruzes, Guarulhos e São Paulo",
+      "fundadora": "Layana Oliveira",
+      "anos_mercado": "10+",
+      "projetos_entregues": "200+",
+      "marcas_criadas": "60+",
+      "manifesto": "Somos o ponto de virada de marcas. A maioria das empresas em crescimento faz marketing errado. Nós fazemos diferente.",
+      "niche": "estúdio de branding, design e audiovisual para empresas em crescimento — fundado por Layana Oliveira (10+ anos). Atende founders e CEOs de PMEs com seis frentes: Branding, Identidade Visual, Audiovisual, Website, Sistemas e Gestão Digital",
+      "tone": "confiante, direto, honesto, com leve provocação. Fala de igual pra igual com founder. Usa 'a gente' em vez de 'nós'. Frases curtas. Estruturas de negação dupla ('sem rodeios, sem enrolação'). Sem jargão de agência, sem clichês de cold outreach",
+      "keywords": ["branding", "identidade visual", "audiovisual", "drone para empresas", "website", "SEO local", "tráfego pago", "gestão digital", "rebrand"],
       "subreddits": ["branding", "marketing", "smallbusiness", "entrepreneur"],
       "notion_db_id": null,
+      "time": [
+        {"nome": "Layana Oliveira", "cargo": "CEO & Estrategista"},
+        {"nome": "Raquel Jacques", "cargo": "Social Media & Storymaker"},
+        {"nome": "Thiago Alves", "cargo": "Videomaker"},
+        {"nome": "Viviane Castro", "cargo": "Comercial & Vendas"},
+        {"nome": "Klayton Gimenez", "cargo": "Web Designer & Dev"},
+        {"nome": "Mauricio Costa", "cargo": "Gestor de Tráfego"}
+      ],
+      "servicos": [
+        {"nome": "Branding", "descricao_curta": "Diagnóstico, posicionamento, arquétipo, tom de voz, brandbook"},
+        {"nome": "Identidade Visual", "descricao_curta": "Logo, paleta, tipografia, manual de aplicação"},
+        {"nome": "Audiovisual", "descricao_curta": "Captação 4K, drone, edição, color grading, Reels, fotos"},
+        {"nome": "Website", "descricao_curta": "UX/UI, dev responsivo, SEO, performance, hospedagem"},
+        {"nome": "Sistemas", "descricao_curta": "Automações, CRM (RD/Kommo), integrações, dashboards"},
+        {"nome": "Gestão Digital", "descricao_curta": "Conteúdo, social media, tráfego pago (Meta/Google/TikTok)"}
+      ],
+      "cases_publicos": ["OMOR Marcas e Patentes", "Confrades", "VCAR Automóveis", "Enjoy Floricultura", "ADHOOD", "Cumnia Engenharia", "Extra Power"],
+      "bordoes": [
+        "Somos o ponto de virada de marcas",
+        "Contaminados por ideias",
+        "Pronto para ser notada?",
+        "Design que serve o negócio, nunca o contrário",
+        "Estética bonita sem retorno não nos interessa",
+        "Sem rodeios, sem enrolação",
+        "Você não é um número"
+      ],
       "sdr": {
         "enabled": true,
+        "responsavel_comercial": "Viviane Castro",
         "icp": {
           "decisor": "Founder/CEO de PME",
           "faturamento": "R$1-20M",
-          "setores_alvo": ["tech", "varejo", "serviços", "food", "saúde", "educação"],
+          "setores_alvo": ["tech", "varejo", "serviços", "food", "saúde", "educação", "indústria", "construção/imobiliário"],
+          "regiao_prioritaria": "Arujá, Mogi das Cruzes, Guarulhos, Grande SP (mas digital atende Brasil)",
           "gatilhos_priorizados": [
             "lançou produto/serviço novo",
-            "rebrand visível em curso (IG/site inconsistente)",
+            "rebrand visível em curso (IG/site inconsistente com o tamanho da empresa)",
             "captação ou rodada anunciada",
-            "troca de cargo / nova empresa",
-            "post relevante no LinkedIn",
-            "indicação de cliente atual"
+            "troca de cargo / nova empresa / sociedade",
+            "post relevante no LinkedIn (founder produzindo conteúdo)",
+            "indicação de cliente atual",
+            "empresa local da Grande SP (gancho de proximidade)"
           ]
         },
         "diferenciais": [
           "estratégia antes de estética — marca com posicionamento, não só design bonito",
-          "time multidisciplinar (design + vídeo + estratégia) num só lugar",
-          "ágil e com preço competitivo vs. agências grandes"
+          "time multidisciplinar (design + vídeo + estratégia + dev + tráfego) num só lugar",
+          "ágil e com preço competitivo vs. agências grandes",
+          "honestidade: 'se algo não funciona, a gente avisa'",
+          "10+ anos, 200+ projetos, 60+ marcas criadas"
         ],
         "canais": ["whatsapp"],
         "modo_autonomia": "copiloto_com_envio_automatico",
