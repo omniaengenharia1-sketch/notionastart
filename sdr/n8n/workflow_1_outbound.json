@@ -1,0 +1,174 @@
+{
+  "name": "SDR Astart — 1. Outbound (gerar e pedir aprovação)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 30
+            }
+          ]
+        }
+      },
+      "id": "cron-trigger",
+      "name": "A cada 30min",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "getAll",
+        "databaseId": "={{ $env.NOTION_LEADS_DB_ID }}",
+        "returnAll": false,
+        "limit": 5,
+        "filterType": "manual",
+        "matchType": "anyFilter",
+        "filters": {
+          "conditions": [
+            {
+              "key": "Etapa|status",
+              "condition": "equals",
+              "statusValue": "Pronto pra abordar"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "notion-fetch-leads",
+      "name": "Notion: leads prontos",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [460, 300],
+      "credentials": {
+        "notionApi": {
+          "id": "notion-cred",
+          "name": "Notion API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "id": "split-batches",
+      "name": "Um lead por vez",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extrai dados do lead vindos do Notion\nconst lead = $input.item.json;\nconst props = lead.property || lead.properties || {};\n\nconst getText = (key) => {\n  const p = props[key];\n  if (!p) return '';\n  if (p.title) return p.title.map(t => t.plain_text).join('');\n  if (p.rich_text) return p.rich_text.map(t => t.plain_text).join('');\n  if (p.select) return p.select?.name || '';\n  if (p.status) return p.status?.name || '';\n  if (p.phone_number) return p.phone_number;\n  if (p.url) return p.url;\n  if (p.email) return p.email;\n  return '';\n};\n\nconst lead_id = lead.id;\nconst nome = getText('Nome');\nconst empresa = getText('Empresa');\nconst cargo = getText('Cargo');\nconst whatsapp = getText('WhatsApp');\nconst gatilho = getText('Gatilho de prospecção');\nconst setor = getText('Setor');\nconst faturamento = getText('Faturamento estimado');\nconst instagram = getText('Instagram');\nconst site = getText('Site da empresa');\nconst linkedin = getText('LinkedIn');\nconst historico = getText('Histórico');\n\nreturn {\n  json: {\n    lead_id,\n    nome,\n    empresa,\n    cargo,\n    whatsapp,\n    gatilho,\n    setor,\n    faturamento,\n    instagram,\n    site,\n    linkedin,\n    historico,\n    is_first_touch: !historico\n  }\n};"
+      },
+      "id": "extract-lead-data",
+      "name": "Extrai dados do lead",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "x-api-key", "value": "={{ $env.ANTHROPIC_API_KEY }}" },
+            { "name": "anthropic-version", "value": "2023-06-01" },
+            { "name": "content-type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"claude-sonnet-4-6\",\n  \"max_tokens\": 1024,\n  \"system\": {{ JSON.stringify($env.SDR_SYSTEM_PROMPT) }},\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": {{ JSON.stringify('Dados do lead:\\n' + JSON.stringify($json, null, 2) + '\\n\\nGere a próxima mensagem seguindo o system prompt. Retorne APENAS o JSON especificado.') }}\n    }\n  ]\n}",
+        "options": {}
+      },
+      "id": "claude-call",
+      "name": "Claude: gera mensagem",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1120, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse da resposta do Claude e merge com dados do lead\nconst claudeResp = $input.item.json;\nconst leadData = $('Extrai dados do lead').item.json;\n\nlet parsed;\ntry {\n  const text = claudeResp.content[0].text.trim();\n  // remove markdown fences se vierem\n  const cleaned = text.replace(/^```json\\s*/i, '').replace(/```\\s*$/, '');\n  parsed = JSON.parse(cleaned);\n} catch (e) {\n  parsed = {\n    mensagem_proposta: '[ERRO de parsing — revisar manualmente]',\n    raciocinio: 'Falha no parsing do Claude: ' + e.message,\n    score_sugerido: '🟡 Warm',\n    proxima_etapa_sugerida: 'Aguardando aprovação',\n    alerta_humano: 'Claude retornou JSON inválido. Resposta crua: ' + claudeResp.content[0].text.slice(0, 300)\n  };\n}\n\nreturn {\n  json: {\n    ...leadData,\n    ...parsed\n  }\n};"
+      },
+      "id": "parse-claude",
+      "name": "Parse JSON do Claude",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1340, 300]
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "update",
+        "pageId": "={{ $json.lead_id }}",
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Etapa|status",
+              "statusValue": "Aguardando aprovação"
+            },
+            {
+              "key": "Mensagem proposta|rich_text",
+              "textContent": "={{ $json.mensagem_proposta }}"
+            },
+            {
+              "key": "Score de qualificação|select",
+              "selectValue": "={{ $json.score_sugerido }}"
+            }
+          ]
+        }
+      },
+      "id": "notion-update-proposed",
+      "name": "Notion: salva proposta",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [1560, 300],
+      "credentials": {
+        "notionApi": {
+          "id": "notion-cred",
+          "name": "Notion API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v21.0/{{ $env.WA_OPS_PHONE_ID }}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer {{ $env.WA_OPS_TOKEN }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"messaging_product\": \"whatsapp\",\n  \"recipient_type\": \"individual\",\n  \"to\": \"{{ $env.OPERATOR_PERSONAL_NUMBER }}\",\n  \"type\": \"interactive\",\n  \"interactive\": {\n    \"type\": \"button\",\n    \"body\": {\n      \"text\": \"🔔 *Nova abordagem pronta*\\n\\n*Lead:* {{ $json.nome }} ({{ $json.cargo }} @ {{ $json.empresa }})\\n*Gatilho:* {{ $json.gatilho }}\\n*Score:* {{ $json.score_sugerido }}\\n\\n*Proposta:*\\n━━━━━━━━━━━━━━\\n{{ $json.mensagem_proposta }}\\n━━━━━━━━━━━━━━\\n\\n_{{ $json.raciocinio }}_\"\n    },\n    \"action\": {\n      \"buttons\": [\n        { \"type\": \"reply\", \"reply\": { \"id\": \"approve_{{ $json.lead_id }}\", \"title\": \"✅ Aprovar\" } },\n        { \"type\": \"reply\", \"reply\": { \"id\": \"edit_{{ $json.lead_id }}\", \"title\": \"✏️ Editar\" } },\n        { \"type\": \"reply\", \"reply\": { \"id\": \"skip_{{ $json.lead_id }}\", \"title\": \"❌ Pular\" } }\n      ]\n    }\n  }\n}",
+        "options": {}
+      },
+      "id": "wa-send-approval",
+      "name": "Ops → seu WA: aprovação",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1780, 300]
+    }
+  ],
+  "connections": {
+    "A cada 30min": { "main": [[{ "node": "Notion: leads prontos", "type": "main", "index": 0 }]] },
+    "Notion: leads prontos": { "main": [[{ "node": "Um lead por vez", "type": "main", "index": 0 }]] },
+    "Um lead por vez": { "main": [[{ "node": "Extrai dados do lead", "type": "main", "index": 0 }]] },
+    "Extrai dados do lead": { "main": [[{ "node": "Claude: gera mensagem", "type": "main", "index": 0 }]] },
+    "Claude: gera mensagem": { "main": [[{ "node": "Parse JSON do Claude", "type": "main", "index": 0 }]] },
+    "Parse JSON do Claude": { "main": [[{ "node": "Notion: salva proposta", "type": "main", "index": 0 }]] },
+    "Notion: salva proposta": { "main": [[{ "node": "Ops → seu WA: aprovação", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" }
+}

@@ -73,9 +73,26 @@ Dois workflows:
 
 ## Fases de entrega
 
-- [x] **Fase 1** — Notion DB schema + system prompt + templates + scaffold (esta entrega)
-- [ ] **Fase 2** — Workflow n8n outbound + integrações
-- [ ] **Fase 3** — Webhook inbound + loop de follow-up + submissão de templates à Meta
+- [x] **Fase 1** — Notion DB schema + system prompt + templates + scaffold
+- [x] **Fase 2** — 3 workflows n8n + setup completo (Meta Cloud API, Notion, Anthropic)
+- [ ] **Fase 3** — Follow-up automático sem resposta, dashboard de métricas, handoff Hot → Viviane
+
+## Estrutura de arquivos
+
+```
+sdr/
+├── README.md                              # este arquivo
+├── SETUP.md                               # passo a passo de configuração end-to-end
+├── notion_lead_schema.md                  # spec do database de Leads
+├── prompts/
+│   ├── system_sdr_astart.md               # persona + tom + regras
+│   ├── templates_primeiro_contato.md      # 6 templates pra submeter à Meta
+│   └── regras_followup.md                 # mapa de resposta → ação
+└── n8n/
+    ├── workflow_1_outbound.json           # cron → busca lead → Claude → pede aprovação
+    ├── workflow_2_approval.json           # webhook Ops → envia pelo SDR → atualiza Notion
+    └── workflow_3_inbound.json            # webhook SDR → lead respondeu → gera follow-up
+```
 
 ## Setup (será detalhado na Fase 2)
 

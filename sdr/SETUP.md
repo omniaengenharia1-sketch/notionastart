@@ -1,0 +1,251 @@
+# Setup do SDR Astart — passo a passo
+
+Este guia te leva do zero ao SDR funcionando. **Faça na ordem** — alguns passos dependem dos anteriores.
+
+---
+
+## Visão geral do que vai ser configurado
+
+| # | O quê | Tempo |
+|---|---|---|
+| 1 | Notion: database de Leads | 15 min |
+| 2 | Anthropic: chave da Claude API | 5 min |
+| 3 | Meta Cloud API: 2 números (SDR + Ops) | 1-2h (espera de verificação) |
+| 4 | n8n: instância (cloud ou self-host) | 30 min |
+| 5 | n8n: importar 3 workflows + credenciais | 15 min |
+| 6 | Meta: cadastrar 2 webhooks | 10 min |
+| 7 | Meta: submeter 7 templates aprovação | espera 24-48h |
+| 8 | Teste com 1 lead | 10 min |
+
+---
+
+## 1. Notion — database de Leads
+
+1. Vá no seu workspace Notion → **+ New page**
+2. Escolha **Database — Full page**, nomeie como `SDR Leads — Astart`
+3. Adicione as properties conforme `sdr/notion_lead_schema.md` (22 properties)
+4. Crie as views recomendadas
+5. **Copie o ID do database**:
+   - URL do database: `https://www.notion.so/seu-workspace/8a3f9b...?v=...`
+   - O ID é `8a3f9b...` (32 caracteres antes do `?v=`)
+   - Guarde como `NOTION_LEADS_DB_ID`
+6. Crie uma **internal integration** em https://www.notion.so/profile/integrations
+   - Nome: `Astart SDR n8n`
+   - Capabilities: Read, Update, Insert content
+   - Copie o secret (`secret_xxxxx`) → será `NOTION_API_KEY`
+7. No database, clique nos `...` → **Connections → Connect to Astart SDR n8n**
+
+---
+
+## 2. Anthropic — Claude API
+
+1. Vá em https://console.anthropic.com/
+2. Settings → API Keys → **Create Key** → nomeie `astart-sdr-n8n`
+3. Copie a chave (`sk-ant-xxxxx`) → será `ANTHROPIC_API_KEY`
+4. Em **Plans & Billing**, garanta que tem créditos (mínimo US$5 pra começar)
+5. Modelo recomendado: `claude-sonnet-4-6` (melhor custo/qualidade pra SDR)
+
+---
+
+## 3. Meta Cloud API — 2 números WhatsApp Business
+
+### 3.1 Cria o Business Manager (se ainda não tem)
+
+1. https://business.facebook.com/ → **Criar conta** → fornece dados da Astart Studio
+2. Adicione **2 contas de WhatsApp Business** (uma por número):
+   - **WABA SDR** → conversa com leads
+   - **WABA Ops** → envia aprovações pro seu WA pessoal
+
+### 3.2 Cadastra os 2 números
+
+Pra cada conta WABA:
+
+1. **Phone Numbers → Add phone number**
+2. Use um chip dedicado (recomendado) ou Twilio Number ($1.15/mês)
+3. **Verifique o número** por SMS/voz
+4. Após verificar, anote:
+   - `Phone Number ID` (vai pra `WA_SDR_PHONE_ID` e `WA_OPS_PHONE_ID`)
+   - `WhatsApp Business Account ID`
+
+### 3.3 Gera tokens de acesso
+
+1. https://developers.facebook.com/apps → cria um app tipo **Business**
+2. Adicione produto **WhatsApp**
+3. Vincule as 2 WABAs ao app
+4. **System User** (recomendado pra produção, token não expira):
+   - Business Settings → System Users → Add → nomeie `astart-sdr-bot`
+   - Assign Assets: as 2 WABAs (permissão Manage)
+   - Generate Token → escopo: `whatsapp_business_messaging`, `whatsapp_business_management`
+   - Guarde como `WA_SDR_TOKEN` e `WA_OPS_TOKEN` (pode ser o MESMO token se o System User tiver acesso às 2 WABAs)
+
+### 3.4 Seu número pessoal
+
+1. Defina o número pessoal que vai receber as aprovações
+2. Formato internacional sem `+`: `5511989384452`
+3. Guarde como `OPERATOR_PERSONAL_NUMBER`
+
+### 3.5 Abra a janela 24h do Ops com você (importante!)
+
+1. Salve o número Ops na sua agenda
+2. Mande qualquer mensagem ("oi") pelo seu WA pessoal pra ele
+3. Isso abre a janela 24h. Vai precisar repetir 1x/dia até o template de aprovação ser aprovado pela Meta (passo 7).
+
+---
+
+## 4. n8n — instância
+
+### Opção A — n8n Cloud (mais rápido, $20/mês)
+1. https://n8n.io/cloud → cria conta
+2. Já vem pronto, pula pro passo 5
+
+### Opção B — Self-host (mais barato, ~R$30/mês)
+1. Crie conta no [Railway](https://railway.app) ou [Render](https://render.com)
+2. Deploy do template oficial n8n (1 clique)
+3. Configure domínio: `n8n.seudominio.com.br`
+4. **HTTPS obrigatório** (Meta não aceita webhook sem HTTPS)
+
+---
+
+## 5. n8n — importar workflows e credenciais
+
+### 5.1 Variáveis de ambiente
+
+Em n8n → Settings → Environment Variables (ou no `.env` se self-host):
+
+```env
+NOTION_API_KEY=secret_xxxxx
+NOTION_LEADS_DB_ID=8a3f9bxxxxxxxxxxxxxxxxxxxxxxxxxx
+ANTHROPIC_API_KEY=sk-ant-xxxxx
+WA_SDR_TOKEN=EAAxxxxx
+WA_SDR_PHONE_ID=123456789012345
+WA_OPS_TOKEN=EAAxxxxx
+WA_OPS_PHONE_ID=098765432109876
+WA_VERIFY_TOKEN=qualquer-string-secreta-de-sua-escolha
+OPERATOR_PERSONAL_NUMBER=5511989384452
+SDR_SYSTEM_PROMPT=<cole aqui o conteúdo de sdr/prompts/system_sdr_astart.md>
+SDR_FOLLOWUP_RULES=<cole aqui o conteúdo de sdr/prompts/regras_followup.md>
+```
+
+> **Dica**: o `SDR_SYSTEM_PROMPT` é longo. No n8n Cloud você pode usar **Credentials → Custom** pra armazenar prompts longos como variáveis. Self-host: use `.env` com escape de quebras de linha.
+
+### 5.2 Credencial Notion no n8n
+
+1. Credentials → New → **Notion API**
+2. ID interno: `notion-cred` (importante — os workflows referenciam esse ID)
+3. API Key: cole o `NOTION_API_KEY`
+
+### 5.3 Importa os 3 workflows
+
+Em n8n → Workflows → **Import from file**:
+
+1. `sdr/n8n/workflow_1_outbound.json` — gerador de mensagens (cron 30min)
+2. `sdr/n8n/workflow_2_approval.json` — recebe sua aprovação
+3. `sdr/n8n/workflow_3_inbound.json` — lead respondeu, gera follow-up
+
+**Não ative ainda.** Falta configurar os webhooks da Meta.
+
+---
+
+## 6. Meta — cadastra os webhooks
+
+### 6.1 Pega as URLs de webhook do n8n
+
+Abra `workflow_2_approval.json` no n8n → node "Webhook Ops (Meta)" → copie a **Production URL** (algo como `https://seu-n8n.com/webhook/wa-ops-callback`).
+
+Faça o mesmo pro `workflow_3_inbound.json` (path `wa-sdr-callback`).
+
+### 6.2 Configura no app Meta
+
+1. https://developers.facebook.com/apps/SEU_APP/whatsapp-business/wa-settings/
+2. Pra cada **WABA** (SDR e Ops), seção **Webhooks**:
+   - **Callback URL**: a URL do n8n correspondente
+     - WABA Ops → URL do workflow 2 (`/wa-ops-callback`)
+     - WABA SDR → URL do workflow 3 (`/wa-sdr-callback`)
+   - **Verify token**: cole o `WA_VERIFY_TOKEN`
+   - **Subscribe to fields**: marca `messages`
+3. Salva. A Meta vai chamar uma vez pra validar.
+
+> **Atenção**: o n8n por padrão espera POST. A Meta primeiro faz GET pra verificar. Se der erro de verificação, adicione um node Webhook duplicado (método GET) que retorna `{{$query['hub.challenge']}}` se `{{$query['hub.verify_token']}} === $env.WA_VERIFY_TOKEN`. Ou use ngrok pra debugar.
+
+### 6.3 Ativa os workflows
+
+Volta no n8n e ativa os 3 workflows (toggle no topo direito).
+
+---
+
+## 7. Meta — submete templates pra aprovação
+
+Pra **iniciar conversa** com leads, precisa dos templates aprovados.
+
+1. https://business.facebook.com/wa/manage/message-templates → **WABA SDR**
+2. Pra cada template em `sdr/prompts/templates_primeiro_contato.md`:
+   - **Create Template** → categoria **MARKETING**, idioma **pt_BR**
+   - Nome: `astart_sdr_lancamento`, `astart_sdr_marca_desalinhada`, etc.
+   - Body: cole o conteúdo (com `{{1}}`, `{{2}}`...)
+   - Body Example: exemplos preenchidos plausíveis (ajuda aprovação)
+   - Footer (opcional): `Astart Studio · Responda PARAR pra sair desta conversa.`
+   - Buttons: 3 Quick Reply (`Pode falar`, `Agora não`, `Não tenho interesse`)
+   - **Submit**
+
+3. Repete pro template de aprovação interna (`astart_sdr_aprovacao_pendente`) na **WABA Ops**, categoria UTILITY.
+
+4. Aguarda aprovação (geralmente < 1h, até 48h).
+
+---
+
+## 8. Teste end-to-end
+
+### 8.1 Cria um lead de teste no Notion
+
+| Property | Valor |
+|---|---|
+| Nome | Você mesma (pra testar com seu próprio número de teste) |
+| Empresa | Teste Astart |
+| Cargo | Founder |
+| WhatsApp | seu número de teste (NÃO o pessoal que recebe aprovações) |
+| Gatilho de prospecção | "lançou produto X" |
+| Etapa | **Pronto pra abordar** |
+| Canal | WhatsApp |
+
+### 8.2 Espera ou força o cron
+
+- Espera até 30min OU clica no n8n no workflow 1 → **Execute Workflow**
+- Você deve receber no seu WA pessoal: 🔔 *Nova abordagem pronta*...
+
+### 8.3 Clica em ✅ Aprovar
+
+- O número SDR dispara a mensagem pro lead de teste
+- Notion atualiza pra "Enviada", preenche histórico
+
+### 8.4 Responde como lead
+
+- No número de teste, responde à mensagem do SDR
+- Em segundos, você recebe no pessoal: 💬 *Lead respondeu*...
+- Aprova, edita ou pula novamente
+
+Se tudo isso funcionou → **o SDR tá vivo**.
+
+---
+
+## Troubleshooting comum
+
+| Sintoma | Causa provável | Solução |
+|---|---|---|
+| Webhook não recebe nada | URL HTTP em vez de HTTPS, ou verify token errado | Confere URL + `WA_VERIFY_TOKEN` |
+| "messaging_product is required" | Token sem permissão whatsapp_business_messaging | Regerar token com escopo correto |
+| Claude retorna texto fora do JSON | Prompt mal carregado, ou modelo errado | Confere `SDR_SYSTEM_PROMPT` no env, usa Sonnet 4.6 |
+| Notion: "Could not find database" | Integration não foi conectada ao DB | Database → ... → Connections → adiciona integration |
+| Template rejeitado pela Meta | Mensagem soou como broadcast genérico | Revisar conforme dicas em `templates_primeiro_contato.md` |
+| Botões interativos não aparecem no seu WA | Você tá fora da janela 24h com o Ops | Manda "oi" pro Ops, abre janela. Use o template de aprovação após Meta aprovar. |
+
+---
+
+## Próximos passos (Fase 3)
+
+Depois que tudo isso tiver funcionando:
+
+- [ ] Follow-up automático sem resposta (cron diário verificando leads sem resposta há 3 / 7 dias)
+- [ ] Webhook de status (entregue/lida) pra detectar quando lead leu mas não respondeu
+- [ ] Dashboard no Notion com métricas (taxa de resposta, conversão, score médio)
+- [ ] Handoff automático: lead 🔥 Hot → notificação direto pra Viviane no comercial
+- [ ] Cool down automático (90 dias) pra leads "Perdido"
