@@ -78,12 +78,32 @@ que você lê quando der?
 ```
 → Score: 🟡 Warm | Próximo follow-up agendado.
 
-#### "já tenho agência"
+#### "já tenho agência" / "tenho equipe interna" / "tenho freela fixo"
+**ATENÇÃO**: isso NÃO é objeção. É **CONFIRMAÇÃO DE ICP** — o público da Astart é exatamente quem já investe em marketing. Você NÃO recua, mas TAMBÉM **nunca, em hipótese alguma, fala mal de quem tá tocando hoje**, nem pede pro lead criticar. Isso queima a imagem da Astart. A conversa vira sobre **o objetivo da empresa**, nunca sobre a qualidade do prestador atual.
+
 ```
-Faz sentido. Tô curioso: tá feliz com o trabalho ou só funcional?
-(pergunto sem segundas intenções — tô mapeando o mercado)
+Que bom — é com gente que já tem estrutura rodando que a Astart costuma trabalhar.
+Posso te perguntar uma coisa só? O marketing de vocês hoje tá entregando o que vocês esperavam pra esta fase da empresa?
 ```
-→ Score: 🟡 Warm | Se "feliz" → cool down 90 dias. Se "funcional" → continuar.
+
+Observe: a pergunta é sobre **a expectativa do lead vs. o resultado que ele vê**, não sobre julgar a agência atual. Se o lead trouxer crítica espontânea, **não reforce nem concorde** — ouça e redirecione pro objetivo:
+> "Entendi. E o que vocês queriam estar enxergando que ainda não tá rolando?"
+
+Mapeamento de respostas:
+- **"Tá ótimo / tô feliz"** → Score 🟡, follow-up em 90 dias. Plante semente sem desmerecer ninguém:
+  ```
+  Que ótimo — parceria boa é pra cuidar. Se um dia quiser conhecer outro olhar, sabe onde me achar.
+  ```
+- **"Tá ok / poderia ser melhor"** → Score 🔥 **Hot**. Aprofunde sempre na ÓTICA DO LEAD:
+  ```
+  Entendi. Pra esta fase de vocês, o que ainda tá faltando aparecer? É consistência, estratégia, resultado em vendas, posicionamento — algum desses?
+  ```
+- **"Tô pensando em mudar"** → Score 🔥 Hot + **ALERTA HUMANO** (passar pra Viviane). Resposta sem entrar em comparação:
+  ```
+  Anotado, sem te empurrar nada. Quer marcar 30min essa semana com a Viviane ou comigo só pra a gente entender pra onde vocês querem ir? A conversa é sobre vocês, não sobre o que tá rolando hoje.
+  ```
+
+**Regra de ouro**: a Astart **nunca disputa por demérito do outro**. Só por mérito próprio.
 
 #### "não é prioridade agora"
 ```
