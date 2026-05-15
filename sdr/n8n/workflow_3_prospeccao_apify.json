@@ -1,0 +1,226 @@
+{
+  "name": "SDR Astart — 3. Prospecção Apify (Instagram + Google Maps → Notion)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            { "field": "cronExpression", "expression": "0 9 * * 1-5" }
+          ]
+        }
+      },
+      "id": "cron-prospect",
+      "name": "Toda manhã 9h (seg-sex)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [240, 400]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Lê queries de prospecção do env. Formato:\n// PROSPECT_QUERIES_GMAPS = JSON array. Ex:\n// [\n//   {\"search\": \"agência de marketing em Mogi das Cruzes\", \"max\": 5},\n//   {\"search\": \"restaurante em Arujá\", \"max\": 5}\n// ]\nlet queries = [];\ntry {\n  queries = JSON.parse($env.PROSPECT_QUERIES_GMAPS || '[]');\n} catch (e) {\n  return [];\n}\nreturn queries.map(q => ({ json: q }));"
+      },
+      "id": "load-gmaps-queries",
+      "name": "Carrega queries Google Maps",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Lê queries do Instagram do env. Formato:\n// PROSPECT_QUERIES_INSTAGRAM = JSON array. Ex:\n// [\n//   {\"hashtag\": \"empresariomogi\", \"max\": 5},\n//   {\"username\": \"perfil_concorrente\", \"max\": 5, \"type\": \"followers\"}\n// ]\nlet queries = [];\ntry {\n  queries = JSON.parse($env.PROSPECT_QUERIES_INSTAGRAM || '[]');\n} catch (e) {\n  return [];\n}\nreturn queries.map(q => ({ json: q }));"
+      },
+      "id": "load-instagram-queries",
+      "name": "Carrega queries Instagram",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 500]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.apify.com/v2/acts/compass~crawler-google-places/run-sync-get-dataset-items?token={{ $env.APIFY_TOKEN }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"searchStringsArray\": [\"{{ $json.search }}\"],\n  \"maxCrawledPlacesPerSearch\": {{ $json.max || 5 }},\n  \"language\": \"pt-BR\",\n  \"scrapePlaceDetailPage\": true,\n  \"scrapeContacts\": true\n}",
+        "options": { "timeout": 180000 }
+      },
+      "id": "apify-gmaps",
+      "name": "Apify: Google Maps",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.apify.com/v2/acts/apify~instagram-hashtag-scraper/run-sync-get-dataset-items?token={{ $env.APIFY_TOKEN }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"hashtags\": [\"{{ $json.hashtag }}\"],\n  \"resultsLimit\": {{ $json.max || 5 }}\n}",
+        "options": { "timeout": 180000 }
+      },
+      "id": "apify-instagram",
+      "name": "Apify: Instagram",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [680, 500]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Normaliza resultado do Google Maps Places (Apify compass actor)\nconst items = Array.isArray($input.all()) ? $input.all().flatMap(i => Array.isArray(i.json) ? i.json : [i.json]) : [];\nconst leads = [];\nfor (const item of items) {\n  if (!item || !item.title) continue;\n  const whatsapp = (item.phone || item.phoneUnformatted || '').replace(/\\D/g, '');\n  if (!whatsapp || whatsapp.length < 10) continue; // sem telefone, sem prospecção\n  leads.push({\n    nome: item.title,\n    empresa: item.title,\n    whatsapp,\n    site: item.website || '',\n    instagram: item.instagrams?.[0] || '',\n    setor: item.categoryName || 'Outro',\n    origem: 'Google Maps',\n    gatilho: `Encontrada via Google Maps: ${item.categoryName || ''} em ${item.city || item.address || ''}`,\n    cargo: '',\n    linkedin: '',\n    cidade: item.city || '',\n    endereco: item.address || ''\n  });\n}\nreturn leads.map(l => ({ json: l }));"
+      },
+      "id": "normalize-gmaps",
+      "name": "Normaliza Google Maps",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Normaliza resultado do Instagram Hashtag Scraper\n// IMPORTANTE: Instagram não expõe WhatsApp direto. Aqui criamos lead com handle do IG\n// e o WhatsApp será extraído do bio depois (via outro actor) ou preenchido manualmente.\nconst items = Array.isArray($input.all()) ? $input.all().flatMap(i => Array.isArray(i.json) ? i.json : [i.json]) : [];\nconst leads = [];\nconst seen = new Set();\nfor (const item of items) {\n  const owner = item.ownerUsername || item.owner?.username;\n  if (!owner || seen.has(owner)) continue;\n  seen.add(owner);\n  leads.push({\n    nome: item.ownerFullName || owner,\n    empresa: item.ownerFullName || owner,\n    whatsapp: '', // a preencher manualmente após análise do perfil\n    site: '',\n    instagram: `https://instagram.com/${owner}`,\n    setor: 'Outro',\n    origem: 'Instagram',\n    gatilho: `Encontrado via hashtag #${item.hashtag || ''} — post: ${item.caption?.slice(0, 80) || ''}`,\n    cargo: '',\n    linkedin: '',\n    cidade: '',\n    endereco: ''\n  });\n}\nreturn leads.map(l => ({ json: l }));"
+      },
+      "id": "normalize-instagram",
+      "name": "Normaliza Instagram",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 500]
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "id": "merge-sources",
+      "name": "Junta fontes",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [1120, 400]
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "getAll",
+        "databaseId": "={{ $env.NOTION_LEADS_DB_ID }}",
+        "returnAll": true,
+        "filterType": "manual",
+        "matchType": "anyFilter",
+        "filters": {
+          "conditions": [
+            { "key": "WhatsApp|phone_number", "condition": "isNotEmpty" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "notion-existing-leads",
+      "name": "Notion: leads existentes",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [1120, 600],
+      "credentials": { "notionApi": { "id": "notion-cred", "name": "Notion API" } }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Deduplica: remove leads que já existem no Notion (por WhatsApp ou Instagram)\nconst newLeads = $('Junta fontes').all().map(i => i.json);\nconst existing = $('Notion: leads existentes').all().map(i => i.json);\n\nconst existingWhats = new Set();\nconst existingInsta = new Set();\nfor (const e of existing) {\n  const props = e.property || e.properties || {};\n  const wpp = (props.WhatsApp?.phone_number || '').replace(/\\D/g, '');\n  const insta = props.Instagram?.url || '';\n  if (wpp) existingWhats.add(wpp);\n  if (insta) existingInsta.add(insta.replace(/\\/$/, ''));\n}\n\nconst dedup = [];\nconst seenNow = new Set();\nfor (const lead of newLeads) {\n  const key = lead.whatsapp || lead.instagram;\n  if (!key || seenNow.has(key)) continue;\n  if (lead.whatsapp && existingWhats.has(lead.whatsapp)) continue;\n  if (lead.instagram && existingInsta.has(lead.instagram.replace(/\\/$/, ''))) continue;\n  seenNow.add(key);\n  dedup.push(lead);\n}\nreturn dedup.map(l => ({ json: l }));"
+      },
+      "id": "dedupe",
+      "name": "Deduplica vs Notion",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1340, 500]
+    },
+    {
+      "parameters": { "batchSize": 1, "options": {} },
+      "id": "split-create",
+      "name": "Um por vez",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [1560, 500]
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "create",
+        "databaseId": "={{ $env.NOTION_LEADS_DB_ID }}",
+        "title": "={{ $json.nome }}",
+        "simple": false,
+        "propertiesUi": {
+          "propertyValues": [
+            { "key": "Empresa|rich_text", "textContent": "={{ $json.empresa }}" },
+            { "key": "WhatsApp|phone_number", "phoneValue": "={{ $json.whatsapp }}" },
+            { "key": "Instagram|url", "urlValue": "={{ $json.instagram }}" },
+            { "key": "Site da empresa|url", "urlValue": "={{ $json.site }}" },
+            { "key": "Setor|select", "selectValue": "={{ $json.setor }}" },
+            { "key": "Origem|select", "selectValue": "={{ $json.origem }}" },
+            { "key": "Gatilho de prospecção|rich_text", "textContent": "={{ $json.gatilho }}" },
+            { "key": "Etapa|select", "selectValue": "Novo Lead" },
+            { "key": "Score de qualificação|select", "selectValue": "❄️ Cold" }
+          ]
+        }
+      },
+      "id": "notion-create-lead",
+      "name": "Notion: cria lead",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [1780, 500],
+      "credentials": { "notionApi": { "id": "notion-cred", "name": "Notion API" } }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.z-api.io/instances/{{ $env.ZAPI_INSTANCE_ID }}/token/{{ $env.ZAPI_TOKEN }}/send-text",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Client-Token", "value": "={{ $env.ZAPI_CLIENT_TOKEN }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"phone\": \"{{ $env.OPERATOR_PERSONAL_NUMBER }}\",\n  \"message\": {{ JSON.stringify('🎯 Prospecção do dia rodou. ' + $('Deduplica vs Notion').all().length + ' novos leads criados no Notion (etapa: Novo Lead). Revisa e marca os que valem como \"Pronto pra abordar\".') }}\n}",
+        "options": {}
+      },
+      "id": "zapi-summary",
+      "name": "Avisa resumo no WA",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2000, 500]
+    }
+  ],
+  "connections": {
+    "Toda manhã 9h (seg-sex)": {
+      "main": [
+        [
+          { "node": "Carrega queries Google Maps", "type": "main", "index": 0 },
+          { "node": "Carrega queries Instagram", "type": "main", "index": 0 },
+          { "node": "Notion: leads existentes", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Carrega queries Google Maps": { "main": [[{ "node": "Apify: Google Maps", "type": "main", "index": 0 }]] },
+    "Apify: Google Maps": { "main": [[{ "node": "Normaliza Google Maps", "type": "main", "index": 0 }]] },
+    "Normaliza Google Maps": { "main": [[{ "node": "Junta fontes", "type": "main", "index": 0 }]] },
+    "Carrega queries Instagram": { "main": [[{ "node": "Apify: Instagram", "type": "main", "index": 0 }]] },
+    "Apify: Instagram": { "main": [[{ "node": "Normaliza Instagram", "type": "main", "index": 0 }]] },
+    "Normaliza Instagram": { "main": [[{ "node": "Junta fontes", "type": "main", "index": 1 }]] },
+    "Junta fontes": { "main": [[{ "node": "Deduplica vs Notion", "type": "main", "index": 0 }]] },
+    "Deduplica vs Notion": { "main": [[{ "node": "Um por vez", "type": "main", "index": 0 }]] },
+    "Um por vez": { "main": [[{ "node": "Notion: cria lead", "type": "main", "index": 0 }]] },
+    "Notion: cria lead": { "main": [[{ "node": "Um por vez", "type": "main", "index": 0 }]] },
+    "Notion: leads existentes": { "main": [[{ "node": "Deduplica vs Notion", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" }
+}

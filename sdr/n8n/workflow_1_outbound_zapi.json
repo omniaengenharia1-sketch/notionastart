@@ -1,0 +1,173 @@
+{
+  "name": "SDR Astart — 1. Outbound Z-API (gerar e pedir aprovação)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            { "field": "hours", "hoursInterval": 1 }
+          ]
+        }
+      },
+      "id": "cron-trigger",
+      "name": "A cada 1h",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Janela de trabalho: 9h–18h, segunda a sexta (horário São Paulo)\nconst now = new Date();\nconst spOffset = -3; // GMT-3\nconst spHour = (now.getUTCHours() + spOffset + 24) % 24;\nconst dayOfWeek = now.getUTCDay(); // 0 = domingo, 6 = sábado\nconst isBusinessHour = spHour >= 9 && spHour < 18;\nconst isBusinessDay = dayOfWeek >= 1 && dayOfWeek <= 5;\nif (!isBusinessHour || !isBusinessDay) {\n  return [];\n}\nreturn [{ json: { ok: true, hora_sp: spHour } }];"
+      },
+      "id": "business-hours-gate",
+      "name": "Só em horário comercial",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [340, 300]
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "getAll",
+        "databaseId": "={{ $env.NOTION_LEADS_DB_ID }}",
+        "returnAll": false,
+        "limit": 1,
+        "filterType": "manual",
+        "matchType": "anyFilter",
+        "filters": {
+          "conditions": [
+            { "key": "Etapa|select", "condition": "equals", "selectValue": "Pronto pra abordar" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "notion-fetch-leads",
+      "name": "Notion: leads prontos",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [460, 300],
+      "credentials": {
+        "notionApi": { "id": "notion-cred", "name": "Notion API" }
+      }
+    },
+    {
+      "parameters": { "batchSize": 1, "options": {} },
+      "id": "split-batches",
+      "name": "Um lead por vez",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const lead = $input.item.json;\nconst props = lead.property || lead.properties || {};\nconst getText = (key) => {\n  const p = props[key];\n  if (!p) return '';\n  if (p.title) return p.title.map(t => t.plain_text).join('');\n  if (p.rich_text) return p.rich_text.map(t => t.plain_text).join('');\n  if (p.select) return p.select?.name || '';\n  if (p.status) return p.status?.name || '';\n  if (p.phone_number) return p.phone_number;\n  if (p.url) return p.url;\n  if (p.email) return p.email;\n  return '';\n};\nconst lead_id = lead.id;\nconst nome = getText('Nome');\nconst empresa = getText('Empresa');\nconst cargo = getText('Cargo');\nconst whatsapp = getText('WhatsApp');\nconst gatilho = getText('Gatilho de prospecção');\nconst setor = getText('Setor');\nconst faturamento = getText('Faturamento estimado');\nconst instagram = getText('Instagram');\nconst site = getText('Site da empresa');\nconst linkedin = getText('LinkedIn');\nconst historico = getText('Histórico');\nreturn { json: { lead_id, nome, empresa, cargo, whatsapp, gatilho, setor, faturamento, instagram, site, linkedin, historico, is_first_touch: !historico } };"
+      },
+      "id": "extract-lead-data",
+      "name": "Extrai dados do lead",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "x-api-key", "value": "={{ $env.ANTHROPIC_API_KEY }}" },
+            { "name": "anthropic-version", "value": "2023-06-01" },
+            { "name": "content-type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"claude-sonnet-4-6\",\n  \"max_tokens\": 1024,\n  \"system\": {{ JSON.stringify($env.SDR_SYSTEM_PROMPT) }},\n  \"messages\": [\n    { \"role\": \"user\", \"content\": {{ JSON.stringify('Dados do lead:\\n' + JSON.stringify($json, null, 2) + '\\n\\nGere a próxima mensagem seguindo o system prompt. Retorne APENAS o JSON especificado.') }} }\n  ]\n}",
+        "options": {}
+      },
+      "id": "claude-call",
+      "name": "Claude: gera mensagem",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1120, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const claudeResp = $input.item.json;\nconst leadData = $('Extrai dados do lead').item.json;\nlet parsed;\ntry {\n  const text = claudeResp.content[0].text.trim();\n  const cleaned = text.replace(/^```json\\s*/i, '').replace(/```\\s*$/, '');\n  parsed = JSON.parse(cleaned);\n} catch (e) {\n  parsed = {\n    mensagem_proposta: '[ERRO de parsing — revisar manualmente]',\n    raciocinio: 'Falha no parsing: ' + e.message,\n    score_sugerido: '🟡 Warm',\n    proxima_etapa_sugerida: 'Aguardando aprovação',\n    alerta_humano: 'Claude retornou JSON inválido. Resposta crua: ' + (claudeResp.content?.[0]?.text || '').slice(0, 300)\n  };\n}\nreturn { json: { ...leadData, ...parsed } };"
+      },
+      "id": "parse-claude",
+      "name": "Parse JSON do Claude",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1340, 300]
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "update",
+        "pageId": "={{ $json.lead_id }}",
+        "propertiesUi": {
+          "propertyValues": [
+            { "key": "Etapa|select", "selectValue": "Aguardando aprovação" },
+            { "key": "Mensagem proposta|rich_text", "textContent": "={{ $json.mensagem_proposta }}" },
+            { "key": "Score de qualificação|select", "selectValue": "={{ $json.score_sugerido }}" }
+          ]
+        }
+      },
+      "id": "notion-update-proposed",
+      "name": "Notion: salva proposta",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [1560, 300],
+      "credentials": {
+        "notionApi": { "id": "notion-cred", "name": "Notion API" }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.z-api.io/instances/{{ $env.ZAPI_INSTANCE_ID }}/token/{{ $env.ZAPI_TOKEN }}/send-text",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Client-Token", "value": "={{ $env.ZAPI_CLIENT_TOKEN }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"phone\": \"{{ $env.OPERATOR_PERSONAL_NUMBER }}\",\n  \"message\": {{ JSON.stringify('🔔 *Nova abordagem pronta*\\n\\n👤 *Lead:* ' + $json.nome + ' (' + ($json.cargo || '-') + ' @ ' + ($json.empresa || '-') + ')\\n🎯 *Gatilho:* ' + ($json.gatilho || '-') + '\\n📊 *Score:* ' + $json.score_sugerido + '\\n\\n💬 *Proposta:*\\n━━━━━━━━━━━━━━\\n' + $json.mensagem_proposta + '\\n━━━━━━━━━━━━━━\\n\\n🧠 ' + $json.raciocinio + '\\n\\n✏️ *Pra responder:*\\n• APROVAR — envia a mensagem pro lead\\n• EDITAR: <novo texto> — substitui e pede confirmação\\n• PULAR — descarta esse lead') }}\n}",
+        "options": {}
+      },
+      "id": "zapi-notify-operator",
+      "name": "Z-API: notifica operador",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1780, 300]
+    },
+    {
+      "parameters": {
+        "amount": 5,
+        "unit": "seconds"
+      },
+      "id": "rate-limit",
+      "name": "Espera 5s",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [2000, 300]
+    }
+  ],
+  "connections": {
+    "A cada 1h": { "main": [[{ "node": "Só em horário comercial", "type": "main", "index": 0 }]] },
+    "Só em horário comercial": { "main": [[{ "node": "Notion: leads prontos", "type": "main", "index": 0 }]] },
+    "Notion: leads prontos": { "main": [[{ "node": "Um lead por vez", "type": "main", "index": 0 }]] },
+    "Um lead por vez": { "main": [[{ "node": "Extrai dados do lead", "type": "main", "index": 0 }]] },
+    "Extrai dados do lead": { "main": [[{ "node": "Claude: gera mensagem", "type": "main", "index": 0 }]] },
+    "Claude: gera mensagem": { "main": [[{ "node": "Parse JSON do Claude", "type": "main", "index": 0 }]] },
+    "Parse JSON do Claude": { "main": [[{ "node": "Notion: salva proposta", "type": "main", "index": 0 }]] },
+    "Notion: salva proposta": { "main": [[{ "node": "Z-API: notifica operador", "type": "main", "index": 0 }]] },
+    "Z-API: notifica operador": { "main": [[{ "node": "Espera 5s", "type": "main", "index": 0 }]] },
+    "Espera 5s": { "main": [[{ "node": "Um lead por vez", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" }
+}

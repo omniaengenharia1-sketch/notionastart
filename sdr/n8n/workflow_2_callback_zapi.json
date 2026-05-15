@@ -1,0 +1,443 @@
+{
+  "name": "SDR Astart — 2. Callback Z-API (aprovação OU resposta de lead)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "zapi-callback",
+        "responseMode": "onReceived",
+        "responseData": "noData",
+        "options": {}
+      },
+      "id": "webhook-zapi",
+      "name": "Webhook Z-API",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 400]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse Z-API webhook (formato 'Ao receber'). Identifica origem (operador x lead) e ação.\nconst body = $input.item.json.body || $input.item.json;\n\n// Ignora: status updates, mensagens enviadas por nós (fromMe), grupos\nif (body.fromMe === true || body.isGroup === true || body.type !== 'ReceivedCallback') {\n  return { json: { skip: true, reason: 'fromMe/group/notReceived' } };\n}\n\nconst fromNumber = String(body.phone || '').replace(/\\D/g, '');\nconst contactName = body.senderName || body.chatName || null;\nconst messageText = body.text?.message || body.image?.caption || body.audio?.caption || '';\nconst messageId = body.messageId;\n\nif (!fromNumber || !messageText) {\n  return { json: { skip: true, reason: 'noNumberOrText' } };\n}\n\nconst operatorNumber = String($env.OPERATOR_PERSONAL_NUMBER).replace(/\\D/g, '');\nconst isFromOperator = fromNumber === operatorNumber;\n\n// Detecta comandos do operador\nlet command = null;\nlet commandPayload = null;\nif (isFromOperator) {\n  const trimmed = messageText.trim();\n  const upper = trimmed.toUpperCase();\n  if (upper === 'APROVAR' || upper === 'APROVA' || upper === 'OK' || upper === '✅') {\n    command = 'approve';\n  } else if (upper === 'PULAR' || upper === 'PULA' || upper === 'SKIP' || upper === '❌') {\n    command = 'skip';\n  } else if (upper.startsWith('EDITAR:') || upper.startsWith('EDITAR ')) {\n    command = 'edit';\n    commandPayload = trimmed.replace(/^EDITAR[:\\s]+/i, '').trim();\n  } else {\n    // Operador mandou texto livre — ignora (provavelmente conversa pessoal)\n    return { json: { skip: true, reason: 'operatorFreeText' } };\n  }\n}\n\nconst route = isFromOperator ? command : 'lead_reply';\n\nreturn {\n  json: {\n    skip: false,\n    fromNumber,\n    contactName,\n    messageText,\n    messageId,\n    isFromOperator,\n    command,\n    commandPayload,\n    route\n  }\n};"
+      },
+      "id": "parse-zapi",
+      "name": "Parse Z-API + identifica",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 400]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [{ "value1": "={{ $json.skip }}", "value2": false }]
+        }
+      },
+      "id": "if-not-skip",
+      "name": "Não é skip?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [680, 400]
+    },
+    {
+      "parameters": {
+        "dataType": "string",
+        "value1": "={{ $json.route }}",
+        "rules": {
+          "rules": [
+            { "operation": "equal", "value2": "approve", "output": 0 },
+            { "operation": "equal", "value2": "skip", "output": 1 },
+            { "operation": "equal", "value2": "edit", "output": 2 },
+            { "operation": "equal", "value2": "lead_reply", "output": 3 }
+          ]
+        },
+        "fallbackOutput": 4
+      },
+      "id": "route",
+      "name": "Roteia",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [900, 400]
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "getAll",
+        "databaseId": "={{ $env.NOTION_LEADS_DB_ID }}",
+        "returnAll": false,
+        "limit": 1,
+        "filterType": "manual",
+        "matchType": "anyFilter",
+        "filters": {
+          "conditions": [
+            { "key": "Etapa|select", "condition": "equals", "selectValue": "Aguardando aprovação" }
+          ]
+        },
+        "options": { "sort": { "sortValue": [{ "key": "Última interação em", "direction": "descending" }] } }
+      },
+      "id": "notion-find-pending-approve",
+      "name": "Acha pendente (aprovar)",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [1120, 100],
+      "credentials": { "notionApi": { "id": "notion-cred", "name": "Notion API" } }
+    },
+    {
+      "parameters": {
+        "jsCode": "const lead = $input.item.json;\nif (!lead || !lead.id) {\n  return { json: { error: 'NoPendingLead', msg: 'Nenhum lead em Aguardando aprovação' } };\n}\nconst props = lead.property || lead.properties || {};\nconst getText = (key) => {\n  const p = props[key];\n  if (!p) return '';\n  if (p.title) return p.title.map(t => t.plain_text).join('');\n  if (p.rich_text) return p.rich_text.map(t => t.plain_text).join('');\n  if (p.phone_number) return p.phone_number;\n  return '';\n};\nconst whatsapp = getText('WhatsApp').replace(/\\D/g, '');\nconst mensagem = getText('Mensagem proposta');\nconst nome = getText('Nome');\nconst empresa = getText('Empresa');\nconst historicoExistente = getText('Histórico');\nconst now = new Date().toISOString().replace('T', ' ').slice(0, 16);\nconst novaLinha = `[${now} SDR] ${mensagem}`;\nconst historicoAtualizado = historicoExistente ? `${historicoExistente}\\n${novaLinha}` : novaLinha;\nreturn { json: { lead_id: lead.id, whatsapp, mensagem, nome, empresa, historicoAtualizado } };"
+      },
+      "id": "prepare-send",
+      "name": "Prepara envio pro lead",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1340, 100]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.z-api.io/instances/{{ $env.ZAPI_INSTANCE_ID }}/token/{{ $env.ZAPI_TOKEN }}/send-text",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Client-Token", "value": "={{ $env.ZAPI_CLIENT_TOKEN }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"phone\": \"{{ $json.whatsapp }}\",\n  \"message\": {{ JSON.stringify($json.mensagem) }}\n}",
+        "options": {}
+      },
+      "id": "zapi-send-lead",
+      "name": "Z-API → Lead: envia",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1560, 100]
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "update",
+        "pageId": "={{ $('Prepara envio pro lead').item.json.lead_id }}",
+        "propertiesUi": {
+          "propertyValues": [
+            { "key": "Etapa|select", "selectValue": "Contato Feito" },
+            { "key": "Mensagem aprovada|rich_text", "textContent": "={{ $('Prepara envio pro lead').item.json.mensagem }}" },
+            { "key": "Histórico|rich_text", "textContent": "={{ $('Prepara envio pro lead').item.json.historicoAtualizado }}" },
+            { "key": "Última interação em|date", "date": "={{ $now.toISO() }}" }
+          ]
+        }
+      },
+      "id": "notion-mark-sent",
+      "name": "Notion: marca enviada",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [1780, 100],
+      "credentials": { "notionApi": { "id": "notion-cred", "name": "Notion API" } }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.z-api.io/instances/{{ $env.ZAPI_INSTANCE_ID }}/token/{{ $env.ZAPI_TOKEN }}/send-text",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Client-Token", "value": "={{ $env.ZAPI_CLIENT_TOKEN }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"phone\": \"{{ $env.OPERATOR_PERSONAL_NUMBER }}\",\n  \"message\": {{ JSON.stringify('✅ Enviado pro lead ' + $('Prepara envio pro lead').item.json.nome + ' (' + $('Prepara envio pro lead').item.json.empresa + ').') }}\n}",
+        "options": {}
+      },
+      "id": "zapi-confirm-ops",
+      "name": "Confirma no seu WA",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2000, 100]
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "getAll",
+        "databaseId": "={{ $env.NOTION_LEADS_DB_ID }}",
+        "returnAll": false,
+        "limit": 1,
+        "filterType": "manual",
+        "matchType": "anyFilter",
+        "filters": {
+          "conditions": [
+            { "key": "Etapa|select", "condition": "equals", "selectValue": "Aguardando aprovação" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "notion-find-pending-skip",
+      "name": "Acha pendente (pular)",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [1120, 300],
+      "credentials": { "notionApi": { "id": "notion-cred", "name": "Notion API" } }
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "update",
+        "pageId": "={{ $json.id }}",
+        "propertiesUi": {
+          "propertyValues": [
+            { "key": "Etapa|select", "selectValue": "Descartado" },
+            { "key": "Motivo desqualificação|rich_text", "textContent": "Operador pulou na aprovação" }
+          ]
+        }
+      },
+      "id": "notion-skip",
+      "name": "Notion: descartado",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [1340, 300],
+      "credentials": { "notionApi": { "id": "notion-cred", "name": "Notion API" } }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.z-api.io/instances/{{ $env.ZAPI_INSTANCE_ID }}/token/{{ $env.ZAPI_TOKEN }}/send-text",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Client-Token", "value": "={{ $env.ZAPI_CLIENT_TOKEN }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"phone\": \"{{ $env.OPERATOR_PERSONAL_NUMBER }}\",\n  \"message\": \"❌ Lead descartado.\"\n}",
+        "options": {}
+      },
+      "id": "zapi-confirm-skip",
+      "name": "Confirma pular",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1560, 300]
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "getAll",
+        "databaseId": "={{ $env.NOTION_LEADS_DB_ID }}",
+        "returnAll": false,
+        "limit": 1,
+        "filterType": "manual",
+        "matchType": "anyFilter",
+        "filters": {
+          "conditions": [
+            { "key": "Etapa|select", "condition": "equals", "selectValue": "Aguardando aprovação" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "notion-find-pending-edit",
+      "name": "Acha pendente (editar)",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [1120, 500],
+      "credentials": { "notionApi": { "id": "notion-cred", "name": "Notion API" } }
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "update",
+        "pageId": "={{ $json.id }}",
+        "propertiesUi": {
+          "propertyValues": [
+            { "key": "Mensagem proposta|rich_text", "textContent": "={{ $('Parse Z-API + identifica').item.json.commandPayload }}" }
+          ]
+        }
+      },
+      "id": "notion-update-edit",
+      "name": "Atualiza texto editado",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [1340, 500],
+      "credentials": { "notionApi": { "id": "notion-cred", "name": "Notion API" } }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.z-api.io/instances/{{ $env.ZAPI_INSTANCE_ID }}/token/{{ $env.ZAPI_TOKEN }}/send-text",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Client-Token", "value": "={{ $env.ZAPI_CLIENT_TOKEN }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"phone\": \"{{ $env.OPERATOR_PERSONAL_NUMBER }}\",\n  \"message\": {{ JSON.stringify('📝 Texto atualizado:\\n\\n' + $('Parse Z-API + identifica').item.json.commandPayload + '\\n\\nResponda APROVAR pra enviar ou PULAR pra cancelar.') }}\n}",
+        "options": {}
+      },
+      "id": "zapi-confirm-edit",
+      "name": "Confirma edição",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1560, 500]
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "getAll",
+        "databaseId": "={{ $env.NOTION_LEADS_DB_ID }}",
+        "returnAll": false,
+        "limit": 1,
+        "filterType": "manual",
+        "matchType": "anyFilter",
+        "filters": {
+          "conditions": [
+            { "key": "WhatsApp|phone_number", "condition": "contains", "value": "={{ $json.fromNumber }}" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "notion-find-lead",
+      "name": "Notion: acha o lead",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [1120, 700],
+      "credentials": { "notionApi": { "id": "notion-cred", "name": "Notion API" } }
+    },
+    {
+      "parameters": {
+        "jsCode": "const lead = $input.item.json;\nconst inbound = $('Parse Z-API + identifica').item.json;\nif (!lead || !lead.id) {\n  // Lead não está no Notion — cria entrada nova\n  return { json: { isNewLead: true, fromNumber: inbound.fromNumber, contactName: inbound.contactName, messageText: inbound.messageText } };\n}\nconst props = lead.property || lead.properties || {};\nconst getText = (key) => {\n  const p = props[key];\n  if (!p) return '';\n  if (p.title) return p.title.map(t => t.plain_text).join('');\n  if (p.rich_text) return p.rich_text.map(t => t.plain_text).join('');\n  if (p.select) return p.select?.name || '';\n  if (p.phone_number) return p.phone_number;\n  if (p.url) return p.url;\n  return '';\n};\nconst historicoExistente = getText('Histórico');\nconst now = new Date().toISOString().replace('T', ' ').slice(0, 16);\nconst novaLinha = `[${now} LEAD] ${inbound.messageText}`;\nconst historicoAtualizado = historicoExistente ? `${historicoExistente}\\n${novaLinha}` : novaLinha;\nreturn { json: {\n  isNewLead: false,\n  lead_id: lead.id,\n  nome: getText('Nome'),\n  empresa: getText('Empresa'),\n  cargo: getText('Cargo'),\n  whatsapp: getText('WhatsApp'),\n  gatilho: getText('Gatilho de prospecção'),\n  setor: getText('Setor'),\n  instagram: getText('Instagram'),\n  site: getText('Site da empresa'),\n  ultima_msg_lead: inbound.messageText,\n  historico: historicoAtualizado,\n  is_first_touch: false\n} };"
+      },
+      "id": "build-context",
+      "name": "Monta contexto + histórico",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1340, 700]
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "update",
+        "pageId": "={{ $json.lead_id }}",
+        "propertiesUi": {
+          "propertyValues": [
+            { "key": "Etapa|select", "selectValue": "Em conversa" },
+            { "key": "Histórico|rich_text", "textContent": "={{ $json.historico }}" },
+            { "key": "Última interação em|date", "date": "={{ $now.toISO() }}" }
+          ]
+        }
+      },
+      "id": "notion-log-reply",
+      "name": "Notion: loga resposta",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [1560, 700],
+      "credentials": { "notionApi": { "id": "notion-cred", "name": "Notion API" } }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "x-api-key", "value": "={{ $env.ANTHROPIC_API_KEY }}" },
+            { "name": "anthropic-version", "value": "2023-06-01" },
+            { "name": "content-type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"claude-sonnet-4-6\",\n  \"max_tokens\": 1024,\n  \"system\": {{ JSON.stringify($env.SDR_SYSTEM_PROMPT + '\\n\\n--- REGRAS DE FOLLOW-UP ---\\n' + $env.SDR_FOLLOWUP_RULES) }},\n  \"messages\": [\n    { \"role\": \"user\", \"content\": {{ JSON.stringify('Lead respondeu. Contexto + histórico:\\n' + JSON.stringify($json, null, 2) + '\\n\\nGere a próxima resposta seguindo o system prompt e as regras de follow-up. Retorne APENAS o JSON especificado.') }} }\n  ]\n}",
+        "options": {}
+      },
+      "id": "claude-followup",
+      "name": "Claude: gera follow-up",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1780, 700]
+    },
+    {
+      "parameters": {
+        "jsCode": "const claudeResp = $input.item.json;\nconst ctx = $('Monta contexto + histórico').item.json;\nlet parsed;\ntry {\n  const text = claudeResp.content[0].text.trim();\n  const cleaned = text.replace(/^```json\\s*/i, '').replace(/```\\s*$/, '');\n  parsed = JSON.parse(cleaned);\n} catch (e) {\n  parsed = { mensagem_proposta: '[ERRO de parsing — revisar]', raciocinio: 'Falha no parsing: ' + e.message, score_sugerido: '🟡 Warm', proxima_etapa_sugerida: 'Em conversa', alerta_humano: 'Claude retornou JSON inválido em follow-up' };\n}\nreturn { json: { ...ctx, ...parsed } };"
+      },
+      "id": "parse-followup",
+      "name": "Parse follow-up",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2000, 700]
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "update",
+        "pageId": "={{ $json.lead_id }}",
+        "propertiesUi": {
+          "propertyValues": [
+            { "key": "Etapa|select", "selectValue": "Aguardando aprovação" },
+            { "key": "Mensagem proposta|rich_text", "textContent": "={{ $json.mensagem_proposta }}" },
+            { "key": "Score de qualificação|select", "selectValue": "={{ $json.score_sugerido }}" }
+          ]
+        }
+      },
+      "id": "notion-save-followup",
+      "name": "Notion: salva follow-up",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [2220, 700],
+      "credentials": { "notionApi": { "id": "notion-cred", "name": "Notion API" } }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.z-api.io/instances/{{ $env.ZAPI_INSTANCE_ID }}/token/{{ $env.ZAPI_TOKEN }}/send-text",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Client-Token", "value": "={{ $env.ZAPI_CLIENT_TOKEN }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"phone\": \"{{ $env.OPERATOR_PERSONAL_NUMBER }}\",\n  \"message\": {{ JSON.stringify('💬 *Lead respondeu*\\n\\n👤 ' + $json.nome + ' (' + $json.empresa + ') disse:\\n_\"' + $json.ultima_msg_lead + '\"_\\n\\n💡 *Resposta proposta:*\\n━━━━━━━━━━━━━━\\n' + $json.mensagem_proposta + '\\n━━━━━━━━━━━━━━\\n\\n📊 Score: ' + $json.score_sugerido + '\\n🧠 ' + $json.raciocinio + (($json.alerta_humano || '') ? '\\n\\n⚠️ ' + $json.alerta_humano : '') + '\\n\\n✏️ Responda: APROVAR | EDITAR: <texto> | PULAR') }}\n}",
+        "options": {}
+      },
+      "id": "zapi-ask-approval-followup",
+      "name": "Pede aprovação follow-up",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2440, 700]
+    }
+  ],
+  "connections": {
+    "Webhook Z-API": { "main": [[{ "node": "Parse Z-API + identifica", "type": "main", "index": 0 }]] },
+    "Parse Z-API + identifica": { "main": [[{ "node": "Não é skip?", "type": "main", "index": 0 }]] },
+    "Não é skip?": { "main": [[{ "node": "Roteia", "type": "main", "index": 0 }], []] },
+    "Roteia": {
+      "main": [
+        [{ "node": "Acha pendente (aprovar)", "type": "main", "index": 0 }],
+        [{ "node": "Acha pendente (pular)", "type": "main", "index": 0 }],
+        [{ "node": "Acha pendente (editar)", "type": "main", "index": 0 }],
+        [{ "node": "Notion: acha o lead", "type": "main", "index": 0 }],
+        []
+      ]
+    },
+    "Acha pendente (aprovar)": { "main": [[{ "node": "Prepara envio pro lead", "type": "main", "index": 0 }]] },
+    "Prepara envio pro lead": { "main": [[{ "node": "Z-API → Lead: envia", "type": "main", "index": 0 }]] },
+    "Z-API → Lead: envia": { "main": [[{ "node": "Notion: marca enviada", "type": "main", "index": 0 }]] },
+    "Notion: marca enviada": { "main": [[{ "node": "Confirma no seu WA", "type": "main", "index": 0 }]] },
+    "Acha pendente (pular)": { "main": [[{ "node": "Notion: descartado", "type": "main", "index": 0 }]] },
+    "Notion: descartado": { "main": [[{ "node": "Confirma pular", "type": "main", "index": 0 }]] },
+    "Acha pendente (editar)": { "main": [[{ "node": "Atualiza texto editado", "type": "main", "index": 0 }]] },
+    "Atualiza texto editado": { "main": [[{ "node": "Confirma edição", "type": "main", "index": 0 }]] },
+    "Notion: acha o lead": { "main": [[{ "node": "Monta contexto + histórico", "type": "main", "index": 0 }]] },
+    "Monta contexto + histórico": { "main": [[{ "node": "Notion: loga resposta", "type": "main", "index": 0 }]] },
+    "Notion: loga resposta": { "main": [[{ "node": "Claude: gera follow-up", "type": "main", "index": 0 }]] },
+    "Claude: gera follow-up": { "main": [[{ "node": "Parse follow-up", "type": "main", "index": 0 }]] },
+    "Parse follow-up": { "main": [[{ "node": "Notion: salva follow-up", "type": "main", "index": 0 }]] },
+    "Notion: salva follow-up": { "main": [[{ "node": "Pede aprovação follow-up", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" }
+}
