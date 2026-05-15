@@ -162,7 +162,7 @@
       "tone": "confiante, direto, honesto, com leve provocação. Fala de igual pra igual com founder. Usa 'a gente' em vez de 'nós'. Frases curtas. Estruturas de negação dupla ('sem rodeios, sem enrolação'). Sem jargão de agência, sem clichês de cold outreach",
       "keywords": ["branding", "identidade visual", "audiovisual", "drone para empresas", "website", "SEO local", "tráfego pago", "gestão digital", "rebrand"],
       "subreddits": ["branding", "marketing", "smallbusiness", "entrepreneur"],
-      "notion_db_id": null,
+      "notion_db_id": "ff29e8a2-84a2-4f94-978b-e486c4310281",
       "time": [
         {"nome": "Layana Oliveira", "cargo": "CEO & Estrategista"},
         {"nome": "Raquel Jacques", "cargo": "Social Media & Storymaker"},
@@ -233,7 +233,8 @@
           "provider": "meta_cloud_api",
           "numero": "sdr"
         },
-        "notion_leads_db_id": null,
+        "notion_leads_db_id": "ff29e8a2-84a2-4f94-978b-e486c4310281",
+        "notion_leads_db_url": "https://www.notion.so/ff29e8a284a24f94978be486c4310281",
         "prompts": {
           "system": "sdr/prompts/system_sdr_astart.md",
           "templates_primeiro_contato": "sdr/prompts/templates_primeiro_contato.md",
