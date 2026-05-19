@@ -145,6 +145,45 @@
         "Tricologia — entendendo a saúde do seu couro cabeludo",
         "Como contar para família e amigos sobre a prótese"
       ]
+    },
+    {
+      "name": "Omnia Engenharia",
+      "niche": "construtora e engenharia de alto padrão com atuação local — obras residenciais e comerciais executadas em parceria com escritórios de arquitetura. Foco em acabamento refinado, materiais premium, gestão de obra transparente, pontualidade na entrega e processos organizados (canteiro limpo). Mais de uma década de experiência e portfólio consolidado de projetos entregues",
+      "tone": "sóbrio, técnico e premium — fala com clientes finais de alto padrão e arquitetos parceiros. Tom de quem domina o ofício: transmite segurança, organização e cuidado com cada detalhe da obra. Sem jargão de engenharia desnecessário, mas mostrando profundidade técnica quando o assunto pede. Educativo nos bastidores, elegante na entrega",
+      "keywords": ["construtora alto padrão", "obra residencial", "engenharia civil", "gestão de obra", "parceria arquiteto construtora", "acabamento de obra"],
+      "subreddits": ["civilengineering", "ConstructionManagement", "Construction", "architecture"],
+      "notion_db_id": "a8f52bb0-5884-4c91-a8ce-2517073644d4",
+      "subtopics": [
+        "Como escolher a construtora certa para a sua obra de alto padrão",
+        "Construtora vs empreiteiro — entenda a diferença que pesa no bolso",
+        "Parceria entre arquiteto e construtora — por que essa relação muda o resultado da obra",
+        "Como funciona a compatibilização de projetos (arquitetônico, estrutural, elétrico, hidráulico)",
+        "Cronograma de obra — como ler e cobrar o seu",
+        "Curva ABC de materiais — onde o orçamento da obra realmente vai",
+        "Canteiro de obra organizado: por que isso impacta a qualidade final",
+        "Medição de obra — como acompanhar o avanço físico-financeiro",
+        "Diário de obra — o documento que protege cliente e construtora",
+        "BDI na construção civil — o que está embutido no preço",
+        "Aditivos contratuais — quando são justos e quando são abuso",
+        "Reforma vs obra do zero — quando vale demolir",
+        "Steel frame, drywall, alvenaria — qual sistema usar e quando",
+        "Impermeabilização — o detalhe invisível que define a vida útil da obra",
+        "Acabamentos premium — porcelanato, mármore, madeira: o que considerar",
+        "Iluminação na obra — pontos elétricos pensados antes da reforma",
+        "Automação residencial — como prever na fase de obra",
+        "Marcenaria sob medida — quando entra no cronograma",
+        "Habite-se, alvará e regularização — o que o cliente precisa saber",
+        "ART e RRT — responsabilidade técnica na obra",
+        "NR-18 — segurança do trabalho em obra de alto padrão",
+        "Sustentabilidade na construção — reaproveitamento, reuso e descarte",
+        "Pós-obra — manutenção preventiva que preserva o investimento",
+        "Garantias da construtora — o que diz o Código Civil",
+        "Antes e depois — como uma obra organizada se traduz no resultado final",
+        "Tour pelo canteiro — bastidores de uma obra premium",
+        "Equipe da obra — engenheiro, mestre, encarregado: quem faz o quê",
+        "Visita técnica do cliente — o que observar em cada fase",
+        "Patologias da construção — fissuras, infiltrações e como evitar"
+      ]
     }
   ]
 }
