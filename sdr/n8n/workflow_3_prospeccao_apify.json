@@ -5,7 +5,10 @@
       "parameters": {
         "rule": {
           "interval": [
-            { "field": "cronExpression", "expression": "0 9 * * 1-5" }
+            {
+              "field": "cronExpression",
+              "expression": "0 9 * * 1-5"
+            }
           ]
         }
       },
@@ -13,69 +16,94 @@
       "name": "Toda manhã 9h (seg-sex)",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.1,
-      "position": [240, 400]
+      "position": [
+        240,
+        400
+      ]
     },
     {
       "parameters": {
-        "jsCode": "// Lê queries de prospecção do env. Formato:\n// PROSPECT_QUERIES_GMAPS = JSON array. Ex:\n// [\n//   {\"search\": \"agência de marketing em Mogi das Cruzes\", \"max\": 5},\n//   {\"search\": \"restaurante em Arujá\", \"max\": 5}\n// ]\nlet queries = [];\ntry {\n  queries = JSON.parse($env.PROSPECT_QUERIES_GMAPS || '[]');\n} catch (e) {\n  return [];\n}\nreturn queries.map(q => ({ json: q }));"
+        "jsCode": "// Lê queries de prospecção do env. Formato:\n// PROSPECT_QUERIES_GMAPS = JSON array. Ex:\n// [\n//   {\"search\": \"agência de marketing em Mogi das Cruzes\", \"max\": 5},\n//   {\"search\": \"restaurante em Arujá\", \"max\": 5}\n// ]\nlet queries = [];\ntry {\n  queries = JSON.parse($('Config').first().json.queriesGmaps || '[]');\n} catch (e) {\n  return [];\n}\nreturn queries.map(q => ({ json: q }));"
       },
       "id": "load-gmaps-queries",
       "name": "Carrega queries Google Maps",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [460, 300]
+      "position": [
+        460,
+        300
+      ]
     },
     {
       "parameters": {
-        "jsCode": "// Lê queries do Instagram do env. Formato:\n// PROSPECT_QUERIES_INSTAGRAM = JSON array. Ex:\n// [\n//   {\"hashtag\": \"empresariomogi\", \"max\": 5},\n//   {\"username\": \"perfil_concorrente\", \"max\": 5, \"type\": \"followers\"}\n// ]\nlet queries = [];\ntry {\n  queries = JSON.parse($env.PROSPECT_QUERIES_INSTAGRAM || '[]');\n} catch (e) {\n  return [];\n}\nreturn queries.map(q => ({ json: q }));"
+        "jsCode": "// Lê queries do Instagram do env. Formato:\n// PROSPECT_QUERIES_INSTAGRAM = JSON array. Ex:\n// [\n//   {\"hashtag\": \"empresariomogi\", \"max\": 5},\n//   {\"username\": \"perfil_concorrente\", \"max\": 5, \"type\": \"followers\"}\n// ]\nlet queries = [];\ntry {\n  queries = JSON.parse($('Config').first().json.queriesInstagram || '[]');\n} catch (e) {\n  return [];\n}\nreturn queries.map(q => ({ json: q }));"
       },
       "id": "load-instagram-queries",
       "name": "Carrega queries Instagram",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [460, 500]
+      "position": [
+        460,
+        500
+      ]
     },
     {
       "parameters": {
         "method": "POST",
-        "url": "=https://api.apify.com/v2/acts/compass~crawler-google-places/run-sync-get-dataset-items?token={{ $env.APIFY_TOKEN }}",
+        "url": "=https://api.apify.com/v2/acts/compass~crawler-google-places/run-sync-get-dataset-items?token={{ $('Config').first().json.apifyToken }}",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "Content-Type", "value": "application/json" }
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
           ]
         },
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={\n  \"searchStringsArray\": [\"{{ $json.search }}\"],\n  \"maxCrawledPlacesPerSearch\": {{ $json.max || 5 }},\n  \"language\": \"pt-BR\",\n  \"scrapePlaceDetailPage\": true,\n  \"scrapeContacts\": true\n}",
-        "options": { "timeout": 180000 }
+        "options": {
+          "timeout": 180000
+        }
       },
       "id": "apify-gmaps",
       "name": "Apify: Google Maps",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [680, 300]
+      "position": [
+        680,
+        300
+      ]
     },
     {
       "parameters": {
         "method": "POST",
-        "url": "=https://api.apify.com/v2/acts/apify~instagram-hashtag-scraper/run-sync-get-dataset-items?token={{ $env.APIFY_TOKEN }}",
+        "url": "=https://api.apify.com/v2/acts/apify~instagram-hashtag-scraper/run-sync-get-dataset-items?token={{ $('Config').first().json.apifyToken }}",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "Content-Type", "value": "application/json" }
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
           ]
         },
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={\n  \"hashtags\": [\"{{ $json.hashtag }}\"],\n  \"resultsLimit\": {{ $json.max || 5 }}\n}",
-        "options": { "timeout": 180000 }
+        "options": {
+          "timeout": 180000
+        }
       },
       "id": "apify-instagram",
       "name": "Apify: Instagram",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [680, 500]
+      "position": [
+        680,
+        500
+      ]
     },
     {
       "parameters": {
@@ -85,7 +113,10 @@
       "name": "Normaliza Google Maps",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [900, 300]
+      "position": [
+        900,
+        300
+      ]
     },
     {
       "parameters": {
@@ -95,7 +126,10 @@
       "name": "Normaliza Instagram",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [900, 500]
+      "position": [
+        900,
+        500
+      ]
     },
     {
       "parameters": {
@@ -107,19 +141,25 @@
       "name": "Junta fontes",
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3,
-      "position": [1120, 400]
+      "position": [
+        1120,
+        400
+      ]
     },
     {
       "parameters": {
         "resource": "databasePage",
         "operation": "getAll",
-        "databaseId": "={{ $env.NOTION_LEADS_DB_ID }}",
+        "databaseId": "={{ $('Config').first().json.notionDbId }}",
         "returnAll": true,
         "filterType": "manual",
         "matchType": "anyFilter",
         "filters": {
           "conditions": [
-            { "key": "WhatsApp|phone_number", "condition": "isNotEmpty" }
+            {
+              "key": "WhatsApp|phone_number",
+              "condition": "isNotEmpty"
+            }
           ]
         },
         "options": {}
@@ -128,8 +168,16 @@
       "name": "Notion: leads existentes",
       "type": "n8n-nodes-base.notion",
       "typeVersion": 2.2,
-      "position": [1120, 600],
-      "credentials": { "notionApi": { "id": "notion-cred", "name": "Notion API" } }
+      "position": [
+        1120,
+        600
+      ],
+      "credentials": {
+        "notionApi": {
+          "id": "notion-cred",
+          "name": "Notion API"
+        }
+      }
     },
     {
       "parameters": {
@@ -139,34 +187,70 @@
       "name": "Deduplica vs Notion",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1340, 500]
+      "position": [
+        1340,
+        500
+      ]
     },
     {
-      "parameters": { "batchSize": 1, "options": {} },
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
       "id": "split-create",
       "name": "Um por vez",
       "type": "n8n-nodes-base.splitInBatches",
       "typeVersion": 3,
-      "position": [1560, 500]
+      "position": [
+        1560,
+        500
+      ]
     },
     {
       "parameters": {
         "resource": "databasePage",
         "operation": "create",
-        "databaseId": "={{ $env.NOTION_LEADS_DB_ID }}",
+        "databaseId": "={{ $('Config').first().json.notionDbId }}",
         "title": "={{ $json.nome }}",
         "simple": false,
         "propertiesUi": {
           "propertyValues": [
-            { "key": "Empresa|rich_text", "textContent": "={{ $json.empresa }}" },
-            { "key": "WhatsApp|phone_number", "phoneValue": "={{ $json.whatsapp }}" },
-            { "key": "Instagram|url", "urlValue": "={{ $json.instagram }}" },
-            { "key": "Site da empresa|url", "urlValue": "={{ $json.site }}" },
-            { "key": "Setor|select", "selectValue": "={{ $json.setor }}" },
-            { "key": "Origem|select", "selectValue": "={{ $json.origem }}" },
-            { "key": "Gatilho de prospecção|rich_text", "textContent": "={{ $json.gatilho }}" },
-            { "key": "Etapa|select", "selectValue": "Novo Lead" },
-            { "key": "Score de qualificação|select", "selectValue": "❄️ Cold" }
+            {
+              "key": "Empresa|rich_text",
+              "textContent": "={{ $json.empresa }}"
+            },
+            {
+              "key": "WhatsApp|phone_number",
+              "phoneValue": "={{ $json.whatsapp }}"
+            },
+            {
+              "key": "Instagram|url",
+              "urlValue": "={{ $json.instagram }}"
+            },
+            {
+              "key": "Site da empresa|url",
+              "urlValue": "={{ $json.site }}"
+            },
+            {
+              "key": "Setor|select",
+              "selectValue": "={{ $json.setor }}"
+            },
+            {
+              "key": "Origem|select",
+              "selectValue": "={{ $json.origem }}"
+            },
+            {
+              "key": "Gatilho de prospecção|rich_text",
+              "textContent": "={{ $json.gatilho }}"
+            },
+            {
+              "key": "Etapa|select",
+              "selectValue": "Novo Lead"
+            },
+            {
+              "key": "Score de qualificação|select",
+              "selectValue": "❄️ Cold"
+            }
           ]
         }
       },
@@ -174,53 +258,279 @@
       "name": "Notion: cria lead",
       "type": "n8n-nodes-base.notion",
       "typeVersion": 2.2,
-      "position": [1780, 500],
-      "credentials": { "notionApi": { "id": "notion-cred", "name": "Notion API" } }
+      "position": [
+        1780,
+        500
+      ],
+      "credentials": {
+        "notionApi": {
+          "id": "notion-cred",
+          "name": "Notion API"
+        }
+      }
     },
     {
       "parameters": {
         "method": "POST",
-        "url": "=https://api.z-api.io/instances/{{ $env.ZAPI_INSTANCE_ID }}/token/{{ $env.ZAPI_TOKEN }}/send-text",
+        "url": "=https://api.z-api.io/instances/{{ $('Config').first().json.zapiInstance }}/token/{{ $('Config').first().json.zapiToken }}/send-text",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "Client-Token", "value": "={{ $env.ZAPI_CLIENT_TOKEN }}" },
-            { "name": "Content-Type", "value": "application/json" }
+            {
+              "name": "Client-Token",
+              "value": "={{ $('Config').first().json.zapiClientToken }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
           ]
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"phone\": \"{{ $env.OPERATOR_PERSONAL_NUMBER }}\",\n  \"message\": {{ JSON.stringify('🎯 Prospecção do dia rodou. ' + $('Deduplica vs Notion').all().length + ' novos leads criados no Notion (etapa: Novo Lead). Revisa e marca os que valem como \"Pronto pra abordar\".') }}\n}",
+        "jsonBody": "={\n  \"phone\": \"{{ $('Config').first().json.operatorNumber }}\",\n  \"message\": {{ JSON.stringify('🎯 Prospecção do dia rodou. ' + $('Deduplica vs Notion').all().length + ' novos leads criados no Notion (etapa: Novo Lead). Revisa e marca os que valem como \"Pronto pra abordar\".') }}\n}",
         "options": {}
       },
       "id": "zapi-summary",
       "name": "Avisa resumo no WA",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [2000, 500]
+      "position": [
+        2000,
+        500
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "includeOtherInputFields": true,
+        "assignments": {
+          "assignments": [
+            {
+              "id": "cfg-0",
+              "name": "notionDbId",
+              "value": "ff29e8a2-84a2-4f94-978b-e486c4310281",
+              "type": "string"
+            },
+            {
+              "id": "cfg-1",
+              "name": "operatorNumber",
+              "value": "5511933554550",
+              "type": "string"
+            },
+            {
+              "id": "cfg-2",
+              "name": "zapiInstance",
+              "value": "COLE_SEU_ZAPI_INSTANCE_ID_AQUI",
+              "type": "string"
+            },
+            {
+              "id": "cfg-3",
+              "name": "zapiToken",
+              "value": "COLE_SEU_ZAPI_TOKEN_AQUI",
+              "type": "string"
+            },
+            {
+              "id": "cfg-4",
+              "name": "zapiClientToken",
+              "value": "COLE_SEU_ZAPI_CLIENT_TOKEN_AQUI",
+              "type": "string"
+            },
+            {
+              "id": "cfg-5",
+              "name": "anthropicKey",
+              "value": "COLE_SUA_ANTHROPIC_API_KEY_AQUI",
+              "type": "string"
+            },
+            {
+              "id": "cfg-6",
+              "name": "apifyToken",
+              "value": "COLE_SEU_APIFY_TOKEN_AQUI",
+              "type": "string"
+            },
+            {
+              "id": "cfg-7",
+              "name": "queriesGmaps",
+              "value": "[]",
+              "type": "string"
+            },
+            {
+              "id": "cfg-8",
+              "name": "queriesInstagram",
+              "value": "[]",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "config-node",
+      "name": "Config",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        240,
+        600
+      ],
+      "notes": "Preencha os campos COLE_..._AQUI com seus valores reais. Os demais já vêm prontos."
     }
   ],
   "connections": {
     "Toda manhã 9h (seg-sex)": {
       "main": [
         [
-          { "node": "Carrega queries Google Maps", "type": "main", "index": 0 },
-          { "node": "Carrega queries Instagram", "type": "main", "index": 0 },
-          { "node": "Notion: leads existentes", "type": "main", "index": 0 }
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
         ]
       ]
     },
-    "Carrega queries Google Maps": { "main": [[{ "node": "Apify: Google Maps", "type": "main", "index": 0 }]] },
-    "Apify: Google Maps": { "main": [[{ "node": "Normaliza Google Maps", "type": "main", "index": 0 }]] },
-    "Normaliza Google Maps": { "main": [[{ "node": "Junta fontes", "type": "main", "index": 0 }]] },
-    "Carrega queries Instagram": { "main": [[{ "node": "Apify: Instagram", "type": "main", "index": 0 }]] },
-    "Apify: Instagram": { "main": [[{ "node": "Normaliza Instagram", "type": "main", "index": 0 }]] },
-    "Normaliza Instagram": { "main": [[{ "node": "Junta fontes", "type": "main", "index": 1 }]] },
-    "Junta fontes": { "main": [[{ "node": "Deduplica vs Notion", "type": "main", "index": 0 }]] },
-    "Deduplica vs Notion": { "main": [[{ "node": "Um por vez", "type": "main", "index": 0 }]] },
-    "Um por vez": { "main": [[{ "node": "Notion: cria lead", "type": "main", "index": 0 }]] },
-    "Notion: cria lead": { "main": [[{ "node": "Um por vez", "type": "main", "index": 0 }]] },
-    "Notion: leads existentes": { "main": [[{ "node": "Deduplica vs Notion", "type": "main", "index": 0 }]] }
+    "Carrega queries Google Maps": {
+      "main": [
+        [
+          {
+            "node": "Apify: Google Maps",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apify: Google Maps": {
+      "main": [
+        [
+          {
+            "node": "Normaliza Google Maps",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normaliza Google Maps": {
+      "main": [
+        [
+          {
+            "node": "Junta fontes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Carrega queries Instagram": {
+      "main": [
+        [
+          {
+            "node": "Apify: Instagram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apify: Instagram": {
+      "main": [
+        [
+          {
+            "node": "Normaliza Instagram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normaliza Instagram": {
+      "main": [
+        [
+          {
+            "node": "Junta fontes",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Junta fontes": {
+      "main": [
+        [
+          {
+            "node": "Deduplica vs Notion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deduplica vs Notion": {
+      "main": [
+        [
+          {
+            "node": "Um por vez",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Um por vez": {
+      "main": [
+        [
+          {
+            "node": "Notion: cria lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notion: cria lead": {
+      "main": [
+        [
+          {
+            "node": "Um por vez",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notion: leads existentes": {
+      "main": [
+        [
+          {
+            "node": "Deduplica vs Notion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config": {
+      "main": [
+        [
+          {
+            "node": "Carrega queries Google Maps",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Carrega queries Instagram",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Notion: leads existentes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
   },
-  "settings": { "executionOrder": "v1" }
+  "settings": {
+    "executionOrder": "v1"
+  }
 }
