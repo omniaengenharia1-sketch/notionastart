@@ -52,7 +52,8 @@
             }
           ]
         },
-        "options": {}
+        "options": {},
+        "simple": false
       },
       "id": "notion-fetch-leads",
       "name": "Notion: leads prontos",
@@ -134,7 +135,7 @@
       "parameters": {
         "resource": "databasePage",
         "operation": "update",
-        "pageId": "={{ $json.lead_id }}",
+        "pageId": "={{ $('Parse JSON do Claude').item.json.lead_id }}",
         "propertiesUi": {
           "propertyValues": [
             {
@@ -143,11 +144,11 @@
             },
             {
               "key": "Mensagem proposta|rich_text",
-              "textContent": "={{ $json.mensagem_proposta }}"
+              "textContent": "={{ $('Parse JSON do Claude').item.json.mensagem_proposta }}"
             },
             {
               "key": "Score de qualificação|select",
-              "selectValue": "={{ $json.score_sugerido }}"
+              "selectValue": "={{ $('Parse JSON do Claude').item.json.score_sugerido }}"
             }
           ]
         }
@@ -186,7 +187,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"phone\": \"{{ $('Config').first().json.operatorNumber }}\",\n  \"message\": {{ JSON.stringify('🔔 *Nova abordagem pronta*\\n\\n👤 *Lead:* ' + $json.nome + ' (' + ($json.cargo || '-') + ' @ ' + ($json.empresa || '-') + ')\\n🎯 *Gatilho:* ' + ($json.gatilho || '-') + '\\n📊 *Score:* ' + $json.score_sugerido + '\\n\\n💬 *Proposta:*\\n━━━━━━━━━━━━━━\\n' + $json.mensagem_proposta + '\\n━━━━━━━━━━━━━━\\n\\n🧠 ' + $json.raciocinio + '\\n\\n✏️ *Pra responder:*\\n• APROVAR — envia a mensagem pro lead\\n• EDITAR: <novo texto> — substitui e pede confirmação\\n• PULAR — descarta esse lead') }}\n}",
+        "jsonBody": "={\n  \"phone\": \"{{ $('Config').first().json.operatorNumber }}\",\n  \"message\": {{ JSON.stringify('🔔 *Nova abordagem pronta*\\n\\n👤 *Lead:* ' + $('Parse JSON do Claude').item.json.nome + ' (' + ($('Parse JSON do Claude').item.json.cargo || '-') + ' @ ' + ($('Parse JSON do Claude').item.json.empresa || '-') + ')\\n🎯 *Gatilho:* ' + ($('Parse JSON do Claude').item.json.gatilho || '-') + '\\n📊 *Score:* ' + $('Parse JSON do Claude').item.json.score_sugerido + '\\n\\n💬 *Proposta:*\\n━━━━━━━━━━━━━━\\n' + $('Parse JSON do Claude').item.json.mensagem_proposta + '\\n━━━━━━━━━━━━━━\\n\\n🧠 ' + $('Parse JSON do Claude').item.json.raciocinio + '\\n\\n✏️ *Pra responder:*\\n• APROVAR — envia a mensagem pro lead\\n• EDITAR: <novo texto> — substitui e pede confirmação\\n• PULAR — descarta esse lead') }}\n}",
         "options": {}
       },
       "id": "zapi-notify-operator",
