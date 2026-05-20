@@ -17,7 +17,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Parse Z-API webhook (formato 'Ao receber'). Identifica origem (operador x lead) e ação.\nconst body = $input.item.json.body || $input.item.json;\n\n// Ignora: status updates, mensagens enviadas por nós (fromMe), grupos\nif (body.fromMe === true || body.isGroup === true || body.type !== 'ReceivedCallback') {\n  return { json: { skip: true, reason: 'fromMe/group/notReceived' } };\n}\n\nconst fromNumber = String(body.phone || '').replace(/\\D/g, '');\nconst contactName = body.senderName || body.chatName || null;\nconst messageText = body.text?.message || body.image?.caption || body.audio?.caption || '';\nconst messageId = body.messageId;\n\nif (!fromNumber || !messageText) {\n  return { json: { skip: true, reason: 'noNumberOrText' } };\n}\n\nconst operatorNumber = String($env.OPERATOR_PERSONAL_NUMBER).replace(/\\D/g, '');\nconst isFromOperator = fromNumber === operatorNumber;\n\n// Detecta comandos do operador\nlet command = null;\nlet commandPayload = null;\nif (isFromOperator) {\n  const trimmed = messageText.trim();\n  const upper = trimmed.toUpperCase();\n  if (upper === 'APROVAR' || upper === 'APROVA' || upper === 'OK' || upper === '✅') {\n    command = 'approve';\n  } else if (upper === 'PULAR' || upper === 'PULA' || upper === 'SKIP' || upper === '❌') {\n    command = 'skip';\n  } else if (upper.startsWith('EDITAR:') || upper.startsWith('EDITAR ')) {\n    command = 'edit';\n    commandPayload = trimmed.replace(/^EDITAR[:\\s]+/i, '').trim();\n  } else {\n    // Operador mandou texto livre — ignora (provavelmente conversa pessoal)\n    return { json: { skip: true, reason: 'operatorFreeText' } };\n  }\n}\n\nconst route = isFromOperator ? command : 'lead_reply';\n\nreturn {\n  json: {\n    skip: false,\n    fromNumber,\n    contactName,\n    messageText,\n    messageId,\n    isFromOperator,\n    command,\n    commandPayload,\n    route\n  }\n};"
+        "jsCode": "// Parse Z-API webhook (formato 'Ao receber'). Identifica origem (operador x lead) e ação.\nconst body = $input.item.json.body || $input.item.json;\n\nif (body.fromMe === true || body.isGroup === true || body.type !== 'ReceivedCallback') {\n  return { json: { skip: true, reason: 'fromMe/group/notReceived' } };\n}\n\nconst fromNumber = String(body.phone || '').replace(/\\D/g, '');\nconst contactName = body.senderName || body.chatName || null;\nconst messageText = body.text?.message || body.image?.caption || body.audio?.caption || '';\nconst messageId = body.messageId;\n\nif (!fromNumber || !messageText) {\n  return { json: { skip: true, reason: 'noNumberOrText' } };\n}\n\nconst operatorNumber = String($env.OPERATOR_PERSONAL_NUMBER).replace(/\\D/g, '');\nconst isFromOperator = fromNumber === operatorNumber;\n\nlet command = null;\nlet commandPayload = null;\nif (isFromOperator) {\n  const trimmed = messageText.trim();\n  const upper = trimmed.toUpperCase();\n  if (upper === 'APROVAR' || upper === 'APROVA' || upper === 'OK' || upper === '✅') {\n    command = 'approve';\n  } else if (upper === 'PULAR' || upper === 'PULA' || upper === 'SKIP' || upper === '❌') {\n    command = 'skip';\n  } else if (upper.startsWith('EDITAR:') || upper.startsWith('EDITAR ')) {\n    command = 'edit';\n    commandPayload = trimmed.replace(/^EDITAR[:\\s]+/i, '').trim();\n  } else {\n    return { json: { skip: true, reason: 'operatorFreeText' } };\n  }\n}\n\nconst route = isFromOperator ? command : 'lead_reply';\n\nreturn {\n  json: { skip: false, fromNumber, contactName, messageText, messageId, isFromOperator, command, commandPayload, route }\n};"
       },
       "id": "parse-zapi",
       "name": "Parse Z-API + identifica",
@@ -28,33 +28,81 @@
     {
       "parameters": {
         "conditions": {
-          "boolean": [{ "value1": "={{ $json.skip }}", "value2": false }]
-        }
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "loose", "version": 2 },
+          "conditions": [
+            {
+              "id": "cond-not-skip",
+              "leftValue": "={{ $json.skip }}",
+              "rightValue": "",
+              "operator": { "type": "boolean", "operation": "false", "singleValue": true }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
       },
       "id": "if-not-skip",
       "name": "Não é skip?",
       "type": "n8n-nodes-base.if",
-      "typeVersion": 2,
+      "typeVersion": 2.2,
       "position": [680, 400]
     },
     {
       "parameters": {
-        "dataType": "string",
-        "value1": "={{ $json.route }}",
         "rules": {
-          "rules": [
-            { "operation": "equal", "value2": "approve", "output": 0 },
-            { "operation": "equal", "value2": "skip", "output": 1 },
-            { "operation": "equal", "value2": "edit", "output": 2 },
-            { "operation": "equal", "value2": "lead_reply", "output": 3 }
+          "values": [
+            {
+              "conditions": {
+                "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "loose", "version": 2 },
+                "conditions": [
+                  { "id": "r-approve", "leftValue": "={{ $json.route }}", "rightValue": "approve", "operator": { "type": "string", "operation": "equals" } }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "approve"
+            },
+            {
+              "conditions": {
+                "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "loose", "version": 2 },
+                "conditions": [
+                  { "id": "r-skip", "leftValue": "={{ $json.route }}", "rightValue": "skip", "operator": { "type": "string", "operation": "equals" } }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "skip"
+            },
+            {
+              "conditions": {
+                "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "loose", "version": 2 },
+                "conditions": [
+                  { "id": "r-edit", "leftValue": "={{ $json.route }}", "rightValue": "edit", "operator": { "type": "string", "operation": "equals" } }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "edit"
+            },
+            {
+              "conditions": {
+                "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "loose", "version": 2 },
+                "conditions": [
+                  { "id": "r-reply", "leftValue": "={{ $json.route }}", "rightValue": "lead_reply", "operator": { "type": "string", "operation": "equals" } }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "lead_reply"
+            }
           ]
         },
-        "fallbackOutput": 4
+        "options": { "fallbackOutput": "none" }
       },
       "id": "route",
       "name": "Roteia",
       "type": "n8n-nodes-base.switch",
-      "typeVersion": 3,
+      "typeVersion": 3.2,
       "position": [900, 400]
     },
     {
@@ -307,7 +355,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const lead = $input.item.json;\nconst inbound = $('Parse Z-API + identifica').item.json;\nif (!lead || !lead.id) {\n  // Lead não está no Notion — cria entrada nova\n  return { json: { isNewLead: true, fromNumber: inbound.fromNumber, contactName: inbound.contactName, messageText: inbound.messageText } };\n}\nconst props = lead.property || lead.properties || {};\nconst getText = (key) => {\n  const p = props[key];\n  if (!p) return '';\n  if (p.title) return p.title.map(t => t.plain_text).join('');\n  if (p.rich_text) return p.rich_text.map(t => t.plain_text).join('');\n  if (p.select) return p.select?.name || '';\n  if (p.phone_number) return p.phone_number;\n  if (p.url) return p.url;\n  return '';\n};\nconst historicoExistente = getText('Histórico');\nconst now = new Date().toISOString().replace('T', ' ').slice(0, 16);\nconst novaLinha = `[${now} LEAD] ${inbound.messageText}`;\nconst historicoAtualizado = historicoExistente ? `${historicoExistente}\\n${novaLinha}` : novaLinha;\nreturn { json: {\n  isNewLead: false,\n  lead_id: lead.id,\n  nome: getText('Nome'),\n  empresa: getText('Empresa'),\n  cargo: getText('Cargo'),\n  whatsapp: getText('WhatsApp'),\n  gatilho: getText('Gatilho de prospecção'),\n  setor: getText('Setor'),\n  instagram: getText('Instagram'),\n  site: getText('Site da empresa'),\n  ultima_msg_lead: inbound.messageText,\n  historico: historicoAtualizado,\n  is_first_touch: false\n} };"
+        "jsCode": "const lead = $input.item.json;\nconst inbound = $('Parse Z-API + identifica').item.json;\nif (!lead || !lead.id) {\n  return { json: { isNewLead: true, fromNumber: inbound.fromNumber, contactName: inbound.contactName, messageText: inbound.messageText } };\n}\nconst props = lead.property || lead.properties || {};\nconst getText = (key) => {\n  const p = props[key];\n  if (!p) return '';\n  if (p.title) return p.title.map(t => t.plain_text).join('');\n  if (p.rich_text) return p.rich_text.map(t => t.plain_text).join('');\n  if (p.select) return p.select?.name || '';\n  if (p.phone_number) return p.phone_number;\n  if (p.url) return p.url;\n  return '';\n};\nconst historicoExistente = getText('Histórico');\nconst now = new Date().toISOString().replace('T', ' ').slice(0, 16);\nconst novaLinha = `[${now} LEAD] ${inbound.messageText}`;\nconst historicoAtualizado = historicoExistente ? `${historicoExistente}\\n${novaLinha}` : novaLinha;\nreturn { json: {\n  isNewLead: false,\n  lead_id: lead.id,\n  nome: getText('Nome'),\n  empresa: getText('Empresa'),\n  cargo: getText('Cargo'),\n  whatsapp: getText('WhatsApp'),\n  gatilho: getText('Gatilho de prospecção'),\n  setor: getText('Setor'),\n  instagram: getText('Instagram'),\n  site: getText('Site da empresa'),\n  ultima_msg_lead: inbound.messageText,\n  historico: historicoAtualizado,\n  is_first_touch: false\n} };"
       },
       "id": "build-context",
       "name": "Monta contexto + histórico",
@@ -420,8 +468,7 @@
         [{ "node": "Acha pendente (aprovar)", "type": "main", "index": 0 }],
         [{ "node": "Acha pendente (pular)", "type": "main", "index": 0 }],
         [{ "node": "Acha pendente (editar)", "type": "main", "index": 0 }],
-        [{ "node": "Notion: acha o lead", "type": "main", "index": 0 }],
-        []
+        [{ "node": "Notion: acha o lead", "type": "main", "index": 0 }]
       ]
     },
     "Acha pendente (aprovar)": { "main": [[{ "node": "Prepara envio pro lead", "type": "main", "index": 0 }]] },
