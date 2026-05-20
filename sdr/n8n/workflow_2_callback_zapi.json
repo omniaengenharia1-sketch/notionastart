@@ -184,7 +184,11 @@
       "parameters": {
         "resource": "databasePage",
         "operation": "getAll",
-        "databaseId": "={{ $('Config').first().json.notionDbId }}",
+        "databaseId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Config').first().json.notionDbId }}"
+        },
         "returnAll": false,
         "limit": 1,
         "filterType": "manual",
@@ -263,7 +267,11 @@
       "parameters": {
         "resource": "databasePage",
         "operation": "update",
-        "pageId": "={{ $('Prepara envio pro lead').item.json.lead_id }}",
+        "pageId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Prepara envio pro lead').item.json.lead_id }}"
+        },
         "propertiesUi": {
           "propertyValues": [
             {
@@ -335,7 +343,11 @@
       "parameters": {
         "resource": "databasePage",
         "operation": "getAll",
-        "databaseId": "={{ $('Config').first().json.notionDbId }}",
+        "databaseId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Config').first().json.notionDbId }}"
+        },
         "returnAll": false,
         "limit": 1,
         "filterType": "manual",
@@ -370,7 +382,11 @@
       "parameters": {
         "resource": "databasePage",
         "operation": "update",
-        "pageId": "={{ $json.id }}",
+        "pageId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.id }}"
+        },
         "propertiesUi": {
           "propertyValues": [
             {
@@ -434,7 +450,11 @@
       "parameters": {
         "resource": "databasePage",
         "operation": "getAll",
-        "databaseId": "={{ $('Config').first().json.notionDbId }}",
+        "databaseId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Config').first().json.notionDbId }}"
+        },
         "returnAll": false,
         "limit": 1,
         "filterType": "manual",
@@ -469,7 +489,11 @@
       "parameters": {
         "resource": "databasePage",
         "operation": "update",
-        "pageId": "={{ $json.id }}",
+        "pageId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.id }}"
+        },
         "propertiesUi": {
           "propertyValues": [
             {
@@ -529,7 +553,11 @@
       "parameters": {
         "resource": "databasePage",
         "operation": "getAll",
-        "databaseId": "={{ $('Config').first().json.notionDbId }}",
+        "databaseId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Config').first().json.notionDbId }}"
+        },
         "returnAll": false,
         "limit": 1,
         "filterType": "manual",
@@ -577,7 +605,11 @@
       "parameters": {
         "resource": "databasePage",
         "operation": "update",
-        "pageId": "={{ $json.lead_id }}",
+        "pageId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.lead_id }}"
+        },
         "propertiesUi": {
           "propertyValues": [
             {
@@ -662,7 +694,11 @@
       "parameters": {
         "resource": "databasePage",
         "operation": "update",
-        "pageId": "={{ $json.lead_id }}",
+        "pageId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.lead_id }}"
+        },
         "propertiesUi": {
           "propertyValues": [
             {

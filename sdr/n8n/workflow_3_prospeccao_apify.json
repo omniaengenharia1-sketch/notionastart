@@ -150,7 +150,11 @@
       "parameters": {
         "resource": "databasePage",
         "operation": "getAll",
-        "databaseId": "={{ $('Config').first().json.notionDbId }}",
+        "databaseId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Config').first().json.notionDbId }}"
+        },
         "returnAll": true,
         "filterType": "manual",
         "matchType": "anyFilter",
@@ -210,7 +214,11 @@
       "parameters": {
         "resource": "databasePage",
         "operation": "create",
-        "databaseId": "={{ $('Config').first().json.notionDbId }}",
+        "databaseId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Config').first().json.notionDbId }}"
+        },
         "title": "={{ $json.nome }}",
         "simple": false,
         "propertiesUi": {

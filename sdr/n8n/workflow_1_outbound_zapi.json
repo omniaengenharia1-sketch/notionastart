@@ -38,7 +38,11 @@
       "parameters": {
         "resource": "databasePage",
         "operation": "getAll",
-        "databaseId": "={{ $('Config').first().json.notionDbId }}",
+        "databaseId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Config').first().json.notionDbId }}"
+        },
         "returnAll": false,
         "limit": 1,
         "filterType": "manual",
@@ -135,7 +139,11 @@
       "parameters": {
         "resource": "databasePage",
         "operation": "update",
-        "pageId": "={{ $('Parse JSON do Claude').item.json.lead_id }}",
+        "pageId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Parse JSON do Claude').item.json.lead_id }}"
+        },
         "propertiesUi": {
           "propertyValues": [
             {
