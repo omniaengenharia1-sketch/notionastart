@@ -71,7 +71,7 @@
             { "key": "Etapa|select", "condition": "equals", "selectValue": "Aguardando aprovação" }
           ]
         },
-        "options": { "sort": { "sortValue": [{ "key": "Última interação em", "direction": "descending" }] } }
+        "options": {}
       },
       "id": "notion-find-pending-approve",
       "name": "Acha pendente (aprovar)",
