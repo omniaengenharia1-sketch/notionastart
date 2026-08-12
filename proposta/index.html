@@ -55,7 +55,6 @@
     --pink:#E91E63;        /* rosa do site */
     --pink-soft:#FDE9F0;
     --lime:#C9E19F;        /* o quadrado do logo */
-    --grad:linear-gradient(28deg,#FEFAF6 0%,#E58BBA 26%,#D089BA 50%,#B282B8 68%,#5163AB 100%);
     --ink-mid:#5E5E62;
     --on-ink-mid:#A2A2A6;
     --rule:rgba(0,0,0,.12);
@@ -116,34 +115,25 @@
 
   /* ---------- abertura ---------- */
   #intro{
-    position:fixed;inset:0;z-index:100;background:var(--grad);color:var(--white);
+    position:fixed;inset:0;z-index:100;background:var(--ink);color:var(--white);
     display:grid;place-items:center;text-align:center;padding:24px;
     transition:opacity .8s ease,visibility .8s ease;
   }
   #intro.done{opacity:0;visibility:hidden}
-  #intro .mk{display:block;width:min(230px,44vw);height:auto;color:#fff;margin:0 auto 42px;
-    opacity:0;transform:translateY(14px);animation:sobe .9s .15s cubic-bezier(.2,.7,.2,1) forwards}
-  #intro .label{color:rgba(255,255,255,.85);display:block;margin-bottom:20px;
+  #intro .label{color:var(--pink);display:block;margin-bottom:20px;
     opacity:0;animation:sobe .9s .45s cubic-bezier(.2,.7,.2,1) forwards}
   #intro .name{font-weight:400;letter-spacing:-.035em;font-size:clamp(2rem,6.4vw,4rem);line-height:1.05;
     text-wrap:balance;max-width:16ch;margin-inline:auto;
     opacity:0;animation:sobe 1s .6s cubic-bezier(.2,.7,.2,1) forwards}
-  #intro .bar{margin:40px auto 0;width:min(220px,56vw);height:2px;background:rgba(255,255,255,.32);overflow:hidden}
-  #intro .bar i{display:block;height:100%;width:0;background:#fff;animation:load 2.1s cubic-bezier(.35,0,.15,1) forwards}
+  #intro .bar{margin:40px auto 0;width:min(220px,56vw);height:2px;background:rgba(255,255,255,.18);overflow:hidden}
+  #intro .bar i{display:block;height:100%;width:0;background:var(--pink);animation:load 2.1s cubic-bezier(.35,0,.15,1) forwards}
   @keyframes load{to{width:100%}}
   @keyframes sobe{to{opacity:1;transform:none}}
 
-  /* ---------- atmosfera ---------- */
-  .halo{position:absolute;border-radius:50%;pointer-events:none;z-index:0;filter:blur(80px);opacity:.8}
-  .halo-a{width:min(64vw,760px);aspect-ratio:1;right:-14vw;top:-20vw;
-    background:radial-gradient(closest-side,rgba(229,139,186,.9),rgba(178,130,184,.55),transparent 74%)}
-  .halo-b{width:min(52vw,620px);aspect-ratio:1;left:-16vw;bottom:-22vw;
-    background:radial-gradient(closest-side,rgba(81,99,171,.8),rgba(233,30,99,.3),transparent 74%)}
-  .on-dark .halo{opacity:.4}
 
   /* ---------- hero ---------- */
   #hero{padding-top:clamp(112px,15vh,170px);padding-bottom:clamp(44px,6vw,72px)}
-  .hero-logo{position:relative;display:block;width:min(220px,44vw);margin:0 0 clamp(34px,5vw,52px)}
+  .hero-logo{position:relative;display:block;width:min(132px,30vw);margin:0 0 clamp(30px,4vw,46px)}
   .hero-logo .mk{display:block;width:100%;height:auto;color:var(--ink)}
   .hero-logo .shine{
     position:absolute;inset:0;color:var(--pink);
@@ -285,23 +275,22 @@
   summary:focus-visible{outline:3px solid var(--pink);outline-offset:4px}
 
   /* ---------- cta ---------- */
-  #cta{background:var(--grad);text-align:center;color:#fff}
+  #cta{background:var(--ink);text-align:center;color:#fff}
   #cta .display,#cta .lede,#cta .label{color:#fff}
-  #cta .eyebrow{color:rgba(255,255,255,.88)}
-  #cta .eyebrow::before{background:#fff}
+  #cta .eyebrow{color:var(--on-ink-mid)}
   .cta-inner{display:flex;flex-direction:column;align-items:center;gap:26px}
-  .btn{display:inline-flex;align-items:center;gap:.8em;background:var(--white);color:var(--ink);
+  .btn{display:inline-flex;align-items:center;gap:.8em;background:var(--pink);color:var(--white);
     text-decoration:none;padding:20px 38px;border-radius:999px;font-weight:400;font-size:1.05rem;
-    letter-spacing:-.01em;box-shadow:0 18px 46px rgba(0,0,0,.24);
+    letter-spacing:-.01em;box-shadow:0 18px 46px rgba(233,30,99,.32);
     transition:transform .25s ease,box-shadow .25s ease}
-  .btn:hover{transform:translateY(-3px);box-shadow:0 26px 60px rgba(0,0,0,.32)}
-  .btn:focus-visible{outline:3px solid #fff;outline-offset:4px}
-  .btn .sq{width:8px;height:8px;background:var(--pink);flex:none}
+  .btn:hover{transform:translateY(-3px);box-shadow:0 26px 60px rgba(233,30,99,.42)}
+  .btn:focus-visible{outline:3px solid var(--white);outline-offset:4px}
+  .btn .sq{width:8px;height:8px;background:var(--white);flex:none}
 
   /* ---------- rodapé ---------- */
   footer{background:var(--ink);color:var(--on-ink-mid);padding-block:clamp(52px,7vw,80px)}
   .fwrap{display:flex;flex-wrap:wrap;gap:30px;justify-content:space-between;align-items:flex-end}
-  .fmark{display:block;width:min(210px,48vw);height:auto;color:var(--white)}
+  .fmark{display:block;width:min(150px,38vw);height:auto;color:var(--white)}
   .fcontact{display:flex;flex-direction:column;gap:9px;font-size:.95rem;text-align:right}
   footer a{color:var(--white);text-decoration:none;border-bottom:1px solid var(--rule-ink)}
   footer a:hover{border-color:var(--pink)}
@@ -393,7 +382,6 @@
 
 <div id="intro">
   <div>
-    <svg class="mk" viewBox="0 0 881.183 498.87507" role="img" aria-label="Astart Studio"><use href="#mk-logo"/></svg>
     <span class="label">Proposta preparada para</span>
     <div class="name" data-cliente>[NOME DO CLIENTE]</div>
     <div class="bar"><i></i></div>
@@ -404,7 +392,6 @@
 
 <!-- ============ HERO ============ -->
 <section id="hero">
-  <span class="halo halo-a" aria-hidden="true"></span>
   <div class="wrap">
     <div class="hero-logo">
       <svg class="mk" viewBox="0 0 881.183 498.87507" role="img" aria-label="Astart Studio"><use href="#mk-logo"/></svg>
@@ -417,8 +404,8 @@
     </h1>
     <div class="hero-sub">
       <p class="lede reveal" style="--i:2;margin:0">
-        [Escreva em uma frase o que esta proposta resolve para o cliente. Ex: posicionamento,
-        identidade visual e audiovisual para a marca entrar no mercado com presença própria.]
+        [Escreva em uma frase o que esta proposta resolve para o cliente. Ex: gestão de
+        marketing e produção audiovisual para a marca crescer com constância e presença.]
       </p>
       <div class="chips reveal" style="--i:3">
         <span class="chip">Válida até <b>[DATA]</b></span>
@@ -430,14 +417,13 @@
 
 <div class="marquee" aria-hidden="true">
   <div class="mq-track">
-    <span>Posicionamento <i class="pt"></i> Branding <i class="pt"></i> Audiovisual <i class="pt"></i> Otimização <i class="pt"></i> <em>Marcas impossíveis de ignorar</em> <i class="pt"></i></span>
-    <span>Posicionamento <i class="pt"></i> Branding <i class="pt"></i> Audiovisual <i class="pt"></i> Otimização <i class="pt"></i> <em>Marcas impossíveis de ignorar</em> <i class="pt"></i></span>
+    <span>Gestão de marketing <i class="pt"></i> Audiovisual <i class="pt"></i> Estratégia <i class="pt"></i> Conteúdo <i class="pt"></i> <em>Marcas impossíveis de ignorar</em> <i class="pt"></i></span>
+    <span>Gestão de marketing <i class="pt"></i> Audiovisual <i class="pt"></i> Estratégia <i class="pt"></i> Conteúdo <i class="pt"></i> <em>Marcas impossíveis de ignorar</em> <i class="pt"></i></span>
   </div>
 </div>
 
 <!-- ============ DIAGNÓSTICO ============ -->
 <section class="on-dark">
-  <span class="halo halo-b" aria-hidden="true"></span>
   <div class="wrap stack">
     <div class="head reveal">
       <span class="label eyebrow">O que a gente entendeu</span>
@@ -476,40 +462,25 @@
     </div>
 
     <div class="servicos">
+      <p class="label eyebrow reveal" style="margin:0">Frentes principais</p>
       <article class="servico reveal">
         <span class="num">01</span>
         <div>
-          <h3>Branding</h3>
-          <p class="oque">Estratégia de posicionamento que define quem você é, no que acredita e por que importa. Não é só visual, é a essência da marca.</p>
+          <h3>Gestão de marketing</h3>
+          <p class="oque">Estratégia integrada de presença online. Redes sociais, conteúdo, tráfego pago e análise de resultado.</p>
           <ul>
-            <li>Diagnóstico de marca</li>
-            <li>Arquétipo, propósito e valores</li>
-            <li>Posicionamento estratégico</li>
-            <li>Proposta de valor clara</li>
-            <li>Tom de voz e direcionamento</li>
-            <li>Brandbook com diretrizes</li>
+            <li>Planejamento mensal de conteúdo</li>
+            <li>Posts, stories e reels</li>
+            <li>Gestão de comunidade</li>
+            <li>Tráfego pago estratégico</li>
+            <li>Análise de métricas e ROI</li>
+            <li>Captação audiovisual inclusa</li>
           </ul>
         </div>
       </article>
 
       <article class="servico reveal" style="--i:1">
         <span class="num">02</span>
-        <div>
-          <h3>Identidade visual</h3>
-          <p class="oque">A face da marca. Um sistema visual coeso que faz você ser reconhecido antes mesmo de qualquer palavra.</p>
-          <ul>
-            <li>Logo único e memorável</li>
-            <li>Paleta de cores estratégica</li>
-            <li>Tipografia definida</li>
-            <li>Elementos gráficos e padrões</li>
-            <li>Manual de aplicação</li>
-            <li>Papelaria digital</li>
-          </ul>
-        </div>
-      </article>
-
-      <article class="servico reveal" style="--i:2">
-        <span class="num">03</span>
         <div>
           <h3>Audiovisual</h3>
           <p class="oque">Conteúdo em movimento. Fotos e vídeos que contam sua história com qualidade audiovisual de cinema.</p>
@@ -524,8 +495,41 @@
         </div>
       </article>
 
-      <article class="servico reveal" style="--i:3">
+      <p class="label eyebrow reveal" style="margin:18px 0 0">Complementares — entram quando o projeto pede</p>
+      <article class="servico reveal" style="--i:1">
+        <span class="num">03</span>
+        <div>
+          <h3>Branding</h3>
+          <p class="oque">Estratégia de posicionamento que define quem você é, no que acredita e por que importa. Não é só visual, é a essência da marca.</p>
+          <ul>
+            <li>Diagnóstico de marca</li>
+            <li>Arquétipo, propósito e valores</li>
+            <li>Posicionamento estratégico</li>
+            <li>Proposta de valor clara</li>
+            <li>Tom de voz e direcionamento</li>
+            <li>Brandbook com diretrizes</li>
+          </ul>
+        </div>
+      </article>
+
+      <article class="servico reveal" style="--i:2">
         <span class="num">04</span>
+        <div>
+          <h3>Identidade visual</h3>
+          <p class="oque">A face da marca. Um sistema visual coeso que faz você ser reconhecido antes mesmo de qualquer palavra.</p>
+          <ul>
+            <li>Logo único e memorável</li>
+            <li>Paleta de cores estratégica</li>
+            <li>Tipografia definida</li>
+            <li>Elementos gráficos e padrões</li>
+            <li>Manual de aplicação</li>
+            <li>Papelaria digital</li>
+          </ul>
+        </div>
+      </article>
+
+      <article class="servico reveal" style="--i:3">
+        <span class="num">05</span>
         <div>
           <h3>Website</h3>
           <p class="oque">Sua loja digital. Um site que não só é bonito, mas converte visitante em cliente com estratégia e design inteligente.</p>
@@ -541,7 +545,7 @@
       </article>
 
       <article class="servico reveal" style="--i:4">
-        <span class="num">05</span>
+        <span class="num">06</span>
         <div>
           <h3>Sistemas</h3>
           <p class="oque">Automações e plataformas que fazem o negócio rodar mais inteligente. CRM, formulários, integrações e fluxos automáticos.</p>
@@ -552,22 +556,6 @@
             <li>Fluxos de e-mail e WhatsApp</li>
             <li>Dashboards de análise</li>
             <li>Treinamento de uso</li>
-          </ul>
-        </div>
-      </article>
-
-      <article class="servico reveal" style="--i:5">
-        <span class="num">06</span>
-        <div>
-          <h3>Gestão digital</h3>
-          <p class="oque">Estratégia integrada de presença online. Redes sociais, conteúdo, tráfego pago e análise de resultado.</p>
-          <ul>
-            <li>Planejamento mensal de conteúdo</li>
-            <li>Posts, stories e reels</li>
-            <li>Gestão de comunidade</li>
-            <li>Tráfego pago estratégico</li>
-            <li>Análise de métricas e ROI</li>
-            <li>Captação audiovisual inclusa</li>
           </ul>
         </div>
       </article>
@@ -639,7 +627,7 @@
       <div class="reveal">
         <span class="label eyebrow">Quem faz</span>
         <h2 class="display" style="margin:16px 0 22px">Mais que um estúdio criativo. <span class="accent">Somos parceiros de negócio.</span></h2>
-        <p class="lede">A Astart Studio é um estúdio de branding, design e audiovisual focado em marcas que buscam presença, autoridade e resultados.</p>
+        <p class="lede">A Astart Studio é um estúdio de gestão de marketing e audiovisual focado em marcas que buscam presença, autoridade e resultados.</p>
         <p class="muted">Fundada por <b>Layana Oliveira</b>, com mais de 10 anos de experiência, a Astart surgiu da necessidade de ajudar empresas em crescimento que, ao investir no negócio, negligenciam a marca. Sem estratégia, uma marca se torna invisível.</p>
         <div class="numeros">
           <div><span class="n" data-conta="10" data-suf="+">0</span><span class="l">anos de experiência</span></div>
@@ -783,7 +771,7 @@
 <section id="cta">
   <div class="wrap cta-inner">
     <span class="label eyebrow reveal">Próximo passo</span>
-    <h2 class="display reveal" style="--i:1">Pronto para ser notado, <span data-cliente>[NOME DO CLIENTE]</span>?</h2>
+    <h2 class="display reveal" style="--i:1">Vamos começar, <span data-cliente>[NOME DO CLIENTE]</span>?</h2>
     <p class="lede reveal" style="--i:2;text-align:center">Se estiver tudo certo, é só responder que a gente já agenda o início. Se quiser ajustar alguma coisa antes, também dá.</p>
     <a class="btn reveal" style="--i:3" id="btn-cta" href="#" target="_blank" rel="noopener">Quero começar <span class="sq"></span></a>
     <span class="label reveal" style="--i:4">Proposta válida até [DATA]</span>
