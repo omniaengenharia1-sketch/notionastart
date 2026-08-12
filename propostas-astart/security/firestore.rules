@@ -1,0 +1,29 @@
+rules_version = '2';
+
+// Regras de segurança do Firestore para a coleção de propostas.
+//
+// NÍVEL 1 (este arquivo) — o ganho mais importante e sem mexer no app:
+//   • ESCRITA (criar, editar, apagar) só para quem está logado no admin.
+//     Hoje qualquer pessoa com o código pode criar/alterar/apagar proposta.
+//   • LEITURA continua liberada, porque o cliente abre a proposta por link
+//     público (sem login). Isso é necessário para o link funcionar.
+//
+// ATENÇÃO: leitura liberada significa que alguém determinado ainda consegue
+// ler/varrer as propostas. Se você quiser fechar isso de vez, veja o
+// NÍVEL 2 no arquivo SEGURANCA.md (servir a proposta por uma função, com o
+// Firestore 100% fechado). É um passo maior e mexe no visualizador.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /proposals/{id} {
+      allow read: if true;                       // link público do cliente
+      allow create, update, delete: if request.auth != null;  // só admin logado
+    }
+
+    // Qualquer outra coleção: fechada por padrão.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

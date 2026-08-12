@@ -1,0 +1,5 @@
+# Diz ao Netlify onde estão as funções.
+# Se você já tem um netlify.toml no projeto, copie só a seção [functions].
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
