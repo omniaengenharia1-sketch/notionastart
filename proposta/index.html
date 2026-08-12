@@ -1,4 +1,15 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Proposta Astart Studio</title>
+<meta name="description" content="Proposta comercial da Astart Studio.">
+<meta name="robots" content="noindex">
+<meta property="og:title" content="Proposta Astart Studio">
+<meta property="og:type" content="website">
+</head>
+<body>
 
 <!--
   ============================================================
@@ -15,8 +26,9 @@
   2. Conteúdo: procure por [COLCHETES]. Tudo que muda por
      cliente está marcado assim.
 
-  3. Logo: procure por "SLOT DO LOGO" (aparece 3x: abertura,
-     hero e rodapé) e troque o texto pelo SVG do logo.
+  3. Logo: já é o vetor oficial, extraído do PDF da marca.
+     Fica num <symbol> logo depois do </style> e é reusado
+     na abertura, na pílula, no hero e no rodapé.
 
   4. Cores: bloco :root logo abaixo.
 
@@ -39,18 +51,19 @@
     --ink-2:#111111;
     --ink-3:#2E2E2E;
     --white:#FFFFFF;
-    --off:#F4F4F4;          /* branco quebrado das faixas alternadas */
-    --pink:#F58CC0;         /* rosa da marca */
-    --pink-deep:#D5468C;    /* rosa escurecido, só para texto grande sobre branco */
-    --pink-soft:#FDEDF4;
-    --lime:#CBE39C;         /* o quadradinho do logo */
+    --off:#F9F8FB;          /* branco quebrado da marca */
+    --grad:linear-gradient(28deg,#FEFAF6 0%,#E58BBA 26%,#D089BA 50%,#B282B8 68%,#5163AB 100%);
+    --pink:#E58BBA;         /* rosa da marca, tirado do vetor */
+    --pink-deep:#D02F83;    /* mesmo matiz, luminosidade baixada p/ ler sobre branco (4.8:1) */
+    --pink-soft:#FBEEF4;
+    --lime:#C9E19F;         /* o quadradinho do logo */
     --ink-mid:#5E5E5E;
     --on-ink-mid:#A2A2A2;
     --rule:rgba(0,0,0,.14);
     --rule-ink:rgba(255,255,255,.14);
     --wrap:1120px;
     --pad:clamp(20px,5vw,44px);
-    --band:clamp(76px,11vw,144px);
+    --band:clamp(64px,9vw,120px);
   }
 
   *{box-sizing:border-box}
@@ -106,42 +119,54 @@
     background:var(--ink);color:var(--white);text-decoration:none;
     font-weight:400;font-size:.92rem;letter-spacing:-.01em;
     box-shadow:0 8px 26px rgba(0,0,0,.28);
+    transition:transform .35s cubic-bezier(.2,.6,.2,1),opacity .35s ease;
   }
-  .brandpill .sq{width:8px;height:8px;background:var(--lime);flex:none}
+  .brandpill.recolhida{transform:translateY(-140%);opacity:0}
+  .brandpill .mk{width:17px;height:auto;color:var(--white);flex:none}
 
   /* ---------- abertura ---------- */
   #intro{
-    position:fixed;inset:0;z-index:100;background:var(--ink);color:var(--white);
+    position:fixed;inset:0;z-index:100;background:var(--grad);color:var(--white);
     display:grid;place-items:center;text-align:center;padding:24px;
     transition:opacity .7s ease,visibility .7s ease;
   }
   #intro.done{opacity:0;visibility:hidden}
-  #intro .label{color:var(--pink);display:block;margin-bottom:26px}
+  #intro .label{color:rgba(255,255,255,.86);display:block;margin-bottom:26px}
   #intro .name{font-weight:400;letter-spacing:-.03em;font-size:clamp(2rem,7vw,4.4rem);line-height:1.04;text-wrap:balance;max-width:16ch;margin-inline:auto}
-  #intro .bar{margin:38px auto 0;width:min(240px,60vw);height:3px;background:rgba(255,255,255,.16);overflow:hidden}
-  #intro .bar i{display:block;height:100%;width:0;background:var(--pink);animation:load 2s cubic-bezier(.4,0,.2,1) forwards}
+  #intro .bar{margin:38px auto 0;width:min(240px,60vw);height:3px;background:rgba(255,255,255,.3);overflow:hidden}
+  #intro .bar i{display:block;height:100%;width:0;background:#fff;animation:load 2s cubic-bezier(.4,0,.2,1) forwards}
   @keyframes load{to{width:100%}}
-  #intro .sq{width:14px;height:14px;background:var(--lime);margin:0 auto 30px}
+  #intro .mk{display:block;width:min(300px,52vw);height:auto;color:#fff;margin:0 auto 40px}
+
+  /* ---------- atmosfera ---------- */
+  /* halo com as cores do degradê da marca; some pra quem pediu menos movimento */
+  .halo{position:absolute;border-radius:50%;pointer-events:none;z-index:0;filter:blur(80px);opacity:.85}
+  .halo-a{width:min(72vw,900px);aspect-ratio:1;right:-16vw;top:-22vw;
+    background:radial-gradient(closest-side,rgba(229,139,186,.95),rgba(178,130,184,.62),rgba(81,99,171,.28),transparent 74%)}
+  .halo-b{width:min(56vw,680px);aspect-ratio:1;left:-16vw;bottom:-24vw;
+    background:radial-gradient(closest-side,rgba(81,99,171,.85),rgba(229,139,186,.45),transparent 74%)}
+  .on-dark .halo{opacity:.42}
+  section{position:relative;overflow:hidden}
+  section > .wrap{position:relative;z-index:1}
 
   /* ---------- hero ---------- */
   #hero{padding-top:clamp(104px,15vh,168px);padding-bottom:clamp(48px,7vw,80px);overflow:hidden}
+  #hero .label{margin-bottom:clamp(20px,3vw,34px);display:inline-flex}
 
-  /* SLOT DO LOGO — trocar por <img src="logo.svg"> quando tiver o arquivo */
-  .wordmark{
-    font-weight:800;
-    font-size:clamp(3.4rem,15.5vw,12.6rem);line-height:.9;letter-spacing:-.05em;
-    margin:0;position:relative;display:inline-block;
-    background:linear-gradient(100deg,var(--ink) 0%,var(--ink) 36%,var(--pink) 50%,var(--ink) 64%,var(--ink) 100%);
-    background-size:300% 100%;
-    -webkit-background-clip:text;background-clip:text;color:transparent;
+  /* logotipo vetorial da marca; o brilho é uma segunda cópia em rosa, revelada por uma máscara que atravessa */
+  .logo-hero{position:relative;display:block;width:min(100%,940px);margin:0}
+  .logo-hero .mk{display:block;width:100%;height:auto;color:var(--ink)}
+  .logo-hero .shine{
+    position:absolute;inset:0;color:var(--pink);
+    -webkit-mask-image:linear-gradient(100deg,transparent 40%,#000 50%,transparent 60%);
+    mask-image:linear-gradient(100deg,transparent 40%,#000 50%,transparent 60%);
+    -webkit-mask-size:320% 100%;mask-size:320% 100%;
+    -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     animation:sweep 9s ease-in-out infinite;
   }
-  .wordmark .l2{display:block;padding-left:.14em}
-  @keyframes sweep{0%,100%{background-position:130% 0}50%{background-position:-30% 0}}
-  .wordmark-wrap{position:relative;display:inline-block}
-  .wordmark-wrap .dot{
-    position:absolute;left:.055em;top:.52em;width:clamp(13px,2.9vw,38px);aspect-ratio:1;
-    background:var(--lime);font-size:clamp(3.4rem,15.5vw,12.6rem);
+  @keyframes sweep{
+    0%,100%{-webkit-mask-position:135% 0;mask-position:135% 0}
+    50%{-webkit-mask-position:-35% 0;mask-position:-35% 0}
   }
 
   .hero-sub{display:flex;flex-wrap:wrap;gap:clamp(24px,4vw,56px);align-items:flex-end;justify-content:space-between;margin-top:clamp(28px,3.5vw,44px)}
@@ -168,7 +193,7 @@
     display:grid;place-items:center;text-align:center;padding:24px;color:var(--ink-mid);
   }
   .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;border-top:1px solid var(--rule);padding-top:28px}
-  .stats .n{font-family:"Comodo","Machina",sans-serif;font-weight:400;font-size:clamp(2.5rem,5.6vw,3.7rem);letter-spacing:-.01em;line-height:1;font-variant-numeric:tabular-nums;display:block}
+  .stats .n{font-weight:400;font-size:clamp(2.1rem,4.6vw,3rem);letter-spacing:-.01em;line-height:1;font-variant-numeric:tabular-nums;display:block}
   .stats .l{font-size:.88rem;color:var(--ink-mid);margin-top:8px;display:block;line-height:1.35}
 
   /* ---------- processo ---------- */
@@ -186,15 +211,27 @@
   .step .tag{color:var(--on-ink-mid);margin-top:15px;display:inline-block}
 
   /* ---------- clientes ---------- */
-  .clients{display:grid;grid-template-columns:repeat(auto-fit,minmax(238px,1fr));gap:14px}
+  .clients{display:grid;grid-template-columns:repeat(auto-fit,minmax(236px,1fr));gap:16px}
   .client{
-    border:1px solid var(--rule);border-radius:20px;padding:clamp(20px,2.4vw,26px);
-    display:flex;flex-direction:column;gap:10px;min-height:196px;background:var(--white);
-    transition:transform .3s ease,border-color .3s ease,box-shadow .3s ease;
+    border-radius:22px;overflow:hidden;background:var(--white);
+    border:1px solid var(--rule);display:flex;flex-direction:column;
+    transition:transform .35s ease,box-shadow .35s ease;
   }
-  .client:hover{transform:translateY(-4px);border-color:var(--pink);box-shadow:0 18px 40px rgba(213,70,140,.12)}
-  .client .label{color:var(--pink-deep)}
-  .client p{color:var(--ink-mid);font-size:.95rem;margin-top:auto}
+  .client:hover{transform:translateY(-6px);box-shadow:0 26px 54px rgba(0,0,0,.14)}
+  /* área da imagem: já nasce no degradê da marca e vira o print do trabalho quando existir */
+  .client .capa{
+    aspect-ratio:4/5;background:linear-gradient(28deg,#FEFAF6 0%,#E58BBA 22%,#D089BA 52%,#B282B8 72%,#5163AB 100%);position:relative;
+    display:grid;place-items:end start;padding:20px;
+  }
+  .client .capa img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .client .capa::after{content:"";position:absolute;inset:auto 0 0 0;height:52%;
+    background:linear-gradient(transparent,rgba(0,0,0,.42));pointer-events:none}
+  .client .capa .label{color:#fff;position:relative;z-index:1}
+  .client:nth-child(2) .capa{background:linear-gradient(155deg,#E58BBA 0%,#D089BA 38%,#B282B8 68%,#5163AB 100%)}
+  .client:nth-child(3) .capa{background:linear-gradient(300deg,#5163AB 0%,#B282B8 30%,#E58BBA 68%,#FDEAF2 100%)}
+  .client:nth-child(4) .capa{background:linear-gradient(200deg,#B282B8 0%,#E58BBA 44%,#FDEAF2 78%,#FEFAF6 100%)}
+  .client .txt{padding:20px clamp(18px,2vw,24px) 24px;display:flex;flex-direction:column;gap:8px}
+  .client p{color:var(--ink-mid);font-size:.93rem}
 
   /* ---------- escopo ---------- */
   .scope{display:flex;flex-direction:column;gap:10px}
@@ -218,12 +255,12 @@
   .plan:hover{border-color:var(--pink);transform:translateY(-4px)}
   .plan[aria-pressed="true"]{border-color:var(--pink);box-shadow:0 0 0 2px var(--pink),0 18px 44px rgba(213,70,140,.16)}
   .plan:focus-visible{outline:3px solid var(--pink-deep);outline-offset:3px}
-  .plan .top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .plan .top{display:flex;flex-direction:column;align-items:flex-start;gap:12px}
   .price{
     display:inline-flex;align-items:baseline;gap:.3em;
     background:var(--pink);color:var(--ink);padding:9px 16px;border-radius:999px;
-    font-family:"Comodo","Machina",sans-serif;font-weight:400;font-size:1.28rem;
-    font-variant-numeric:tabular-nums;
+    font-weight:400;font-size:1.05rem;white-space:nowrap;
+    font-variant-numeric:tabular-nums;letter-spacing:-.01em;
   }
   .price small{font-size:.72rem;font-weight:400;opacity:.72}
   .plan ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
@@ -231,6 +268,16 @@
   .plan li::before{content:"";position:absolute;left:0;top:.58em;width:9px;height:9px;background:var(--lime)}
   .plan .pick{margin-top:auto;padding-top:8px;color:var(--ink-mid)}
   .plan[aria-pressed="true"] .pick{color:var(--pink-deep)}
+  /* plano sugerido: fundo preto, para o olho cair nele primeiro */
+  .plan.destaque{background:var(--ink);border-color:var(--ink);color:var(--white)}
+  .plan.destaque li{color:var(--on-ink-mid)}
+  .plan.destaque .pick{color:var(--pink)}
+  .plan.destaque .price{background:var(--pink);color:var(--ink)}
+  .plan.destaque:hover{box-shadow:0 26px 60px rgba(0,0,0,.3)}
+  .selo{
+    display:inline-flex;align-items:center;gap:.5em;background:var(--pink);color:var(--ink);
+    padding:5px 12px;border-radius:999px;align-self:flex-start;
+  }
   .pay{display:grid;grid-template-columns:repeat(auto-fit,minmax(212px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);border-radius:20px;overflow:hidden}
   .pay > div{background:var(--white);padding:24px clamp(20px,2.2vw,28px)}
   .pay .label{color:var(--ink-mid);display:block;margin-bottom:9px}
@@ -251,32 +298,30 @@
   summary:focus-visible{outline:3px solid var(--pink);outline-offset:4px}
 
   /* ---------- cta ---------- */
-  #cta{background:var(--off);text-align:center}
+  #cta{background:var(--grad);text-align:center;color:#fff}
+  #cta .eyebrow{color:rgba(255,255,255,.85)}
+  #cta .lede{color:rgba(255,255,255,.92)}
+  #cta .display{color:#fff}
+  #cta .accent{color:#fff;text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:6px}
   #cta .display{font-size:clamp(2rem,5.4vw,3.6rem)}
   .cta-inner{display:flex;flex-direction:column;align-items:center;gap:26px}
   .btn{
     display:inline-flex;align-items:center;gap:.8em;
-    background:var(--pink);color:var(--ink);text-decoration:none;
-    padding:20px 36px;border-radius:999px;
+    background:var(--white);color:var(--ink);text-decoration:none;
+    padding:20px 38px;border-radius:999px;
     font-weight:400;font-size:1.06rem;letter-spacing:-.01em;
-    box-shadow:0 16px 44px rgba(245,140,192,.42);
-    transition:transform .25s ease,box-shadow .25s ease,background .25s ease;
+    box-shadow:0 18px 46px rgba(0,0,0,.22);
+    transition:transform .25s ease,box-shadow .25s ease;
   }
-  .btn:hover{transform:translateY(-3px);box-shadow:0 24px 56px rgba(245,140,192,.55)}
-  .btn:focus-visible{outline:3px solid var(--ink);outline-offset:4px}
-  .btn .sq{width:9px;height:9px;background:var(--ink);flex:none}
+  .btn:hover{transform:translateY(-3px);box-shadow:0 26px 60px rgba(0,0,0,.3)}
+  .btn:focus-visible{outline:3px solid var(--white);outline-offset:4px}
+  .btn .sq{width:9px;height:9px;background:var(--lime);flex:none}
+  #cta .label{color:rgba(255,255,255,.8)}
 
   /* ---------- rodapé ---------- */
   footer{background:var(--ink);color:var(--on-ink-mid);padding-block:clamp(52px,7vw,80px)}
-  .tagline{
-    font-family:"Comodo","Machina",sans-serif;font-weight:400;
-    font-size:clamp(3.4rem,14vw,9.6rem);line-height:.92;letter-spacing:.01em;
-    text-transform:uppercase;color:var(--white);margin:0 0 clamp(36px,5vw,56px)
-  }
-  .tagline em{font-style:normal;color:var(--pink)}
-  .fwrap{display:flex;flex-wrap:wrap;gap:28px;justify-content:space-between;align-items:flex-end;border-top:1px solid var(--rule-ink);padding-top:32px}
-  .fmark{font-weight:400;font-size:clamp(1.6rem,4vw,2.2rem);letter-spacing:-.03em;color:var(--white);line-height:1.05}
-  .fmark .sq{display:inline-block;width:10px;height:10px;background:var(--lime);margin-left:4px}
+  .fwrap{display:flex;flex-wrap:wrap;gap:28px;justify-content:space-between;align-items:flex-end}
+  .fmark{display:block;width:min(228px,52vw);height:auto;color:var(--white)}
   .fcontact{display:flex;flex-direction:column;gap:9px;font-size:.95rem;text-align:right}
   footer a{color:var(--white);text-decoration:none;border-bottom:1px solid var(--rule-ink)}
   footer a:hover{border-color:var(--pink)}
@@ -290,7 +335,8 @@
     .stats{grid-template-columns:1fr;gap:20px}
     .step{grid-template-columns:1fr;gap:10px}
     .row{border-radius:22px}
-    .brandpill{top:14px;left:14px;padding:8px 15px 8px 12px;font-size:.85rem}
+    .brandpill{top:14px;left:14px;padding:9px 12px;font-size:0;gap:0}
+    .brandpill .mk{width:20px}
     .fcontact{text-align:left}
     .fwrap{align-items:flex-start}
   }
@@ -302,29 +348,80 @@
   }
 </style>
 
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="mk-logo" viewBox="0 0 881.183 498.87507">
+<defs>
+<clipPath id="lg-clip_1">
+<path transform="matrix(1,0,0,-1,-98.0142,789.43759)" d="M98.0142 290.5625H979.1972V789.43759H98.0142Z" clip-rule="evenodd"/>
+</clipPath>
+<clipPath id="lg-clip_2">
+<path transform="matrix(1,0,0,-1,-98.0142,789.43759)" d="M0 1080H1080V0H0Z"/>
+</clipPath>
+</defs>
+<g clip-path="url(#lg-clip_1)">
+<g clip-path="url(#lg-clip_2)">
+<path transform="matrix(1,0,0,-1,182.117,196.14337)" d="M0 0 26.642 12.322C32.967-1.332 48.952-6.66 64.935-6.66 85.25-6.66 105.564 1.999 105.564 11.322 105.564 32.635 1.332 23.311 1.332 76.259 1.332 105.23 34.299 123.546 67.935 123.546 93.908 123.546 120.215 112.89 131.872 87.582L105.564 75.26C98.903 88.913 83.251 94.241 67.935 94.241 48.952 94.241 30.636 86.249 30.636 76.259 30.636 53.947 134.534 63.938 134.534 11.322 134.534-17.65 100.235-35.964 65.27-35.964 38.628-35.964 11.654-24.975 0 0" fill="currentColor"/>
+<path transform="matrix(1,0,0,-1,377.25743,77.592288)" d="M0 0H25.636V-29.305H-13.66V-74.927C-13.66-102.9 8.985-125.545 36.959-125.545V-154.849C-7.333-154.849-42.964-119.217-42.964-74.927V76.592H-13.66V0Z" fill="currentColor"/>
+<path transform="matrix(1,0,0,-1,492.80455,204.13105)" d="M0 0C-25.976 0-50.951 19.981-50.951 50.285-50.951 78.258-28.306 100.901-.332 100.901 30.305 100.901 50.285 75.926 50.285 49.952 50.285 22.645 27.305 0 0 0M-.332 130.207C-44.624 130.207-80.255 94.575-80.255 50.285-80.255 2.998-40.961-29.304 .332-29.304 17.315-29.304 34.965-23.643 50.285-11.321V-27.465H79.589V50.285C79.257 94.575 43.623 130.207-.332 130.207" fill="currentColor"/>
+<path transform="matrix(1,0,0,-1,134.32071,246.43769)" d="M0 0C0-.026 .021-1.995 .047-1.995H29.257C29.283-1.995 29.304-.026 29.304 0V22.056L0 21.064Z" fill="#c9e19f"/>
+<path transform="matrix(1,0,0,-1,84.036,204.13105)" d="M0 0C-29.283 0-57.294 25.393-49.687 62.34-45.78 81.321-30.565 96.27-11.517 99.836 25.351 106.736 50.285 78.967 50.285 49.952 50.285 22.645 27.305 0 0 0M-6.594 129.967C-50.055 126.644-83.036 88.051-80.061 44.564-77.041 .412-39.273-29.304 .332-29.304 17.287-29.304 34.907-23.661 50.21-11.382 50.241-11.357 50.285-11.378 50.285-11.417V-18.588L79.589-17.596V50.285C79.241 96.661 40.188 133.543-6.594 129.967" fill="currentColor"/>
+<path transform="matrix(1,0,0,-1,847.44668,232.44098)" d="M0 0C-44.292 0-79.923 35.631-79.923 79.922V231.441H-50.619V154.849H-11.322V125.543H-50.619V79.922C-50.619 51.949-27.974 29.304 0 29.304Z" fill="currentColor"/>
+<path transform="matrix(1,0,0,-1,65.678508,461.57746)" d="M0 0 26.642 12.322C32.967-1.332 48.952-6.66 64.935-6.66 85.25-6.66 105.564 1.999 105.564 11.322 105.564 32.635 1.332 23.311 1.332 76.259 1.332 105.23 34.299 123.546 67.935 123.546 93.908 123.546 120.215 112.89 131.872 87.582L105.564 75.26C98.903 88.913 83.251 94.241 67.935 94.241 48.952 94.241 30.636 86.249 30.636 76.259 30.636 53.947 134.534 63.937 134.534 11.322 134.534-17.65 100.235-35.965 65.27-35.965 38.628-35.965 11.654-24.975 0 0" fill="currentColor"/>
+<path transform="matrix(1,0,0,-1,297.7804,497.87507)" d="M0 0C-44.292 0-79.923 35.631-79.923 79.922V231.441H-50.619V154.849H-11.322V125.543H-50.619V79.922C-50.619 51.949-27.974 29.304 0 29.304Z" fill="currentColor"/>
+<path transform="matrix(1,0,0,-1,454.61979,424.94676)" d="M0 0C0-40.293-32.969-72.928-73.261-72.928-113.556-72.928-146.191-40.293-146.191 0V81.92H-116.887V.333C-116.887-23.976-97.239-43.624-73.261-43.624-48.952-43.624-29.304-23.976-29.304 .333V81.92H0Z" fill="currentColor"/>
+<path transform="matrix(1,0,0,-1,553.5251,468.23799)" d="M0 0C-27.974 0-50.619 22.645-50.619 50.285-50.619 78.258-27.974 100.901 0 100.901 27.972 100.901 50.617 78.258 50.617 50.285 50.617 22.645 27.972 0 0 0M123.424 395.641C83.13 395.641 50.495 363.006 50.495 322.712V215.407H50.617V112.224C35.631 124.212 17.647 130.207 0 130.207-45.29 130.207-79.923 93.243-79.923 50.618-79.923 5.661-43.291-29.304 0-29.304 43.955-29.304 79.589 6.327 79.921 50.285V226.025H79.799V322.712C79.799 346.688 99.447 366.335 123.424 366.335 147.733 366.335 167.382 346.688 167.382 322.712H196.686C196.686 363.006 164.051 395.641 123.424 395.641" fill="currentColor"/>
+<path transform="matrix(1,0,0,-1,-98.0142,789.43759)" d="M795.382 296.558H766.078V555.188H795.382Z" fill="currentColor"/>
+<path transform="matrix(1,0,0,-1,749.643,417.62016)" d="M0 0C0-27.973 22.645-50.618 50.619-50.618 78.591-50.618 101.236-27.973 101.236 0 101.236 27.973 78.591 50.617 50.619 50.617 22.645 50.617 0 27.973 0 0M-29.304 0C-29.304 43.957 6.327 79.922 50.619 79.922 94.574 79.922 130.54 43.957 130.54 0 130.208-44.29 94.574-79.922 50.619-79.922 6.327-79.922-29.304-44.29-29.304 0" fill="currentColor"/>
+</g>
+</g>
+</symbol><symbol id="mk-a" viewBox="0 0 164.625 179.8446">
+<defs>
+<clipPath id="sm-clip_1">
+<path transform="matrix(1,0,0,-1,-98.0142,719.8495)" d="M98.0142 540.0049H262.6392V719.8495H98.0142Z" clip-rule="evenodd"/>
+</clipPath>
+<clipPath id="sm-clip_2">
+<path transform="matrix(1,0,0,-1,-98.0142,719.8495)" d="M0 1080H1080V0H0Z"/>
+</clipPath>
+</defs>
+<g clip-path="url(#sm-clip_1)">
+<g clip-path="url(#sm-clip_2)">
+<path transform="matrix(1,0,0,-1,182.117,126.5553)" d="M0 0 26.642 12.322C32.967-1.332 48.952-6.66 64.935-6.66 85.25-6.66 105.564 1.999 105.564 11.322 105.564 32.635 1.332 23.311 1.332 76.259 1.332 105.23 34.299 123.546 67.935 123.546 93.908 123.546 120.215 112.89 131.872 87.582L105.564 75.26C98.903 88.913 83.251 94.241 67.935 94.241 48.952 94.241 30.636 86.249 30.636 76.259 30.636 53.947 134.534 63.938 134.534 11.322 134.534-17.65 100.235-35.964 65.27-35.964 38.628-35.964 11.654-24.975 0 0" fill="currentColor"/>
+<path transform="matrix(1,0,0,-1,377.25743,8.004211)" d="M0 0H25.636V-29.305H-13.66V-74.927C-13.66-102.9 8.985-125.545 36.959-125.545V-154.849C-7.333-154.849-42.964-119.217-42.964-74.927V76.592H-13.66V0Z" fill="currentColor"/>
+<path transform="matrix(1,0,0,-1,492.80455,134.54297)" d="M0 0C-25.976 0-50.951 19.981-50.951 50.285-50.951 78.258-28.306 100.901-.332 100.901 30.305 100.901 50.285 75.926 50.285 49.952 50.285 22.645 27.305 0 0 0M-.332 130.207C-44.624 130.207-80.255 94.575-80.255 50.285-80.255 2.998-40.961-29.304 .332-29.304 17.315-29.304 34.965-23.643 50.285-11.321V-27.465H79.589V50.285C79.257 94.575 43.623 130.207-.332 130.207" fill="currentColor"/>
+<path transform="matrix(1,0,0,-1,134.32071,176.84961)" d="M0 0C0-.026 .021-1.995 .047-1.995H29.257C29.283-1.995 29.304-.026 29.304 0V22.056L0 21.064Z" fill="#c9e19f"/>
+<path transform="matrix(1,0,0,-1,84.036,134.54297)" d="M0 0C-29.283 0-57.294 25.393-49.687 62.34-45.78 81.321-30.565 96.27-11.517 99.836 25.351 106.736 50.285 78.967 50.285 49.952 50.285 22.645 27.305 0 0 0M-6.594 129.967C-50.055 126.644-83.036 88.051-80.061 44.564-77.041 .412-39.273-29.304 .332-29.304 17.287-29.304 34.907-23.661 50.21-11.382 50.241-11.357 50.285-11.378 50.285-11.417V-18.588L79.589-17.596V50.285C79.241 96.661 40.188 133.543-6.594 129.967" fill="currentColor"/>
+<path transform="matrix(1,0,0,-1,847.44668,162.8529)" d="M0 0C-44.292 0-79.923 35.631-79.923 79.922V231.441H-50.619V154.849H-11.322V125.543H-50.619V79.922C-50.619 51.949-27.974 29.304 0 29.304Z" fill="currentColor"/>
+<path transform="matrix(1,0,0,-1,65.678508,391.98939)" d="M0 0 26.642 12.322C32.967-1.332 48.952-6.66 64.935-6.66 85.25-6.66 105.564 1.999 105.564 11.322 105.564 32.635 1.332 23.311 1.332 76.259 1.332 105.23 34.299 123.546 67.935 123.546 93.908 123.546 120.215 112.89 131.872 87.582L105.564 75.26C98.903 88.913 83.251 94.241 67.935 94.241 48.952 94.241 30.636 86.249 30.636 76.259 30.636 53.947 134.534 63.937 134.534 11.322 134.534-17.65 100.235-35.965 65.27-35.965 38.628-35.965 11.654-24.975 0 0" fill="currentColor"/>
+<path transform="matrix(1,0,0,-1,297.7804,428.287)" d="M0 0C-44.292 0-79.923 35.631-79.923 79.922V231.441H-50.619V154.849H-11.322V125.543H-50.619V79.922C-50.619 51.949-27.974 29.304 0 29.304Z" fill="currentColor"/>
+<path transform="matrix(1,0,0,-1,454.61979,355.35868)" d="M0 0C0-40.293-32.969-72.928-73.261-72.928-113.556-72.928-146.191-40.293-146.191 0V81.92H-116.887V.333C-116.887-23.976-97.239-43.624-73.261-43.624-48.952-43.624-29.304-23.976-29.304 .333V81.92H0Z" fill="currentColor"/>
+<path transform="matrix(1,0,0,-1,553.5251,398.6499)" d="M0 0C-27.974 0-50.619 22.645-50.619 50.285-50.619 78.258-27.974 100.901 0 100.901 27.972 100.901 50.617 78.258 50.617 50.285 50.617 22.645 27.972 0 0 0M123.424 395.641C83.13 395.641 50.495 363.006 50.495 322.712V215.407H50.617V112.224C35.631 124.212 17.647 130.207 0 130.207-45.29 130.207-79.923 93.243-79.923 50.618-79.923 5.661-43.291-29.304 0-29.304 43.955-29.304 79.589 6.327 79.921 50.285V226.025H79.799V322.712C79.799 346.688 99.447 366.335 123.424 366.335 147.733 366.335 167.382 346.688 167.382 322.712H196.686C196.686 363.006 164.051 395.641 123.424 395.641" fill="currentColor"/>
+<path transform="matrix(1,0,0,-1,-98.0142,719.8495)" d="M795.382 296.558H766.078V555.188H795.382Z" fill="currentColor"/>
+<path transform="matrix(1,0,0,-1,749.643,348.03208)" d="M0 0C0-27.973 22.645-50.618 50.619-50.618 78.591-50.618 101.236-27.973 101.236 0 101.236 27.973 78.591 50.617 50.619 50.617 22.645 50.617 0 27.973 0 0M-29.304 0C-29.304 43.957 6.327 79.922 50.619 79.922 94.574 79.922 130.54 43.957 130.54 0 130.208-44.29 94.574-79.922 50.619-79.922 6.327-79.922-29.304-44.29-29.304 0" fill="currentColor"/>
+</g>
+</g>
+</symbol></svg>
+
 <div id="progress"></div>
 
 <div id="intro">
   <div>
-    <!-- SLOT DO LOGO (abertura) -->
-    <div class="sq"></div>
+    <svg class="mk" viewBox="0 0 881.183 498.87507" role="img" aria-label="Astart Studio"><use href="#mk-logo"/></svg>
     <span class="label">Proposta preparada para</span>
     <div class="name" data-cliente>[NOME DO CLIENTE]</div>
     <div class="bar"><i></i></div>
   </div>
 </div>
 
-<a class="brandpill" href="#hero"><span class="sq"></span>astart studio</a>
+<a class="brandpill" href="#hero"><svg class="mk" viewBox="0 0 164.625 179.8446" aria-hidden="true"><use href="#mk-a"/></svg>astart studio</a>
 
 <!-- ============ HERO ============ -->
 <section id="hero">
+  <span class="halo halo-a" aria-hidden="true"></span>
   <div class="wrap">
     <span class="label eyebrow">Proposta comercial · [MÊS/ANO]</span>
-    <!-- SLOT DO LOGO (hero) — troque este bloco por <img src="logo.svg" alt="Astart Studio"> -->
-    <div class="wordmark-wrap">
-      <h1 class="wordmark">astart<span class="l2">studio</span></h1>
-      <span class="dot" aria-hidden="true"></span>
-    </div>
+    <h1 class="logo-hero">
+      <svg class="mk" viewBox="0 0 881.183 498.87507" role="img" aria-label="Astart Studio"><use href="#mk-logo"/></svg>
+      <svg class="mk shine" viewBox="0 0 881.183 498.87507" aria-hidden="true"><use href="#mk-logo"/></svg>
+    </h1>
     <div class="hero-sub">
       <p class="lede" style="margin:0">
         Gestão de conteúdo e social media para <b data-cliente>[NOME DO CLIENTE]</b>.
@@ -341,6 +438,7 @@
 
 <!-- ============ DIAGNÓSTICO ============ -->
 <section class="on-dark">
+  <span class="halo halo-b" aria-hidden="true"></span>
   <div class="wrap stack">
     <div class="head reveal">
       <span class="label eyebrow">O que a gente entendeu</span>
@@ -397,6 +495,7 @@
 
 <!-- ============ PROCESSO ============ -->
 <section class="on-dark">
+  <span class="halo halo-b" aria-hidden="true"></span>
   <div class="wrap stack">
     <div class="head reveal">
       <span class="label eyebrow">Como funciona</span>
@@ -456,24 +555,44 @@
     </div>
     <div class="clients reveal">
       <div class="client">
-        <span class="label">Marcas e patentes</span>
-        <h3>Mor Marcas</h3>
-        <p>Registro de marca no INPI traduzido em conteúdo que dono de negócio entende.</p>
+        <div class="capa">
+          <!-- troque por: <img src="[PRINT DO TRABALHO]" alt="Mor Marcas"> -->
+          <span class="label">Marcas e patentes</span>
+        </div>
+        <div class="txt">
+          <h3>Mor Marcas</h3>
+          <p>Registro de marca no INPI traduzido em conteúdo que dono de negócio entende.</p>
+        </div>
       </div>
       <div class="client">
-        <span class="label">Comunicação e RP</span>
-        <h3>Publika.ai</h3>
-        <p>Assessoria de imprensa e gestão de crise virando pauta didática para gestores.</p>
+        <div class="capa">
+          <!-- troque por: <img src="[PRINT DO TRABALHO]" alt="Publika.ai"> -->
+          <span class="label">Comunicação e RP</span>
+        </div>
+        <div class="txt">
+          <h3>Publika.ai</h3>
+          <p>Assessoria de imprensa e gestão de crise virando pauta didática para gestores.</p>
+        </div>
       </div>
       <div class="client">
-        <span class="label">Networking feminino</span>
-        <h3>Confraria Somos</h3>
-        <p>Comunidade premium de mulheres empreendedoras, com conteúdo à altura do posicionamento.</p>
+        <div class="capa">
+          <!-- troque por: <img src="[PRINT DO TRABALHO]" alt="Confraria Somos"> -->
+          <span class="label">Networking feminino</span>
+        </div>
+        <div class="txt">
+          <h3>Confraria Somos</h3>
+          <p>Comunidade premium de mulheres empreendedoras, com conteúdo à altura do posicionamento.</p>
+        </div>
       </div>
       <div class="client">
-        <span class="label">Prótese capilar</span>
-        <h3>Pamela Dantas</h3>
-        <p>Um tema delicado tratado com acolhimento — e transformação como prova social.</p>
+        <div class="capa">
+          <!-- troque por: <img src="[PRINT DO TRABALHO]" alt="Pamela Dantas"> -->
+          <span class="label">Prótese capilar</span>
+        </div>
+        <div class="txt">
+          <h3>Pamela Dantas</h3>
+          <p>Um tema delicado tratado com acolhimento — e transformação como prova social.</p>
+        </div>
       </div>
     </div>
   </div>
@@ -522,7 +641,8 @@
         <span class="label pick">Selecionar</span>
       </button>
 
-      <button type="button" class="plan" aria-pressed="false" data-plano="Performance">
+      <button type="button" class="plan destaque" aria-pressed="false" data-plano="Performance">
+        <span class="selo label">Mais escolhido</span>
         <div class="top">
           <h3>Performance</h3>
           <span class="price">R$ [0.000]<small>/mês</small></span>
@@ -563,6 +683,7 @@
 
 <!-- ============ FAQ ============ -->
 <section class="on-dark">
+  <span class="halo halo-b" aria-hidden="true"></span>
   <div class="wrap stack">
     <div class="head reveal">
       <span class="label eyebrow">Perguntas frequentes</span>
@@ -604,17 +725,15 @@
     <h2 class="display reveal">Bora começar, <span class="accent" data-cliente>[NOME DO CLIENTE]</span>?</h2>
     <p class="lede reveal" style="text-align:center">Responde essa proposta e a gente já marca a imersão. Se preferir ajustar alguma coisa antes, também dá — é só falar.</p>
     <a class="btn reveal" id="btn-cta" href="#" target="_blank" rel="noopener">Quero fechar com a Astart <span class="sq"></span></a>
-    <span class="label reveal" style="color:var(--ink-mid)">Proposta válida até [DATA]</span>
+    <span class="label reveal">Proposta válida até [DATA]</span>
   </div>
 </section>
 
 <footer>
   <div class="wrap">
-    <p class="tagline">Feita para<br>ser <em>notada</em></p>
     <div class="fwrap">
-      <!-- SLOT DO LOGO (rodapé) -->
       <div>
-        <div class="fmark">astart studio<span class="sq"></span></div>
+        <svg class="fmark" viewBox="0 0 881.183 498.87507" role="img" aria-label="Astart Studio"><use href="#mk-logo"/></svg>
       </div>
       <div class="fcontact">
         <a href="mailto:[E-MAIL]">[E-MAIL]</a>
@@ -648,9 +767,16 @@
 
   // --- barra de progresso de leitura ---
   var bar = document.getElementById("progress");
+  var pill = document.querySelector(".brandpill");
+  var ultimo = 0;
   var tick = function(){
     var h = document.documentElement.scrollHeight - window.innerHeight;
-    bar.style.width = (h > 0 ? (window.scrollY / h) * 100 : 0) + "%";
+    var y = window.scrollY;
+    bar.style.width = (h > 0 ? (y / h) * 100 : 0) + "%";
+    // recolhe a pílula ao descer para ela não cobrir os títulos
+    if (y > 140 && y > ultimo) pill.classList.add("recolhida");
+    else pill.classList.remove("recolhida");
+    ultimo = y;
   };
   window.addEventListener("scroll", tick, {passive:true});
   tick();
@@ -699,3 +825,6 @@
   montarLink();
 })();
 </script>
+
+</body>
+</html>
