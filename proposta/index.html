@@ -24,16 +24,17 @@
   2. Todo o resto está marcado com [COLCHETES].
      Procure por "[" e preencha.
 
-  3. ESCOPO: a seção "O que entra nesta proposta" tem os 6
-     serviços da Astart. APAGUE o bloco <article> dos serviços
-     que não fazem parte desta proposta. O que sobrar se
-     reorganiza sozinho.
+  3. SOLUÇÕES: o catálogo tem os 5 serviços da Astart. APAGUE
+     o <article> dos que não entram nesta proposta.
 
-  4. INVESTIMENTO: um valor por proposta, não há pacote fixo.
-     Preencha o resumo, o valor e as condições.
+  4. "O QUE VOCÊ VAI RECEBER": um cartão por entregável.
+     Duplique ou apague cartões conforme o projeto.
 
-  5. Conteúdo, fotos, logos, números e depoimentos vieram de
-     astartstudio.com.br.
+  5. INVESTIMENTO: um valor por proposta, sem pacote fixo.
+     Linhas de composição são opcionais; o total é o que vale.
+
+  6. Conteúdo, fotos, logos, números e depoimentos vieram de
+     astartstudio.com.br e da proposta Larissa Zayat.
   ============================================================
 -->
 
@@ -148,7 +149,9 @@
     50%{-webkit-mask-position:-35% 0;mask-position:-35% 0}
   }
   h1.display{font-size:clamp(2.6rem,7.4vw,5.4rem);letter-spacing:-.042em}
-  h1 .cliente{display:block;color:var(--pink)}
+  h1.display{color:var(--pink)}
+  .segmento{font-size:clamp(1.05rem,2vw,1.4rem);letter-spacing:-.01em;color:var(--ink-mid);margin:10px 0 0}
+  .rolar{display:inline-block;margin-top:clamp(30px,5vw,52px);color:var(--ink-mid)}
   .hero-sub{display:flex;flex-wrap:wrap;gap:clamp(24px,4vw,56px);align-items:flex-end;justify-content:space-between;margin-top:clamp(30px,4vw,46px)}
   .chips{display:flex;flex-wrap:wrap;gap:10px}
   .chip{display:inline-flex;align-items:center;gap:.7em;padding:10px 18px;border-radius:999px;border:1px solid var(--rule);font-size:.9rem}
@@ -243,6 +246,16 @@
   .depo .quem{margin-top:auto;padding-top:6px}
   .depo .quem b{font-weight:400}
 
+  /* ---------- o que você vai receber ---------- */
+  .receber{display:grid;grid-template-columns:repeat(auto-fit,minmax(262px,1fr));gap:14px}
+  .receber .item{background:var(--white);border:1px solid var(--rule);border-radius:18px;
+    padding:clamp(20px,2.4vw,26px);display:flex;flex-direction:column;gap:8px;
+    transition:transform .3s ease,border-color .3s ease}
+  .receber .item:hover{transform:translateY(-3px);border-color:var(--pink)}
+  .receber .num{font-family:"Comodo","Machina",sans-serif;font-size:1.3rem;color:var(--pink);font-variant-numeric:tabular-nums}
+  .receber b{font-weight:400;font-size:1.05rem;letter-spacing:-.01em}
+  .receber p{color:var(--ink-mid);font-size:.93rem;margin:0}
+
   /* ---------- investimento ---------- */
   .conta{border:1px solid var(--rule);border-radius:26px;overflow:hidden}
   .conta .linha{display:flex;flex-wrap:wrap;gap:12px 24px;justify-content:space-between;align-items:baseline;
@@ -275,9 +288,7 @@
   summary:focus-visible{outline:3px solid var(--pink);outline-offset:4px}
 
   /* ---------- cta ---------- */
-  #cta{background:var(--ink);text-align:center;color:#fff}
-  #cta .display,#cta .lede,#cta .label{color:#fff}
-  #cta .eyebrow{color:var(--on-ink-mid)}
+  #cta{background:var(--off);text-align:center}
   .cta-inner{display:flex;flex-direction:column;align-items:center;gap:26px}
   .btn{display:inline-flex;align-items:center;gap:.8em;background:var(--pink);color:var(--white);
     text-decoration:none;padding:20px 38px;border-radius:999px;font-weight:400;font-size:1.05rem;
@@ -397,21 +408,17 @@
       <svg class="mk" viewBox="0 0 881.183 498.87507" role="img" aria-label="Astart Studio"><use href="#mk-logo"/></svg>
       <svg class="mk shine" viewBox="0 0 881.183 498.87507" aria-hidden="true"><use href="#mk-logo"/></svg>
     </div>
-    <span class="label eyebrow reveal">Proposta comercial · [MÊS/ANO]</span>
-    <h1 class="display reveal" style="--i:1">
-      Proposta para
-      <span class="cliente" data-cliente>[NOME DO CLIENTE]</span>
-    </h1>
+    <span class="label eyebrow reveal">Proposta personalizada · [MÊS/ANO]</span>
+    <h1 class="display reveal" style="--i:1" data-cliente>[NOME DO CLIENTE]</h1>
+    <p class="segmento reveal" style="--i:2">[SEGMENTO DO CLIENTE — ex: Empresária da Beleza]</p>
     <div class="hero-sub">
-      <p class="lede reveal" style="--i:2;margin:0">
-        [Escreva em uma frase o que esta proposta resolve para o cliente. Ex: gestão de
-        marketing e produção audiovisual para a marca crescer com constância e presença.]
-      </p>
-      <div class="chips reveal" style="--i:3">
+      <p class="lede reveal" style="--i:3;margin:0">Presença que converte.</p>
+      <div class="chips reveal" style="--i:4">
         <span class="chip">Válida até <b>[DATA]</b></span>
         <span class="chip">Por <b>[QUEM ASSINA]</b></span>
       </div>
     </div>
+    <span class="label rolar reveal" style="--i:5">Role para explorar ↓</span>
   </div>
 </section>
 
@@ -422,43 +429,30 @@
   </div>
 </div>
 
-<!-- ============ DIAGNÓSTICO ============ -->
+<!-- ============ VISÃO GERAL ============ -->
 <section class="on-dark">
   <div class="wrap stack">
     <div class="head reveal">
-      <span class="label eyebrow">O que a gente entendeu</span>
-      <h2 class="display">Antes de falar de valor, <span class="accent">o cenário</span>.</h2>
+      <span class="label eyebrow">Visão geral do projeto</span>
+      <h2 class="display">O que vamos fazer, <span class="accent">em resumo</span>.</h2>
     </div>
-    <div class="cards reveal" style="--i:1">
-      <div>
-        <span class="label">Momento atual</span>
-        <h3>[ONDE A MARCA ESTÁ HOJE]</h3>
-        <p class="muted">[Uma ou duas frases sobre a situação atual, com o que você ouviu na conversa.]</p>
-      </div>
-      <div>
-        <span class="label">O que trava</span>
-        <h3>[O PROBLEMA REAL]</h3>
-        <p class="muted">[O gargalo. Seja específico: sem posicionamento definido, marca invisível, material sem padrão.]</p>
-      </div>
-      <div>
-        <span class="label">Onde dá pra chegar</span>
-        <h3>[O RESULTADO ESPERADO]</h3>
-        <p class="muted">[O que muda quando o trabalho estiver entregue e rodando.]</p>
-      </div>
+    <div class="reveal" style="--i:1;max-width:66ch">
+      <p class="lede">[VISÃO GERAL — um ou dois parágrafos descrevendo o projeto deste cliente. Ex: produção audiovisual completa para o evento em Alphaville, com storymaker e fotos profissionais, garantindo uma cobertura completa e elegante.]</p>
+      <p class="muted">[Segundo parágrafo, se precisar: o que a equipe garante, o clima da entrega, o resultado esperado.]</p>
     </div>
     <p class="aside-note muted reveal" style="--i:2">
-      Se algum ponto aqui estiver errado, me avisa antes da gente seguir. A proposta inteira foi montada em cima desse diagnóstico.
+      Se algum ponto aqui estiver errado, me avisa antes da gente seguir. A proposta inteira foi montada em cima dessa visão.
     </p>
   </div>
 </section>
 
-<!-- ============ ESCOPO ============ -->
+<!-- ============ SOLUÇÕES ============ -->
 <section>
   <div class="wrap escopo">
     <div class="head reveal">
-      <span class="label eyebrow">Escopo</span>
-      <h2 class="display">O que entra <span class="accent">nesta proposta</span>.</h2>
-      <p class="muted">Apague desta lista o que não fizer parte do trabalho combinado com <b data-cliente>[NOME DO CLIENTE]</b>.</p>
+      <span class="label eyebrow">Soluções</span>
+      <h2 class="display">O que a Astart <span class="accent">entrega</span>.</h2>
+      <p class="muted">Apague deste catálogo o que não fizer parte da proposta de <b data-cliente>[NOME DO CLIENTE]</b>.</p>
     </div>
 
     <div class="servicos">
@@ -466,32 +460,16 @@
       <article class="servico reveal">
         <span class="num">01</span>
         <div>
-          <h3>Gestão de marketing</h3>
-          <p class="oque">Estratégia integrada de presença online. Redes sociais, conteúdo, tráfego pago e análise de resultado.</p>
-          <ul>
-            <li>Planejamento mensal de conteúdo</li>
-            <li>Posts, stories e reels</li>
-            <li>Gestão de comunidade</li>
-            <li>Tráfego pago estratégico</li>
-            <li>Análise de métricas e ROI</li>
-            <li>Captação audiovisual inclusa</li>
-          </ul>
+          <h3>Gestão digital</h3>
+          <p class="oque">Planejamento editorial mensal para Instagram, TikTok e demais plataformas, criação de artes visuais e vídeos, publicação com legendas otimizadas, monitoramento de interações e relatório mensal de desempenho.</p>
         </div>
       </article>
 
       <article class="servico reveal" style="--i:1">
         <span class="num">02</span>
         <div>
-          <h3>Audiovisual</h3>
-          <p class="oque">Conteúdo em movimento. Fotos e vídeos que contam sua história com qualidade audiovisual de cinema.</p>
-          <ul>
-            <li>Captação em 4K</li>
-            <li>Drone quando necessário</li>
-            <li>Edição e color grading</li>
-            <li>Vídeos de apresentação</li>
-            <li>Reels otimizados</li>
-            <li>Fotos para site e marketing</li>
-          </ul>
+          <h3>Captação audiovisual</h3>
+          <p class="oque">Sessões de captação com produção completa — roteiro, direção, gravação em 4K e edição. Entrega de vídeos longos e cortes curtos para Reels e TikTok, com tratamento de cor profissional.</p>
         </div>
       </article>
 
@@ -499,64 +477,24 @@
       <article class="servico reveal" style="--i:1">
         <span class="num">03</span>
         <div>
-          <h3>Branding</h3>
-          <p class="oque">Estratégia de posicionamento que define quem você é, no que acredita e por que importa. Não é só visual, é a essência da marca.</p>
-          <ul>
-            <li>Diagnóstico de marca</li>
-            <li>Arquétipo, propósito e valores</li>
-            <li>Posicionamento estratégico</li>
-            <li>Proposta de valor clara</li>
-            <li>Tom de voz e direcionamento</li>
-            <li>Brandbook com diretrizes</li>
-          </ul>
+          <h3>Identidade visual / Branding</h3>
+          <p class="oque">Desenvolvimento completo de identidade visual: pesquisa de mercado, criação de logotipo, paleta de cores, tipografia, papelaria e manual de marca alinhados ao posicionamento do negócio.</p>
         </div>
       </article>
 
       <article class="servico reveal" style="--i:2">
         <span class="num">04</span>
         <div>
-          <h3>Identidade visual</h3>
-          <p class="oque">A face da marca. Um sistema visual coeso que faz você ser reconhecido antes mesmo de qualquer palavra.</p>
-          <ul>
-            <li>Logo único e memorável</li>
-            <li>Paleta de cores estratégica</li>
-            <li>Tipografia definida</li>
-            <li>Elementos gráficos e padrões</li>
-            <li>Manual de aplicação</li>
-            <li>Papelaria digital</li>
-          </ul>
+          <h3>Tráfego pago</h3>
+          <p class="oque">Gestão de campanhas pagas no Meta Ads e Google Ads com foco em crescimento, alcance e conversão. Configuração, segmentação de público, acompanhamento e otimizações semanais.</p>
         </div>
       </article>
 
       <article class="servico reveal" style="--i:3">
         <span class="num">05</span>
         <div>
-          <h3>Website</h3>
-          <p class="oque">Sua loja digital. Um site que não só é bonito, mas converte visitante em cliente com estratégia e design inteligente.</p>
-          <ul>
-            <li>Design UX/UI estratégico</li>
-            <li>Desenvolvimento responsivo</li>
-            <li>Otimização de SEO</li>
-            <li>Velocidade e performance</li>
-            <li>Segurança e SSL</li>
-            <li>Domínio e hospedagem</li>
-          </ul>
-        </div>
-      </article>
-
-      <article class="servico reveal" style="--i:4">
-        <span class="num">06</span>
-        <div>
-          <h3>Sistemas</h3>
-          <p class="oque">Automações e plataformas que fazem o negócio rodar mais inteligente. CRM, formulários, integrações e fluxos automáticos.</p>
-          <ul>
-            <li>Integração de CRM</li>
-            <li>Automação de formulários e leads</li>
-            <li>Integração de pagamento</li>
-            <li>Fluxos de e-mail e WhatsApp</li>
-            <li>Dashboards de análise</li>
-            <li>Treinamento de uso</li>
-          </ul>
+          <h3>Sites / Landing pages</h3>
+          <p class="oque">Criação de sites institucionais e landing pages com foco em conversão, design alinhado à identidade visual, responsividade mobile, SEO básico e integração com ferramentas de análise.</p>
         </div>
       </article>
     </div>
@@ -573,52 +511,6 @@
   </div>
 </section>
 
-<!-- ============ PROCESSO ============ -->
-<section class="on-dark">
-  <div class="wrap stack">
-    <div class="head reveal">
-      <span class="label eyebrow">Como trabalhamos</span>
-      <h2 class="display">Do primeiro papo <span class="accent">ao resultado</span>.</h2>
-    </div>
-    <div class="steps">
-      <div class="step">
-        <div class="num">01</div>
-        <div>
-          <h3>Conversa estratégica</h3>
-          <p class="muted">A gente se conhece. Você nos conta sobre o negócio, os desafios e os objetivos. Sem pressa e sem venda pesada.</p>
-        </div>
-      </div>
-      <div class="step">
-        <div class="num">02</div>
-        <div>
-          <h3>Diagnóstico</h3>
-          <p class="muted">Analisamos concorrência, mercado e oportunidades. Entendemos o contexto antes de qualquer execução.</p>
-        </div>
-      </div>
-      <div class="step">
-        <div class="num">03</div>
-        <div>
-          <h3>Proposta estruturada</h3>
-          <p class="muted">Apresentamos um plano claro: o que fazer, por que fazer, quando e quanto custa. É este documento aqui.</p>
-        </div>
-      </div>
-      <div class="step">
-        <div class="num">04</div>
-        <div>
-          <h3>Execução</h3>
-          <p class="muted">A mágica acontece aqui. Produção, design e desenvolvimento com qualidade e dentro do prazo.</p>
-        </div>
-      </div>
-      <div class="step">
-        <div class="num">05</div>
-        <div>
-          <h3>Entrega e resultado</h3>
-          <p class="muted">Você recebe tudo documentado. Acompanhamos os primeiros resultados e ajustamos se for preciso.</p>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
 
 <!-- ============ QUEM FAZ ============ -->
 <section>
@@ -626,9 +518,9 @@
     <div class="fundadora">
       <div class="reveal">
         <span class="label eyebrow">Quem faz</span>
-        <h2 class="display" style="margin:16px 0 22px">Mais que um estúdio criativo. <span class="accent">Somos parceiros de negócio.</span></h2>
-        <p class="lede">A Astart Studio é um estúdio de gestão de marketing e audiovisual focado em marcas que buscam presença, autoridade e resultados.</p>
-        <p class="muted">Fundada por <b>Layana Oliveira</b>, com mais de 10 anos de experiência, a Astart surgiu da necessidade de ajudar empresas em crescimento que, ao investir no negócio, negligenciam a marca. Sem estratégia, uma marca se torna invisível.</p>
+        <h2 class="display" style="margin:16px 0 22px">Somos o ponto de virada <span class="accent">das marcas</span>.</h2>
+        <p class="lede">Mais que um estúdio criativo, somos parceiros de negócio. A Astart é um estúdio de gestão de marketing e audiovisual focado em marcas que buscam presença, autoridade e resultados.</p>
+        <p class="muted">Fundada por <b>Layana Oliveira</b>, com mais de 10 anos de experiência, a Astart surgiu da necessidade de ajudar empresas em crescimento que, ao investir no negócio, negligenciam a marca. Pensamos com estratégia, comunicamos com propósito e criamos com estética — com sinceridade, proximidade e prontidão na entrega.</p>
         <div class="numeros">
           <div><span class="n" data-conta="10" data-suf="+">0</span><span class="l">anos de experiência</span></div>
           <div><span class="n" data-conta="200" data-suf="+">0</span><span class="l">projetos entregues</span></div>
@@ -693,6 +585,28 @@
   </div>
 </section>
 
+<!-- ============ O QUE VOCÊ VAI RECEBER ============ -->
+<section style="background:var(--off)">
+  <div class="wrap stack">
+    <div class="head reveal">
+      <span class="label eyebrow">Escopo do projeto</span>
+      <h2 class="display">O que você <span class="accent">vai receber</span>.</h2>
+      <p class="muted">Cada entregável pensado para gerar resultado real e conectar sua marca ao público certo.</p>
+    </div>
+    <!-- Um cartão por entregável. Apague ou duplique conforme o projeto.
+         Exemplo real: briefing de alinhamento · cobertura em tempo real nos stories ·
+         fotos profissionais · vídeo after movie · locomoção da equipe · setup de equipamentos. -->
+    <div class="receber reveal" style="--i:1">
+      <div class="item"><span class="num">01</span><b>[ENTREGÁVEL 1]</b><p>[uma linha explicando o que é]</p></div>
+      <div class="item"><span class="num">02</span><b>[ENTREGÁVEL 2]</b><p>[uma linha explicando o que é]</p></div>
+      <div class="item"><span class="num">03</span><b>[ENTREGÁVEL 3]</b><p>[uma linha explicando o que é]</p></div>
+      <div class="item"><span class="num">04</span><b>[ENTREGÁVEL 4]</b><p>[uma linha explicando o que é]</p></div>
+      <div class="item"><span class="num">05</span><b>[ENTREGÁVEL 5]</b><p>[uma linha explicando o que é]</p></div>
+      <div class="item"><span class="num">06</span><b>[ENTREGÁVEL 6]</b><p>[uma linha explicando o que é]</p></div>
+    </div>
+  </div>
+</section>
+
 <!-- ============ INVESTIMENTO ============ -->
 <section>
   <div class="wrap stack">
@@ -723,10 +637,11 @@
     </div>
 
     <div class="cond reveal" style="--i:2">
-      <div><span class="label">Condição de pagamento</span><strong>[ex: 40% na aprovação e 60% na entrega]</strong></div>
-      <div><span class="label">Formas</span><strong>Pix, boleto ou cartão em até [00]x</strong></div>
-      <div><span class="label">Prazo de execução</span><strong>[00] dias após o briefing</strong></div>
-      <div><span class="label">Validade da proposta</span><strong>[DATA]</strong></div>
+      <div><span class="label">Tipo</span><strong>[Projeto único · Recorrente]</strong></div>
+      <div><span class="label">Pagamento</span><strong>[PIX · Boleto · Cartão]</strong></div>
+      <div><span class="label">Condição</span><strong>[ex: 50% no agendamento e 50% no dia]</strong></div>
+      <div><span class="label">Prazo de entrega</span><strong>[ex: fotos em até 3 dias úteis]</strong></div>
+      <div><span class="label">Validade da proposta</span><strong>[10] dias úteis</strong></div>
     </div>
 
     <p class="muted reveal" style="--i:3;font-size:.92rem;max-width:64ch">
@@ -735,34 +650,50 @@
   </div>
 </section>
 
-<!-- ============ FAQ ============ -->
+<!-- ============ PRÓXIMOS PASSOS ============ -->
 <section class="on-dark">
   <div class="wrap stack">
     <div class="head reveal">
-      <span class="label eyebrow">Dúvidas</span>
-      <h2 class="display">O que costumam <span class="accent">perguntar</span>.</h2>
+      <span class="label eyebrow">Proposta aprovada</span>
+      <h2 class="display">Próximos <span class="accent">passos</span>.</h2>
+      <p class="muted">Assim que a gente fechar, é isso que acontece — simples, rápido e sem complicação.</p>
     </div>
-    <div class="faq reveal" style="--i:1">
-      <details>
-        <summary>Quando o projeto começa?</summary>
-        <p>Assim que a proposta for aprovada e o pagamento inicial confirmado, a gente agenda a imersão. O cronograma detalhado sai nessa reunião.</p>
-      </details>
-      <details>
-        <summary>Quantas rodadas de ajuste eu tenho?</summary>
-        <p>Cada entrega tem [00] rodadas de ajuste incluídas. Você comenta direto no material e a gente refaz. Redesenho completo depois da aprovação é orçado à parte.</p>
-      </details>
-      <details>
-        <summary>Quem grava os vídeos?</summary>
-        <p>A captação é nossa, com câmera profissional em 4K e drone quando o projeto pede. Roteiro e direção também.</p>
-      </details>
-      <details>
-        <summary>O que vocês precisam de mim?</summary>
-        <p>Participação na imersão, acesso aos materiais que já existem e retorno nas aprovações dentro do prazo combinado. O resto é com a gente.</p>
-      </details>
-      <details>
-        <summary>E depois da entrega?</summary>
-        <p>Você recebe tudo documentado e organizado. Acompanhamos os primeiros resultados e, se quiser continuidade, a gente monta uma proposta de acompanhamento.</p>
-      </details>
+    <div class="steps">
+      <div class="step">
+        <div class="num">01</div>
+        <div>
+          <h3>Pagamento do sinal</h3>
+          <p class="muted">Confirmação do pagamento inicial para dar início ao processo.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="num">02</div>
+        <div>
+          <h3>Reunião de alinhamento</h3>
+          <p class="muted">Marcamos uma conversa para fechar os detalhes e as expectativas do projeto.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="num">03</div>
+        <div>
+          <h3>Preparação da equipe</h3>
+          <p class="muted">Nossa equipe se organiza — roteiro, equipamento e logística prontos para o dia.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="num">04</div>
+        <div>
+          <h3>Execução do serviço</h3>
+          <p class="muted">Realizamos o trabalho com dedicação e atenção aos detalhes.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="num">05</div>
+        <div>
+          <h3>Entrega de materiais</h3>
+          <p class="muted">Você recebe tudo dentro do prazo combinado, documentado e organizado.</p>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -771,10 +702,10 @@
 <section id="cta">
   <div class="wrap cta-inner">
     <span class="label eyebrow reveal">Próximo passo</span>
-    <h2 class="display reveal" style="--i:1">Vamos começar, <span data-cliente>[NOME DO CLIENTE]</span>?</h2>
-    <p class="lede reveal" style="--i:2;text-align:center">Se estiver tudo certo, é só responder que a gente já agenda o início. Se quiser ajustar alguma coisa antes, também dá.</p>
-    <a class="btn reveal" style="--i:3" id="btn-cta" href="#" target="_blank" rel="noopener">Quero começar <span class="sq"></span></a>
-    <span class="label reveal" style="--i:4">Proposta válida até [DATA]</span>
+    <h2 class="display reveal" style="--i:1">Bora fechar, <span class="accent" data-cliente>[NOME DO CLIENTE]</span>?</h2>
+    <p class="lede reveal" style="--i:2;text-align:center">Se estiver tudo certo, é só chamar no WhatsApp que a gente já agenda o início. Se quiser ajustar alguma coisa antes, também dá.</p>
+    <a class="btn reveal" style="--i:3" id="btn-cta" href="#" target="_blank" rel="noopener">Fechar pelo WhatsApp <span class="sq"></span></a>
+    <span class="label reveal" style="--i:4;color:var(--ink-mid)">Proposta válida por [10] dias úteis</span>
   </div>
 </section>
 
@@ -784,6 +715,7 @@
       <svg class="fmark" viewBox="0 0 881.183 498.87507" role="img" aria-label="Astart Studio"><use href="#mk-logo"/></svg>
     </div>
     <div class="fcontact">
+      <a href="https://instagram.com/astartstudio_" target="_blank" rel="noopener">@astartstudio_</a>
       <a href="https://astartstudio.com.br" target="_blank" rel="noopener">astartstudio.com.br</a>
       <a href="https://wa.me/5511989384452" target="_blank" rel="noopener">+55 11 98938-4452</a>
       <span>Arujá · Mogi das Cruzes · Guarulhos · São Paulo</span>
