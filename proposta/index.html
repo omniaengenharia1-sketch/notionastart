@@ -135,6 +135,7 @@
   /* ---------- hero ---------- */
   #hero{padding-top:clamp(112px,15vh,170px);padding-bottom:clamp(44px,6vw,72px)}
   .hero-logo{position:relative;display:block;width:min(132px,30vw);margin:0 0 clamp(30px,4vw,46px)}
+  #hero .label,#hero h1,#hero .segmento,#hero .hero-sub,#hero .rolar{will-change:transform}
   .hero-logo .mk{display:block;width:100%;height:auto;color:var(--ink)}
   .hero-logo .shine{
     position:absolute;inset:0;color:var(--pink);
@@ -152,6 +153,8 @@
   h1.display{color:var(--pink)}
   .segmento{font-size:clamp(1.05rem,2vw,1.4rem);letter-spacing:-.01em;color:var(--ink-mid);margin:10px 0 0}
   .rolar{display:inline-block;margin-top:clamp(30px,5vw,52px);color:var(--ink-mid)}
+  .rolar{animation:flutua 2.4s ease-in-out infinite}
+  @keyframes flutua{0%,100%{transform:translateY(0)}50%{transform:translateY(5px)}}
   .hero-sub{display:flex;flex-wrap:wrap;gap:clamp(24px,4vw,56px);align-items:flex-end;justify-content:space-between;margin-top:clamp(30px,4vw,46px)}
   .chips{display:flex;flex-wrap:wrap;gap:10px}
   .chip{display:inline-flex;align-items:center;gap:.7em;padding:10px 18px;border-radius:999px;border:1px solid var(--rule);font-size:.9rem}
@@ -312,6 +315,23 @@
     transition-delay:calc(var(--i,0) * 80ms)}
   .reveal.seen{opacity:1;transform:none;filter:none}
 
+  /* títulos que sobem palavra por palavra (sem corte, para não comer acento) */
+  .words{--wd:0}
+  .words i.w{display:inline-block;font-style:normal;opacity:0;transform:translateY(.62em) rotate(1.2deg);
+    transition:opacity .6s ease,transform .66s cubic-bezier(.2,.75,.2,1);
+    transition-delay:calc(var(--wd) * 1ms + var(--wi,0) * 52ms);will-change:transform}
+  .words.seen i.w{opacity:1;transform:none}
+
+  /* etapa: número desliza e acende */
+  .step .num{transform:translateX(-12px);opacity:.5;transition:color .5s ease,transform .6s cubic-bezier(.2,.7,.2,1),opacity .6s ease}
+  .step.seen .num{transform:none;opacity:1}
+  /* serviço: barra rosa que preenche ao entrar */
+  .servico{position:relative}
+  .servico::after{content:"";position:absolute;left:0;bottom:-1px;height:2px;width:0;background:var(--pink);transition:width .8s cubic-bezier(.2,.7,.2,1) .1s}
+  .servico.seen::after{width:100%}
+  .servico:hover .num{color:var(--pink)}
+  .servico .num{transition:color .4s ease}
+
   @media (max-width:860px){
     .escopo{grid-template-columns:1fr}
     .escopo .head{position:static}
@@ -434,7 +454,7 @@
   <div class="wrap stack">
     <div class="head reveal">
       <span class="label eyebrow">Visão geral do projeto</span>
-      <h2 class="display">O que vamos fazer, <span class="accent">em resumo</span>.</h2>
+      <h2 class="display words">O que vamos fazer, <span class="accent">em resumo</span>.</h2>
     </div>
     <div class="reveal" style="--i:1;max-width:66ch">
       <p class="lede">[VISÃO GERAL — um ou dois parágrafos descrevendo o projeto deste cliente. Ex: produção audiovisual completa para o evento em Alphaville, com storymaker e fotos profissionais, garantindo uma cobertura completa e elegante.]</p>
@@ -451,7 +471,7 @@
   <div class="wrap escopo">
     <div class="head reveal">
       <span class="label eyebrow">Soluções</span>
-      <h2 class="display">O que a Astart <span class="accent">entrega</span>.</h2>
+      <h2 class="display words">O que a Astart <span class="accent">entrega</span>.</h2>
       <p class="muted">Apague deste catálogo o que não fizer parte da proposta de <b data-cliente>[NOME DO CLIENTE]</b>.</p>
     </div>
 
@@ -518,7 +538,7 @@
     <div class="fundadora">
       <div class="reveal">
         <span class="label eyebrow">Quem faz</span>
-        <h2 class="display" style="margin:16px 0 22px">Somos o ponto de virada <span class="accent">das marcas</span>.</h2>
+        <h2 class="display words" style="margin:16px 0 22px">Somos o ponto de virada <span class="accent">das marcas</span>.</h2>
         <p class="lede">Mais que um estúdio criativo, somos parceiros de negócio. A Astart é um estúdio de gestão de marketing e audiovisual focado em marcas que buscam presença, autoridade e resultados.</p>
         <p class="muted">Fundada por <b>Layana Oliveira</b>, com mais de 10 anos de experiência, a Astart surgiu da necessidade de ajudar empresas em crescimento que, ao investir no negócio, negligenciam a marca. Pensamos com estratégia, comunicamos com propósito e criamos com estética — com sinceridade, proximidade e prontidão na entrega.</p>
         <div class="numeros">
@@ -547,7 +567,7 @@
   <div class="wrap">
     <div class="head reveal" style="margin-bottom:clamp(34px,4vw,52px)">
       <span class="label eyebrow">Clientes</span>
-      <h2 class="display">Quem já faz parte <span class="accent">da Astart</span>.</h2>
+      <h2 class="display words">Quem já faz parte <span class="accent">da Astart</span>.</h2>
     </div>
   </div>
   <div class="marquee" style="background:transparent;border:0">
@@ -563,7 +583,7 @@
   <div class="wrap stack">
     <div class="head reveal">
       <span class="label eyebrow">Depoimentos</span>
-      <h2 class="display">O que estão <span class="accent">falando</span> sobre nós.</h2>
+      <h2 class="display words">O que estão <span class="accent">falando</span> sobre nós.</h2>
     </div>
     <div class="depos">
       <div class="depo reveal">
@@ -590,7 +610,7 @@
   <div class="wrap stack">
     <div class="head reveal">
       <span class="label eyebrow">Escopo do projeto</span>
-      <h2 class="display">O que você <span class="accent">vai receber</span>.</h2>
+      <h2 class="display words">O que você <span class="accent">vai receber</span>.</h2>
       <p class="muted">Cada entregável pensado para gerar resultado real e conectar sua marca ao público certo.</p>
     </div>
     <!-- Um cartão por entregável. Apague ou duplique conforme o projeto.
@@ -612,7 +632,7 @@
   <div class="wrap stack">
     <div class="head reveal">
       <span class="label eyebrow">Investimento</span>
-      <h2 class="display">O valor <span class="accent">deste projeto</span>.</h2>
+      <h2 class="display words">O valor <span class="accent">deste projeto</span>.</h2>
       <p class="muted">Cada proposta é montada sob medida. Este valor vale para o escopo descrito acima, do jeito que foi combinado.</p>
     </div>
 
@@ -655,7 +675,7 @@
   <div class="wrap stack">
     <div class="head reveal">
       <span class="label eyebrow">Proposta aprovada</span>
-      <h2 class="display">Próximos <span class="accent">passos</span>.</h2>
+      <h2 class="display words">Próximos <span class="accent">passos</span>.</h2>
       <p class="muted">Assim que a gente fechar, é isso que acontece — simples, rápido e sem complicação.</p>
     </div>
     <div class="steps">
@@ -747,6 +767,33 @@
   var quem = document.querySelector("[data-cliente]").textContent.trim();
   btn.href = "https://wa.me/" + WHATS + "?text=" +
     encodeURIComponent("Oi! Vi a proposta da Astart Studio e quero seguir. Sou " + quem + ".");
+
+
+  // --- títulos que sobem palavra por palavra ---
+  if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    document.querySelectorAll(".words").forEach(function(el){
+      var i = 0, frag = document.createDocumentFragment();
+      (function anda(node, accent){
+        Array.prototype.slice.call(node.childNodes).forEach(function(n){
+          if (n.nodeType === 3) {
+            n.textContent.split(/(\s+)/).forEach(function(tok){
+              if (!tok) return;
+              if (!tok.trim()) { frag.appendChild(document.createTextNode(" ")); return; }
+              var w = document.createElement("i");
+              w.className = "w" + (accent ? " accent" : "");
+              w.style.setProperty("--wi", i++);
+              w.textContent = tok;
+              frag.appendChild(w);
+            });
+          } else if (n.nodeType === 1) {
+            anda(n, accent || /accent/.test(n.className));
+          }
+        });
+      })(el, false);
+      el.innerHTML = "";
+      el.appendChild(frag);
+    });
+  }
 
   // --- revelação, contadores ---
   var io = new IntersectionObserver(function(es){
