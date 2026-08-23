@@ -152,57 +152,24 @@ const vitrineExemplo: VitrineProps = {
       inverter: true
     },
     {
-      imagem: "imagens/dupla_camera.jpg",
-      inverter: false
-    },
-    {
-      imagem: "imagens/tripe.jpg",
-      inverter: true
-    },
-    {
       imagem: "imagens/flash_ensaio.jpg",
-      inverter: false
-    },
-    {
-      imagem: "imagens/brinde.jpg",
-      inverter: true
-    },
-    {
-      imagem: "imagens/modelo_luz.jpg",
-      inverter: false
-    },
-    {
-      imagem: "imagens/microfone.jpg",
-      inverter: true
-    },
-    {
-      imagem: "imagens/set.jpg",
-      inverter: false
-    },
-    {
-      imagem: "imagens/evento_jantar.jpg",
-      inverter: true
-    },
-    {
-      imagem: "imagens/ringlight_dupla.jpg",
-      inverter: false
-    },
-    {
-      imagem: "imagens/confete.jpg",
-      inverter: true
-    },
-    {
-      imagem: "imagens/edicao_laptop.jpg",
       inverter: false
     }
   ],
-  larguraMarca: 36,
+  larguraMarca: 29,
+  trilha: "audio/trilha.wav",
   pulso: "forte",
-  trilha: "audio/trilha.wav"
+  frases: [
+    "De nós",
+    "Para vocês",
+    "O que faltava",
+    "No audiovisual",
+    "Em Arujá"
+  ]
 };
 
 const calcularVitrine: CalculateMetadataFunction<VitrineProps> = ({props}) => ({
-  durationInFrames: duracaoVitrine(props.cenas.length),
+  durationInFrames: duracaoVitrine(props.cenas.length, props.frases.length),
 });
 
 const surgindoExemplo: SurgindoProps = {tagline: ''};
@@ -248,7 +215,7 @@ export const RemotionRoot: React.FC = () => (
     fps={fps}
     width={largura}
     height={altura}
-    durationInFrames={duracaoVitrine(vitrineExemplo.cenas.length)}
+    durationInFrames={duracaoVitrine(vitrineExemplo.cenas.length, vitrineExemplo.frases.length)}
     calculateMetadata={calcularVitrine}
   />
   <Composition

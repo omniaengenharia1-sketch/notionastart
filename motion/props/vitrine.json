@@ -85,51 +85,18 @@
       "inverter": true
     },
     {
-      "imagem": "imagens/dupla_camera.jpg",
-      "inverter": false
-    },
-    {
-      "imagem": "imagens/tripe.jpg",
-      "inverter": true
-    },
-    {
       "imagem": "imagens/flash_ensaio.jpg",
-      "inverter": false
-    },
-    {
-      "imagem": "imagens/brinde.jpg",
-      "inverter": true
-    },
-    {
-      "imagem": "imagens/modelo_luz.jpg",
-      "inverter": false
-    },
-    {
-      "imagem": "imagens/microfone.jpg",
-      "inverter": true
-    },
-    {
-      "imagem": "imagens/set.jpg",
-      "inverter": false
-    },
-    {
-      "imagem": "imagens/evento_jantar.jpg",
-      "inverter": true
-    },
-    {
-      "imagem": "imagens/ringlight_dupla.jpg",
-      "inverter": false
-    },
-    {
-      "imagem": "imagens/confete.jpg",
-      "inverter": true
-    },
-    {
-      "imagem": "imagens/edicao_laptop.jpg",
       "inverter": false
     }
   ],
-  "larguraMarca": 36,
+  "larguraMarca": 29,
   "trilha": "audio/trilha.wav",
-  "pulso": "forte"
+  "pulso": "forte",
+  "frases": [
+    "De nós",
+    "Para vocês",
+    "O que faltava",
+    "No audiovisual",
+    "Em Arujá"
+  ]
 }

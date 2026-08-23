@@ -1,8 +1,15 @@
 import React from 'react';
-import {AbsoluteFill, Audio, Img, Sequence, staticFile} from 'remotion';
+import {
+  AbsoluteFill,
+  Audio,
+  Img,
+  Sequence,
+  staticFile,
+  useVideoConfig,
+} from 'remotion';
 import {z} from 'zod';
 import {zColor} from '@remotion/zod-types';
-import {paletaDe} from '../theme';
+import {cores, fonte, paletaDe} from '../theme';
 import '../fonte';
 
 const LOGO = 'logos/astart.png';
@@ -41,6 +48,8 @@ export const vitrineSchema = z.object({
    * brilho. O corte continua batendo no clique, sem o efeito estroboscopico.
    */
   pulso: z.enum(['forte', 'suave']).default('forte'),
+  /** Uma frase por tela, depois da vitrine e antes da marca. */
+  frases: z.array(z.string()).max(8).default([]),
   accent: zColor().optional(),
 });
 
@@ -51,9 +60,11 @@ export type VitrineProps = z.infer<typeof vitrineSchema>;
  * Nada se move dentro do quadro — o ritmo vem so do corte.
  */
 const SEGURA = 4;
+const FRASE = 16; // uma batida a 112,5 BPM — tempo de ler sem quebrar o ritmo
 const FECHO = 40; // ~1,3s com a marca sozinha no branco
 
-export const duracaoVitrine = (cenas: number) => cenas * SEGURA * 2 + FECHO;
+export const duracaoVitrine = (cenas: number, frases = 0) =>
+  cenas * SEGURA * 2 + frases * FRASE + FECHO;
 
 /** Marca em branco chapado: brightness(0) leva tudo a preto, invert devolve branco. */
 const MARCA_BRANCA = 'brightness(0) invert(1) drop-shadow(0 6px 26px rgba(0,0,0,0.45))';
@@ -116,6 +127,46 @@ const Quadro: React.FC<{
 };
 
 /** Ultimo take: a marca sozinha no branco. */
+/**
+ * Uma frase por tela, no escuro. Entra em corte seco como o resto, mas fica uma
+ * batida inteira — texto piscando a cada quatro frames ninguem le.
+ */
+const Frase: React.FC<{texto: string; corpo: number; suave: boolean}> = ({
+  texto,
+  corpo,
+  suave,
+}) => {
+  const {width, height} = useVideoConfig();
+  const larguraUtil = width - 200;
+
+  return (
+    <AbsoluteFill
+      style={{
+        backgroundColor: suave ? '#1A1A1C' : '#050506',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 100,
+      }}
+    >
+      <div
+        style={{
+          fontFamily: fonte,
+          fontSize: corpo,
+          fontWeight: 800,
+          lineHeight: 1.05,
+          letterSpacing: '-0.035em',
+          color: cores.texto,
+          textAlign: 'center',
+          maxWidth: larguraUtil,
+          paddingBottom: height * 0.02,
+        }}
+      >
+        {texto}
+      </div>
+    </AbsoluteFill>
+  );
+};
+
 const Fecho: React.FC<{larguraMarca: number}> = ({larguraMarca}) => (
   <AbsoluteFill
     style={{backgroundColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center'}}
@@ -130,9 +181,16 @@ export const Vitrine: React.FC<VitrineProps> = ({
   larguraMarca,
   trilha,
   pulso,
+  frases,
   accent,
 }) => {
+  const {width: largura} = useVideoConfig();
   const a1 = accent ?? paletaDe('Astart').accent;
+
+  // Um corpo so para as cinco frases, tirado da mais longa: tamanho variando de
+  // tela para tela faz o bloco pular.
+  const maiorFrase = Math.max(1, ...frases.map((f) => f.length));
+  const corpoFrase = Math.min(160, (largura - 200) / (maiorFrase * 0.55));
 
   return (
     <AbsoluteFill style={{backgroundColor: '#050506'}}>
@@ -159,7 +217,19 @@ export const Vitrine: React.FC<VitrineProps> = ({
           </Sequence>
         </React.Fragment>
       ))}
-      <Sequence from={cenas.length * SEGURA * 2} durationInFrames={FECHO}>
+      {frases.map((texto, i) => (
+        <Sequence
+          key={`frase-${i}`}
+          from={cenas.length * SEGURA * 2 + i * FRASE}
+          durationInFrames={FRASE}
+        >
+          <Frase texto={texto} corpo={corpoFrase} suave={pulso === 'suave'} />
+        </Sequence>
+      ))}
+      <Sequence
+        from={cenas.length * SEGURA * 2 + frases.length * FRASE}
+        durationInFrames={FECHO}
+      >
         <Fecho larguraMarca={larguraMarca} />
       </Sequence>
     </AbsoluteFill>

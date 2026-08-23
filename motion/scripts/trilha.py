@@ -28,9 +28,14 @@ COMPASSO = BATIDA * 4
 # de ajustar dois numeros em lugares diferentes.
 _props = json.loads((RAIZ / 'props' / 'vitrine.json').read_text())
 SEGURA_CENA = 8
+QUADROS_FRASE = 16
 QUADROS_FECHO = 40
-FECHO = len(_props['cenas']) * SEGURA_CENA / 30
-DURACAO = FECHO + QUADROS_FECHO / 30
+
+# Tres partes: a vitrine picotada, as frases (uma por batida) e a marca.
+FIM_VITRINE = len(_props['cenas']) * SEGURA_CENA / 30
+FIM_FRASES = FIM_VITRINE + len(_props.get('frases', [])) * QUADROS_FRASE / 30
+DURACAO = FIM_FRASES + QUADROS_FECHO / 30
+FECHO = FIM_VITRINE  # onde a vitrine entrega o video para as frases
 
 n = int(SR * DURACAO)
 t = np.arange(n) / SR
@@ -126,19 +131,21 @@ def impacto(inicio: float, forca=1.0):
 notas = [55.0, 55.0, 65.4, 73.4, 55.0, 61.7, 73.4, 55.0]
 compasso = 0.0
 c = 0
-while compasso < FECHO:
-    sub(compasso, min(COMPASSO, FECHO - compasso) + 0.1, notas[c % len(notas)], 0.3)
+while compasso < FIM_FRASES:
+    sub(compasso, min(COMPASSO, FIM_FRASES - compasso) + 0.1, notas[c % len(notas)], 0.3)
     compasso += COMPASSO
     c += 1
 
-total_compassos = max(1, int(round(FECHO / COMPASSO)))
+total_compassos = max(1, int(round(FIM_VITRINE / COMPASSO)))
 respiro = total_compassos - 2  # penultimo compasso: tira o bumbo e abre espaco
 
+# bumbo e palma atravessam a vitrine e as frases: e a mesma musica, e cada
+# frase troca exatamente em uma batida
 batida = 0.0
 i = 0
-while batida < FECHO:
+while batida < FIM_FRASES:
     dentro = int(batida / COMPASSO)
-    meio_do_respiro = dentro == respiro and (i % 4) < 2
+    meio_do_respiro = batida < FIM_VITRINE and dentro == respiro and (i % 4) < 2
     if not meio_do_respiro:
         grave(batida, 0.85 if i % 2 == 0 else 0.68)
     if i % 2 == 1 and dentro > 0:
@@ -146,18 +153,28 @@ while batida < FECHO:
     batida += BATIDA
     i += 1
 
+# a virada de capitulo: a vitrine para e as frases comecam
+impacto(FIM_VITRINE, 0.8)
+
 # um clique em cada corte do video — sem excecao, e mais forte a cada quatro,
 # que e onde cai a batida
+# durante a vitrine, um clique em cada corte. Durante as frases o clique
+# continua, mais baixo, e so a troca de frase leva o acento.
 semi = 0.0
 k = 0
-while semi < FECHO:
-    clique(semi, 0.58 if k % 4 == 0 else 0.36)
+while semi < FIM_FRASES:
+    na_vitrine = semi < FIM_VITRINE
+    acento = k % 4 == 0
+    if na_vitrine:
+        clique(semi, 0.58 if acento else 0.36)
+    else:
+        clique(semi, 0.5 if acento else 0.16)
     semi += SEMI
     k += 1
 
-# ultimo compasso puxa para o fecho
-subida(FECHO - BATIDA * 3, BATIDA * 3, 0.24)  # baixo o bastante para o clique nao sumir na subida
-impacto(FECHO, 1.0)
+# a ultima frase puxa para a marca
+subida(FIM_FRASES - BATIDA * 2, BATIDA * 2, 0.24)  # baixo o bastante para o clique nao sumir
+impacto(FIM_FRASES, 1.0)
 
 # --- masterizacao ------------------------------------------------------------
 
@@ -186,4 +203,5 @@ with wave.open(str(destino), 'w') as w:
     w.setframerate(SR)
     w.writeframes((quadro * 32767).astype('<i2').tobytes())
 
-print(f'{destino} — {DURACAO}s a {BPM} BPM')
+print(f'{destino} — {DURACAO:.2f}s a {BPM} BPM '
+      f'(vitrine ate {FIM_VITRINE:.2f}s, frases ate {FIM_FRASES:.2f}s)')

@@ -106,62 +106,19 @@
       "brilho": 1.507
     },
     {
-      "imagem": "imagens/dupla_camera.jpg",
-      "inverter": false,
-      "brilho": 0.706
-    },
-    {
-      "imagem": "imagens/tripe.jpg",
-      "inverter": true,
-      "brilho": 1.446
-    },
-    {
       "imagem": "imagens/flash_ensaio.jpg",
       "inverter": false,
       "brilho": 1.127
-    },
-    {
-      "imagem": "imagens/brinde.jpg",
-      "inverter": true,
-      "brilho": 1.602
-    },
-    {
-      "imagem": "imagens/modelo_luz.jpg",
-      "inverter": false,
-      "brilho": 1.122
-    },
-    {
-      "imagem": "imagens/microfone.jpg",
-      "inverter": true,
-      "brilho": 2.511
-    },
-    {
-      "imagem": "imagens/set.jpg",
-      "inverter": false,
-      "brilho": 0.983
-    },
-    {
-      "imagem": "imagens/evento_jantar.jpg",
-      "inverter": true,
-      "brilho": 1.515
-    },
-    {
-      "imagem": "imagens/ringlight_dupla.jpg",
-      "inverter": false,
-      "brilho": 0.738
-    },
-    {
-      "imagem": "imagens/confete.jpg",
-      "inverter": true,
-      "brilho": 2.6
-    },
-    {
-      "imagem": "imagens/edicao_laptop.jpg",
-      "inverter": false,
-      "brilho": 0.777
     }
   ],
-  "larguraMarca": 36,
+  "larguraMarca": 29,
   "trilha": "audio/trilha.wav",
-  "pulso": "suave"
+  "pulso": "suave",
+  "frases": [
+    "De nós",
+    "Para vocês",
+    "O que faltava",
+    "No audiovisual",
+    "Em Arujá"
+  ]
 }
