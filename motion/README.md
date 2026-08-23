@@ -55,7 +55,8 @@ que ja e clara, o negativo daria preto — entao ali a versao clara e um estouro
 de luz.
 
 ```bash
-npm run render -- Vitrine out/vitrine.mp4 --props=props/vitrine.json
+npm run render:vitrine              # -> out/astart-vitrine.mp4, com trilha
+npm run render:vitrine out/x.mp4    # outro destino
 ```
 
 ### Trilha
@@ -65,11 +66,22 @@ gerada por `scripts/trilha.py`. O andamento sai do corte: 4 frames a 30fps sao
 0,1333s, que e exatamente uma semicolcheia a **112,5 BPM**. Entao bumbo, palma e
 marcacao caem junto com o corte, e o ultimo compasso puxa para o fecho.
 
-Mesmo espirito da referencia: grave dominante, quase nada de agudo.
+Mesmo espirito da referencia: grave dominante, quase nada de agudo — mas o
+**clique da troca de quadro fica por cima do grave**, e ele que conduz. Um
+clique em cada corte, mais forte a cada quatro, que e onde cai a batida.
 
 ```bash
-python3 scripts/trilha.py   # regrava public/audio/trilha.wav
+npm run trilha   # regrava public/audio/trilha.wav
 ```
+
+**Por que o render passa por um script.** O audio que o `remotion render` escreve
+no mp4 sai 45ms atrasado (medido: o primeiro clique cai em 45ms em vez de 2ms).
+Em um video que corta a cada 133ms isso e um terco de corte, e da para ouvir o
+clique chegando depois da imagem. Por isso `scripts/render-vitrine.sh` renderiza
+mudo e casa a trilha depois com o ffmpeg: aferido, o clique cai a 0-2ms do corte.
+
+A trilha fica em wav de proposito — mp3 e aac carregam atraso de codificacao,
+e aqui a referencia de tempo precisa ser exata.
 
 Para rodar mudo ou trocar a faixa, e o prop `trilha` (caminho dentro de
 `public/`; vazio desliga o audio).

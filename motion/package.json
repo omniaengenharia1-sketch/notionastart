@@ -7,7 +7,9 @@
     "studio": "remotion studio",
     "render": "remotion render src/index.ts",
     "render:exemplo": "remotion render src/index.ts ReelIdeia out/reel.mp4 --props=props/exemplo.json",
-    "still": "remotion still src/index.ts"
+    "still": "remotion still src/index.ts",
+    "trilha": "python3 scripts/trilha.py",
+    "render:vitrine": "bash scripts/render-vitrine.sh"
   },
   "dependencies": {
     "@remotion/cli": "4.0.515",

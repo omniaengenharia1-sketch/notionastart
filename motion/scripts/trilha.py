@@ -55,7 +55,7 @@ def grave(inicio: float, forca=1.0, dur=0.42):
     soma(inicio, forca * np.sin(fase) * env(dur, 0.002, 0.09))
 
 
-def estalo(inicio: float, forca=0.5):
+def estalo(inicio: float, forca=0.42):
     """Palma: ruido curto, sem corpo grave."""
     dur = 0.18
     r = np.random.default_rng(int(inicio * 1000)).normal(0, 1, int(dur * SR))
@@ -63,12 +63,20 @@ def estalo(inicio: float, forca=0.5):
     soma(inicio, forca * (r - passa_baixa) * env(dur, 0.001, 0.045))
 
 
-def tique(inicio: float, forca=0.16):
-    """Marcacao no corte: ruido agudo bem curto."""
-    dur = 0.05
-    r = np.random.default_rng(int(inicio * 7919)).normal(0, 1, int(dur * SR))
-    passa_baixa = np.convolve(r, np.ones(8) / 8, mode='same')
-    soma(inicio, forca * (r - passa_baixa) * env(dur, 0.001, 0.012))
+def clique(inicio: float, forca=0.34):
+    """
+    O clique que troca o quadro. E o elemento mais importante da faixa: cai
+    exatamente no corte, e precisa ser seco e agudo o bastante para nao sumir
+    embaixo do grave. Ruido curtissimo somado a um transiente de 2 kHz.
+    """
+    dur = 0.035
+    m = int(dur * SR)
+    r = np.random.default_rng(int(inicio * 7919)).normal(0, 1, m)
+    passa_baixa = np.convolve(r, np.ones(4) / 4, mode='same')
+    agudo = r - passa_baixa
+    x = np.arange(m) / SR
+    transiente = np.sin(2 * np.pi * 2000 * x) * np.exp(-x / 0.004)
+    soma(inicio, forca * (agudo * env(dur, 0.0005, 0.007) + 0.5 * transiente))
 
 
 def sub(inicio: float, dur: float, freq=55.0, forca=0.5):
@@ -101,25 +109,27 @@ def impacto(inicio: float, forca=1.0):
 
 # --- arranjo -----------------------------------------------------------------
 
-# grave sustentado por baixo de tudo, trocando de nota no meio
-sub(0.0, 2.2, 55.0, 0.42)
-sub(2.133, 1.7, 61.7, 0.42)  # sobe uma nota: tira a sensacao de loop parado
+# grave sustentado por baixo de tudo, trocando de nota no meio.
+# fica de proposito abaixo do clique: quem conduz o video e a marcacao do corte
+sub(0.0, 2.2, 55.0, 0.3)
+sub(2.133, 1.7, 61.7, 0.3)  # sobe uma nota: tira a sensacao de loop parado
 
 # bumbo em toda batida; palma na 2 e na 4
 batida = 0.0
 i = 0
 while batida < FECHO:
-    grave(batida, 1.0 if i % 2 == 0 else 0.8)
+    grave(batida, 0.85 if i % 2 == 0 else 0.68)
     if i % 2 == 1:
         estalo(batida)
     batida += BATIDA
     i += 1
 
-# tique em cada corte do video, mais forte a cada quatro
+# um clique em cada corte do video — sem excecao, e mais forte a cada quatro,
+# que e onde cai a batida
 semi = 0.0
 k = 0
 while semi < FECHO:
-    tique(semi, 0.2 if k % 4 == 0 else 0.11)
+    clique(semi, 0.58 if k % 4 == 0 else 0.36)
     semi += SEMI
     k += 1
 
@@ -132,7 +142,8 @@ impacto(FECHO, 1.0)
 mix = np.tanh(mix * 1.15)  # limitador suave
 mix /= np.max(np.abs(mix))
 mix *= 0.92
-mix[: int(0.02 * SR)] *= np.linspace(0, 1, int(0.02 * SR))
+# fade de entrada curtissimo: 20ms ja comia o ataque do primeiro clique
+mix[: int(0.003 * SR)] *= np.linspace(0, 1, int(0.003 * SR))
 saida_fade = int(0.16 * SR)
 mix[-saida_fade:] *= np.linspace(1, 0, saida_fade)
 

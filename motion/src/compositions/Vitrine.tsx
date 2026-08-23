@@ -20,7 +20,7 @@ export const cenaSchema = z.object({
 export const vitrineSchema = z.object({
   cenas: z.array(cenaSchema).min(1).max(24),
   /** trilha dentro de public/ — vazio roda mudo */
-  trilha: z.string().default('audio/trilha.mp3'),
+  trilha: z.string().default('audio/trilha.wav'),
   /** largura da marca, em % da largura do quadro — igual em todas as cenas */
   larguraMarca: z.number().min(10).max(80).default(36),
   accent: zColor().optional(),
