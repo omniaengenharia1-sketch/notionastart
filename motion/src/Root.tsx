@@ -54,9 +54,9 @@ const manifestoExemplo: ManifestoProps = {
   blocos: [
     {imagem: 'imagens/crew.jpg', linhas: ['Aparecer', 'não é sorte.']},
     {imagem: 'imagens/operador.jpg', linhas: ['É método.']},
-    {imagem: 'imagens/parede.jpg', linhas: ['Antes da câmera,', 'o planejamento.']},
+    {imagem: 'imagens/estudio_vazio.jpg', linhas: ['Antes da câmera,', 'o planejamento.']},
     {imagem: 'imagens/estudio.jpg', linhas: ['Antes do post,', 'a estratégia.']},
-    {imagem: 'imagens/reuniao.jpg', linhas: ['Marca se constrói', 'todo dia.']},
+    {imagem: 'imagens/crew_escuro.jpg', linhas: ['Marca se constrói', 'todo dia.']},
   ],
   fecho: '',
 };
@@ -68,19 +68,15 @@ const calcularManifesto: CalculateMetadataFunction<ManifestoProps> = ({props}) =
 const vitrineExemplo: VitrineProps = {
   cenas: [
     {
-      imagem: "imagens/outdoor_noite.jpg",
-      inverter: true
-    },
-    {
-      imagem: "imagens/cabide.jpg",
+      imagem: "imagens/estudio_backdrop.jpg",
       inverter: false
     },
     {
-      imagem: "imagens/crew.jpg",
+      imagem: "imagens/crew_escuro.jpg",
       inverter: true
     },
     {
-      imagem: "imagens/laptop_branco.jpg",
+      imagem: "imagens/claquete.jpg",
       inverter: false
     },
     {
@@ -88,39 +84,43 @@ const vitrineExemplo: VitrineProps = {
       inverter: true
     },
     {
-      imagem: "imagens/camiseta.jpg",
+      imagem: "imagens/estudio_tripe.jpg",
       inverter: false
     },
     {
-      imagem: "imagens/estudio.jpg",
+      imagem: "imagens/crew.jpg",
+      inverter: false
+    },
+    {
+      imagem: "imagens/mesa_som.jpg",
       inverter: true
     },
     {
-      imagem: "imagens/abrigo.jpg",
+      imagem: "imagens/videocam.jpg",
       inverter: false
     },
     {
-      imagem: "imagens/camiseta_pessoa.jpg",
+      imagem: "imagens/estudio_vazio.jpg",
       inverter: true
-    },
-    {
-      imagem: "imagens/mesa_cafe.jpg",
-      inverter: false
-    },
-    {
-      imagem: "imagens/reuniao.jpg",
-      inverter: true
-    },
-    {
-      imagem: "imagens/outdoor_urbano.jpg",
-      inverter: false
     },
     {
       imagem: "imagens/set.jpg",
+      inverter: false
+    },
+    {
+      imagem: "imagens/monitor_edicao.jpg",
       inverter: true
     },
     {
-      imagem: "imagens/parede.jpg",
+      imagem: "imagens/cameraman.jpg",
+      inverter: false
+    },
+    {
+      imagem: "imagens/tripe.jpg",
+      inverter: true
+    },
+    {
+      imagem: "imagens/estudio.jpg",
       inverter: false
     }
   ],

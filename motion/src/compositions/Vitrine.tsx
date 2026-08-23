@@ -50,7 +50,7 @@ const Quadro: React.FC<{
     ? 'grayscale(1) brightness(0.34) contrast(1.28)'
     : cena.inverter
       ? 'grayscale(1) invert(1) contrast(1.02) brightness(1.16)'
-      : 'grayscale(1) brightness(1.62) contrast(0.86)';
+      : 'grayscale(1) brightness(1.8) contrast(0.88)';
 
   return (
     <AbsoluteFill style={{backgroundColor: escura ? '#050506' : '#FFFFFF'}}>
