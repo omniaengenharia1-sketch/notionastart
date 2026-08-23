@@ -24,6 +24,12 @@ import {
   surgindoSchema,
   type SurgindoProps,
 } from './compositions/LogoSurgindo';
+import {
+  duracaoVitrine,
+  Vitrine,
+  vitrineSchema,
+  type VitrineProps,
+} from './compositions/Vitrine';
 import {altura, fps, largura} from './theme';
 
 const exemplo: ReelProps = {
@@ -62,6 +68,114 @@ const calcularManifesto: CalculateMetadataFunction<ManifestoProps> = ({props}) =
   durationInFrames: duracaoManifesto(props.blocos.length),
 });
 
+const vitrineExemplo: VitrineProps = {
+  cenas: [
+    {
+      imagem: "imagens/outdoor_noite.jpg",
+      x: 22,
+      y: 47,
+      largura: 13,
+      inverter: true
+    },
+    {
+      imagem: "imagens/cabide.jpg",
+      x: 42,
+      y: 50,
+      largura: 24,
+      inverter: false
+    },
+    {
+      imagem: "imagens/crew.jpg",
+      x: 50,
+      y: 50,
+      largura: 40,
+      inverter: true
+    },
+    {
+      imagem: "imagens/laptop_branco.jpg",
+      x: 50,
+      y: 50,
+      largura: 30,
+      inverter: false
+    },
+    {
+      imagem: "imagens/operador.jpg",
+      x: 50,
+      y: 50,
+      largura: 38,
+      inverter: true
+    },
+    {
+      imagem: "imagens/camiseta.jpg",
+      x: 50,
+      y: 50,
+      largura: 32,
+      inverter: false
+    },
+    {
+      imagem: "imagens/estudio.jpg",
+      x: 50,
+      y: 50,
+      largura: 40,
+      inverter: true
+    },
+    {
+      imagem: "imagens/abrigo.jpg",
+      x: 27,
+      y: 37,
+      largura: 24,
+      inverter: false
+    },
+    {
+      imagem: "imagens/camiseta_pessoa.jpg",
+      x: 62,
+      y: 62,
+      largura: 14,
+      inverter: true
+    },
+    {
+      imagem: "imagens/mesa_cafe.jpg",
+      x: 76,
+      y: 22,
+      largura: 20,
+      inverter: false
+    },
+    {
+      imagem: "imagens/reuniao.jpg",
+      x: 50,
+      y: 50,
+      largura: 38,
+      inverter: true
+    },
+    {
+      imagem: "imagens/outdoor_urbano.jpg",
+      x: 22,
+      y: 38,
+      largura: 30,
+      inverter: false
+    },
+    {
+      imagem: "imagens/set.jpg",
+      x: 50,
+      y: 50,
+      largura: 40,
+      inverter: true
+    },
+    {
+      imagem: "imagens/parede.jpg",
+      x: 50,
+      y: 50,
+      largura: 38,
+      inverter: false
+    }
+  ],
+  fecho: "conteúdo que sustenta marca"
+};
+
+const calcularVitrine: CalculateMetadataFunction<VitrineProps> = ({props}) => ({
+  durationInFrames: duracaoVitrine(props.cenas.length),
+});
+
 const surgindoExemplo: SurgindoProps = {tagline: 'conteúdo que sustenta marca'};
 
 /** Mesmo componente em tres formatos: feed, story e capa de video. */
@@ -97,6 +211,17 @@ export const RemotionRoot: React.FC = () => (
       durationInFrames={DURACAO_LOGO}
     />
   ))}
+  <Composition
+    id="Vitrine"
+    component={Vitrine}
+    schema={vitrineSchema}
+    defaultProps={vitrineExemplo}
+    fps={fps}
+    width={largura}
+    height={altura}
+    durationInFrames={duracaoVitrine(vitrineExemplo.cenas.length)}
+    calculateMetadata={calcularVitrine}
+  />
   <Composition
     id="Manifesto"
     component={Manifesto}

@@ -29,10 +29,35 @@ npm run render -- ReelIdeia out/mor.mp4 --props=props/mor-dominio.json
 
 | composicao | formato | o que e |
 | --- | --- | --- |
+| `Vitrine` | 9:16, 4,6s | a marca aplicada em tudo, piscando escuro/claro a cada 4 frames |
 | `Manifesto` | 9:16, ~16s | frases em corte seco sobre b-roll, fechando na marca |
 | `LogoSurgindo` / `...Vertical` / `...Wide` | 1:1, 9:16, 16:9, 7s | a marca se formando devagar no escuro |
 | `LogoMotion` / `...Vertical` / `...Wide` | 1:1, 9:16, 16:9, 5s | assinatura tipografica (wordmark), sem depender do arquivo do logo |
 | `ReelIdeia` | 9:16, duracao variavel | reel de lista a partir de uma ideia de conteudo |
+
+## Composicao `Vitrine`
+
+Feita em cima da referencia (reel da @ownmediabr), medida frame a frame:
+
+- corte a cada **4 frames** — a 30fps sao 7,5 cortes por segundo, do primeiro ao
+  ultimo quadro;
+- **nada se move** dentro do quadro: o ritmo vem so do corte;
+- cada foto aparece duas vezes seguidas, **escura e clara**. Na escura a imagem
+  vai a preto-e-branco com uma camada da cor da marca e a logo entra em branco;
+  na clara a imagem estoura para o branco (negativo, quando a foto e escura) e a
+  logo entra na cor da marca.
+
+Cada cena diz onde a marca pousa — `x`, `y` (centro, em % do quadro) e `largura`
+(em % da largura). E assim que a logo cai em cima do outdoor, da camiseta ou do
+painel do abrigo em vez de flutuar no meio.
+
+`inverter` marca as fotos escuras: nelas a versao clara e o negativo. Em foto
+que ja e clara, o negativo daria preto — entao ali a versao clara e um estouro
+de luz.
+
+```bash
+npm run render -- Vitrine out/vitrine.mp4 --props=props/vitrine.json
+```
 
 ## Composicao `Manifesto`
 
