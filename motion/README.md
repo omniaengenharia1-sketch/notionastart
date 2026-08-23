@@ -61,10 +61,11 @@ npm run render:vitrine out/x.mp4    # outro destino
 
 ### Epilepsia fotossensivel — leia antes de publicar
 
-O pulso da referencia pisca **8 vezes por segundo** varrendo quase toda a escala
+O pulso da referencia da **4 flashes por segundo** varrendo quase toda a escala
 de luminancia (medido no arquivo final: 0,03 a 0,98 de luminancia relativa, em
 100% da tela). O limite da WCAG 2.3.1 — o mesmo criterio das normas de TV — e de
-**3 flashes por segundo**. Isso e risco real de convulsao para quem tem
+**3 flashes por segundo**. Encurtar o video nao muda nada: o criterio e por
+segundo, nao pelo total. Isso e risco real de convulsao para quem tem
 epilepsia fotossensivel, e em feed de rede social o video ainda toca sozinho,
 sem ninguem escolher ver.
 
@@ -72,8 +73,18 @@ Por isso a composicao tem o prop `pulso`:
 
 | valor | o que faz | flashes no pior segundo |
 | --- | --- | --- |
-| `forte` | o da referencia: escuro e claro alternando | 8 (acima do limite) |
-| `suave` | mesma troca de quadro, luminancia igualada; o que alterna e a cor da marca sobre a foto | 1 (dentro do limite) |
+| `forte` | o da referencia: escuro e claro a cada 4 frames | 4 (acima do limite) |
+| `medio` | padrao: a imagem troca a cada 4 frames, o escuro/claro so a cada 12 | 2 (dentro) |
+| `suave` | luminancia igualada; o que alterna e a cor da marca sobre a foto | 0 (dentro) |
+
+O `medio` depende de tres correcoes por foto (`brilhoEscuro`, `brilhoClaro`,
+`veuClaro`): sem elas, duas fotos no mesmo bloco terminam com brilhos
+diferentes e a troca entre elas conta como flash, estourando o limite mesmo com
+o bloco de 12 frames. O veu branco existe porque foto com muito preto nao
+alcanca o alvo claro so multiplicando brilho.
+
+Contagem: a norma chama de *flash* um **par** de mudancas opostas (escurece e
+volta), entao dois cortes de luminancia valem um flash.
 
 No `suave` o corte continua caindo no clique, no mesmo ritmo — o que sai e o
 estroboscopio, nao o ritmo. Cada cena leva um `brilho` proprio para que todos os

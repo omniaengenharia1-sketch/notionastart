@@ -3,123 +3,209 @@
     {
       "imagem": "imagens/ensaio_luz.jpg",
       "inverter": false,
-      "brilho": 0.658
+      "brilho": 0.658,
+      "brilhoEscuro": 0.293,
+      "brilhoClaro": 1.7,
+      "veuClaro": 0.0
     },
     {
       "imagem": "imagens/dslr_estudio.jpg",
       "inverter": true,
-      "brilho": 2.691
+      "brilho": 2.714,
+      "brilhoEscuro": 1.196,
+      "brilhoClaro": 1.7,
+      "veuClaro": 0.689
     },
     {
       "imagem": "imagens/evento_palco.jpg",
       "inverter": false,
-      "brilho": 1.097
+      "brilho": 1.111,
+      "brilhoEscuro": 0.487,
+      "brilhoClaro": 1.7,
+      "veuClaro": 0.535
     },
     {
       "imagem": "imagens/ringlight.jpg",
       "inverter": true,
-      "brilho": 3.366
+      "brilho": 4.173,
+      "brilhoEscuro": 1.496,
+      "brilhoClaro": 1.7,
+      "veuClaro": 0.707
     },
     {
       "imagem": "imagens/ensaio_modelo.jpg",
       "inverter": true,
-      "brilho": 1.355
+      "brilho": 1.566,
+      "brilhoEscuro": 0.602,
+      "brilhoClaro": 1.7,
+      "veuClaro": 0.618
     },
     {
       "imagem": "imagens/estudio_backdrop.jpg",
       "inverter": false,
-      "brilho": 0.739
+      "brilho": 0.739,
+      "brilhoEscuro": 0.328,
+      "brilhoClaro": 1.7,
+      "veuClaro": 0.049
     },
     {
       "imagem": "imagens/gravando_celular.jpg",
       "inverter": true,
-      "brilho": 1.429
+      "brilho": 1.574,
+      "brilhoEscuro": 0.635,
+      "brilhoClaro": 1.7,
+      "veuClaro": 0.611
     },
     {
       "imagem": "imagens/evento_conferencia.jpg",
       "inverter": false,
-      "brilho": 0.89
+      "brilho": 0.89,
+      "brilhoEscuro": 0.396,
+      "brilhoClaro": 1.7,
+      "veuClaro": 0.341
     },
     {
       "imagem": "imagens/fotografo_dslr.jpg",
       "inverter": true,
-      "brilho": 3.199
+      "brilho": 3.827,
+      "brilhoEscuro": 1.423,
+      "brilhoClaro": 1.7,
+      "veuClaro": 0.704
     },
     {
       "imagem": "imagens/estudio_tripe.jpg",
       "inverter": false,
-      "brilho": 0.775
+      "brilho": 0.775,
+      "brilhoEscuro": 0.345,
+      "brilhoClaro": 1.7,
+      "veuClaro": 0.21
     },
     {
       "imagem": "imagens/evento_publico.jpg",
       "inverter": true,
-      "brilho": 1.613
+      "brilho": 1.784,
+      "brilhoEscuro": 0.717,
+      "brilhoClaro": 1.7,
+      "veuClaro": 0.632
     },
     {
       "imagem": "imagens/criador_dslr.jpg",
       "inverter": false,
-      "brilho": 0.556
+      "brilho": 0.556,
+      "brilhoEscuro": 0.247,
+      "brilhoClaro": 1.7,
+      "veuClaro": 0.0
     },
     {
       "imagem": "imagens/estudio_vazio.jpg",
       "inverter": true,
-      "brilho": 1.605
+      "brilho": 1.669,
+      "brilhoEscuro": 0.713,
+      "brilhoClaro": 1.7,
+      "veuClaro": 0.622
     },
     {
       "imagem": "imagens/ensaio_fotografo.jpg",
       "inverter": false,
-      "brilho": 0.615
+      "brilho": 0.615,
+      "brilhoEscuro": 0.273,
+      "brilhoClaro": 1.7,
+      "veuClaro": 0.0
     },
     {
       "imagem": "imagens/modelo_banco.jpg",
       "inverter": true,
-      "brilho": 1.736
+      "brilho": 2.202,
+      "brilhoEscuro": 0.772,
+      "brilhoClaro": 1.7,
+      "veuClaro": 0.647
     },
     {
       "imagem": "imagens/ensaio_parede.jpg",
       "inverter": false,
-      "brilho": 0.559
+      "brilho": 0.559,
+      "brilhoEscuro": 0.248,
+      "brilhoClaro": 1.7,
+      "veuClaro": 0.0
     },
     {
       "imagem": "imagens/show.jpg",
       "inverter": true,
-      "brilho": 1.43
+      "brilho": 1.487,
+      "brilhoEscuro": 0.636,
+      "brilhoClaro": 1.7,
+      "veuClaro": 0.602
     },
     {
       "imagem": "imagens/maquiagem.jpg",
       "inverter": false,
-      "brilho": 0.735
+      "brilho": 0.735,
+      "brilhoEscuro": 0.327,
+      "brilhoClaro": 1.7,
+      "veuClaro": 0.182
     },
     {
       "imagem": "imagens/fotografa.jpg",
       "inverter": true,
-      "brilho": 2.393
+      "brilho": 2.443,
+      "brilhoEscuro": 1.064,
+      "brilhoClaro": 1.7,
+      "veuClaro": 0.678
     },
     {
       "imagem": "imagens/estudio_homem.jpg",
       "inverter": false,
-      "brilho": 0.55
+      "brilho": 0.55,
+      "brilhoEscuro": 0.244,
+      "brilhoClaro": 1.7,
+      "veuClaro": 0.0
     },
     {
       "imagem": "imagens/evento_palestra.jpg",
       "inverter": true,
-      "brilho": 1.292
+      "brilho": 1.327,
+      "brilhoEscuro": 0.574,
+      "brilhoClaro": 1.7,
+      "veuClaro": 0.576
     },
     {
       "imagem": "imagens/flash_ensaio.jpg",
       "inverter": false,
-      "brilho": 0.966
+      "brilho": 0.966,
+      "brilhoEscuro": 0.429,
+      "brilhoClaro": 1.7,
+      "veuClaro": 0.428
     }
   ],
   "larguraMarca": 29,
   "trilha": "audio/trilha.wav",
   "pulso": "suave",
   "frases": [
-    "De nós",
-    "Para vocês",
-    "O que faltava",
-    "No audiovisual",
-    "Em Arujá"
+    {
+      "texto": "De nós",
+      "imagem": "imagens/dupla_camera.jpg",
+      "brilho": 0.269
+    },
+    {
+      "texto": "Para vocês",
+      "imagem": "imagens/evento_publico.jpg",
+      "brilho": 0.717
+    },
+    {
+      "texto": "O que faltava",
+      "imagem": "imagens/estudio_vazio.jpg",
+      "brilho": 0.713
+    },
+    {
+      "texto": "No audiovisual",
+      "imagem": "imagens/flash_ensaio.jpg",
+      "brilho": 0.429
+    },
+    {
+      "texto": "Em Arujá",
+      "imagem": "imagens/evento_conferencia.jpg",
+      "brilho": 0.396
+    }
   ],
   "marcaFecho": "logos/astart-producoes.png",
   "larguraFecho": 34
