@@ -33,7 +33,7 @@ export type VitrineProps = z.infer<typeof vitrineSchema>;
  * Nada se move dentro do quadro — o ritmo vem so do corte.
  */
 const SEGURA = 4;
-const FECHO = 26;
+const FECHO = 40; // ~1,3s com a marca sozinha no branco
 
 export const duracaoVitrine = (cenas: number) => cenas * SEGURA * 2 + FECHO;
 

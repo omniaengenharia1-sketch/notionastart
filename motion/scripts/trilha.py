@@ -10,16 +10,27 @@ faixa e escrita nesse andamento e todo ataque cai junto com um corte.
     python3 scripts/trilha.py
 """
 
+import json
 import numpy as np
 import wave
 from pathlib import Path
+
+RAIZ = Path(__file__).resolve().parent.parent
 
 SR = 44100
 BPM = 112.5
 BATIDA = 60 / BPM  # 0,5333s
 SEMI = BATIDA / 4  # 0,1333s = 4 frames a 30fps
-DURACAO = 4.6  # 138 frames
-FECHO = 112 / 30  # frame em que a marca fica sozinha no preto
+COMPASSO = BATIDA * 4
+
+# A duracao sai do proprio video: 8 frames por cena mais o fecho, a 30fps.
+# Assim a faixa acompanha quando cenas entram ou saem, sem ninguem lembrar
+# de ajustar dois numeros em lugares diferentes.
+_props = json.loads((RAIZ / 'props' / 'vitrine.json').read_text())
+SEGURA_CENA = 8
+QUADROS_FECHO = 40
+FECHO = len(_props['cenas']) * SEGURA_CENA / 30
+DURACAO = FECHO + QUADROS_FECHO / 30
 
 n = int(SR * DURACAO)
 t = np.arange(n) / SR
@@ -109,17 +120,28 @@ def impacto(inicio: float, forca=1.0):
 
 # --- arranjo -----------------------------------------------------------------
 
-# grave sustentado por baixo de tudo, trocando de nota no meio.
-# fica de proposito abaixo do clique: quem conduz o video e a marcacao do corte
-sub(0.0, 2.2, 55.0, 0.3)
-sub(2.133, 1.7, 61.7, 0.3)  # sobe uma nota: tira a sensacao de loop parado
+# O grave anda por baixo, trocando de nota a cada compasso — sem isso, dez
+# segundos de mesma nota viram zumbido. Fica de proposito abaixo do clique:
+# quem conduz o video e a marcacao do corte.
+notas = [55.0, 55.0, 65.4, 73.4, 55.0, 61.7, 73.4, 55.0]
+compasso = 0.0
+c = 0
+while compasso < FECHO:
+    sub(compasso, min(COMPASSO, FECHO - compasso) + 0.1, notas[c % len(notas)], 0.3)
+    compasso += COMPASSO
+    c += 1
 
-# bumbo em toda batida; palma na 2 e na 4
+total_compassos = max(1, int(round(FECHO / COMPASSO)))
+respiro = total_compassos - 2  # penultimo compasso: tira o bumbo e abre espaco
+
 batida = 0.0
 i = 0
 while batida < FECHO:
-    grave(batida, 0.85 if i % 2 == 0 else 0.68)
-    if i % 2 == 1:
+    dentro = int(batida / COMPASSO)
+    meio_do_respiro = dentro == respiro and (i % 4) < 2
+    if not meio_do_respiro:
+        grave(batida, 0.85 if i % 2 == 0 else 0.68)
+    if i % 2 == 1 and dentro > 0:
         estalo(batida)
     batida += BATIDA
     i += 1
@@ -134,7 +156,7 @@ while semi < FECHO:
     k += 1
 
 # ultimo compasso puxa para o fecho
-subida(FECHO - BATIDA * 2, BATIDA * 2, 0.34)
+subida(FECHO - BATIDA * 3, BATIDA * 3, 0.24)  # baixo o bastante para o clique nao sumir na subida
 impacto(FECHO, 1.0)
 
 # --- masterizacao ------------------------------------------------------------

@@ -122,10 +122,82 @@ const vitrineExemplo: VitrineProps = {
     {
       imagem: "imagens/ensaio_fotografo.jpg",
       inverter: false
+    },
+    {
+      imagem: "imagens/modelo_banco.jpg",
+      inverter: true
+    },
+    {
+      imagem: "imagens/ensaio_parede.jpg",
+      inverter: false
+    },
+    {
+      imagem: "imagens/show.jpg",
+      inverter: true
+    },
+    {
+      imagem: "imagens/maquiagem.jpg",
+      inverter: false
+    },
+    {
+      imagem: "imagens/fotografa.jpg",
+      inverter: true
+    },
+    {
+      imagem: "imagens/estudio_homem.jpg",
+      inverter: false
+    },
+    {
+      imagem: "imagens/evento_palestra.jpg",
+      inverter: true
+    },
+    {
+      imagem: "imagens/dupla_camera.jpg",
+      inverter: false
+    },
+    {
+      imagem: "imagens/tripe.jpg",
+      inverter: true
+    },
+    {
+      imagem: "imagens/flash_ensaio.jpg",
+      inverter: false
+    },
+    {
+      imagem: "imagens/brinde.jpg",
+      inverter: true
+    },
+    {
+      imagem: "imagens/modelo_luz.jpg",
+      inverter: false
+    },
+    {
+      imagem: "imagens/microfone.jpg",
+      inverter: true
+    },
+    {
+      imagem: "imagens/set.jpg",
+      inverter: false
+    },
+    {
+      imagem: "imagens/evento_jantar.jpg",
+      inverter: true
+    },
+    {
+      imagem: "imagens/ringlight_dupla.jpg",
+      inverter: false
+    },
+    {
+      imagem: "imagens/confete.jpg",
+      inverter: true
+    },
+    {
+      imagem: "imagens/edicao_laptop.jpg",
+      inverter: false
     }
   ],
   larguraMarca: 36,
-  trilha: "audio/trilha.mp3"
+  trilha: "audio/trilha.wav"
 };
 
 const calcularVitrine: CalculateMetadataFunction<VitrineProps> = ({props}) => ({

@@ -29,7 +29,7 @@ npm run render -- ReelIdeia out/mor.mp4 --props=props/mor-dominio.json
 
 | composicao | formato | o que e |
 | --- | --- | --- |
-| `Vitrine` | 9:16, 4,6s | a marca aplicada em tudo, piscando escuro/claro a cada 4 frames |
+| `Vitrine` | 9:16, ~9,9s | a marca aplicada em tudo, piscando escuro/claro a cada 4 frames |
 | `Manifesto` | 9:16, ~16s | frases em corte seco sobre b-roll, fechando na marca |
 | `LogoSurgindo` / `...Vertical` / `...Wide` | 1:1, 9:16, 16:9, 7s | a marca se formando devagar no escuro |
 | `LogoMotion` / `...Vertical` / `...Wide` | 1:1, 9:16, 16:9, 5s | assinatura tipografica (wordmark), sem depender do arquivo do logo |
