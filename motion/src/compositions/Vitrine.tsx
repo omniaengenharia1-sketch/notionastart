@@ -82,9 +82,10 @@ const Quadro: React.FC<{
   );
 };
 
+/** Ultimo take: a marca sozinha no branco. */
 const Fecho: React.FC<{larguraMarca: number}> = ({larguraMarca}) => (
   <AbsoluteFill
-    style={{backgroundColor: '#050506', justifyContent: 'center', alignItems: 'center'}}
+    style={{backgroundColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center'}}
   >
     <Img src={staticFile(LOGO)} style={{width: `${larguraMarca}%`}} />
   </AbsoluteFill>
