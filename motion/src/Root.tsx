@@ -48,10 +48,7 @@ const calcularMetadados: CalculateMetadataFunction<ReelProps> = ({props}) => ({
   durationInFrames: duracaoDoReel(props.topicos.length),
 });
 
-const logoExemplo: LogoProps = {
-  marca: 'Astart',
-  tagline: 'conteúdo que sustenta marca',
-};
+const logoExemplo: LogoProps = {marca: 'Astart', tagline: ''};
 
 const manifestoExemplo: ManifestoProps = {
   blocos: [
@@ -61,7 +58,7 @@ const manifestoExemplo: ManifestoProps = {
     {imagem: 'imagens/estudio.jpg', linhas: ['Antes do post,', 'a estratégia.']},
     {imagem: 'imagens/reuniao.jpg', linhas: ['Marca se constrói', 'todo dia.']},
   ],
-  fecho: 'conteúdo que sustenta marca',
+  fecho: '',
 };
 
 const calcularManifesto: CalculateMetadataFunction<ManifestoProps> = ({props}) => ({
@@ -72,111 +69,69 @@ const vitrineExemplo: VitrineProps = {
   cenas: [
     {
       imagem: "imagens/outdoor_noite.jpg",
-      x: 22,
-      y: 47,
-      largura: 13,
       inverter: true
     },
     {
       imagem: "imagens/cabide.jpg",
-      x: 42,
-      y: 50,
-      largura: 24,
       inverter: false
     },
     {
       imagem: "imagens/crew.jpg",
-      x: 50,
-      y: 50,
-      largura: 40,
       inverter: true
     },
     {
       imagem: "imagens/laptop_branco.jpg",
-      x: 50,
-      y: 50,
-      largura: 30,
       inverter: false
     },
     {
       imagem: "imagens/operador.jpg",
-      x: 50,
-      y: 50,
-      largura: 38,
       inverter: true
     },
     {
       imagem: "imagens/camiseta.jpg",
-      x: 50,
-      y: 50,
-      largura: 32,
       inverter: false
     },
     {
       imagem: "imagens/estudio.jpg",
-      x: 50,
-      y: 50,
-      largura: 40,
       inverter: true
     },
     {
       imagem: "imagens/abrigo.jpg",
-      x: 27,
-      y: 37,
-      largura: 24,
       inverter: false
     },
     {
       imagem: "imagens/camiseta_pessoa.jpg",
-      x: 62,
-      y: 62,
-      largura: 14,
       inverter: true
     },
     {
       imagem: "imagens/mesa_cafe.jpg",
-      x: 76,
-      y: 22,
-      largura: 20,
       inverter: false
     },
     {
       imagem: "imagens/reuniao.jpg",
-      x: 50,
-      y: 50,
-      largura: 38,
       inverter: true
     },
     {
       imagem: "imagens/outdoor_urbano.jpg",
-      x: 22,
-      y: 38,
-      largura: 30,
       inverter: false
     },
     {
       imagem: "imagens/set.jpg",
-      x: 50,
-      y: 50,
-      largura: 40,
       inverter: true
     },
     {
       imagem: "imagens/parede.jpg",
-      x: 50,
-      y: 50,
-      largura: 38,
       inverter: false
     }
   ],
-  fecho: "conteúdo que sustenta marca"
+  larguraMarca: 36
 };
 
 const calcularVitrine: CalculateMetadataFunction<VitrineProps> = ({props}) => ({
   durationInFrames: duracaoVitrine(props.cenas.length),
 });
 
-const surgindoExemplo: SurgindoProps = {tagline: 'conteúdo que sustenta marca'};
+const surgindoExemplo: SurgindoProps = {tagline: ''};
 
 /** Mesmo componente em tres formatos: feed, story e capa de video. */
 const formatosLogo = [

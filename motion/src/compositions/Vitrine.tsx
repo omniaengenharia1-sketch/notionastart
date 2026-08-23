@@ -1,8 +1,8 @@
 import React from 'react';
-import {AbsoluteFill, Img, Sequence, staticFile, useVideoConfig} from 'remotion';
+import {AbsoluteFill, Img, Sequence, staticFile} from 'remotion';
 import {z} from 'zod';
 import {zColor} from '@remotion/zod-types';
-import {cores, fonte, paletaDe} from '../theme';
+import {paletaDe} from '../theme';
 import '../fonte';
 
 const LOGO = 'logos/astart.png';
@@ -10,11 +10,6 @@ const LOGO = 'logos/astart.png';
 export const cenaSchema = z.object({
   /** caminho dentro de public/ — ex.: "imagens/outdoor_noite.jpg" */
   imagem: z.string(),
-  /** centro da marca, em % do quadro */
-  x: z.number().min(0).max(100),
-  y: z.number().min(0).max(100),
-  /** largura da marca, em % da largura do quadro */
-  largura: z.number().min(4).max(90),
   /**
    * true para foto escura: a versao clara e o negativo dela.
    * false para foto ja clara: a versao clara e um estouro de luz.
@@ -24,7 +19,8 @@ export const cenaSchema = z.object({
 
 export const vitrineSchema = z.object({
   cenas: z.array(cenaSchema).min(1).max(24),
-  fecho: z.string(),
+  /** largura da marca, em % da largura do quadro — igual em todas as cenas */
+  larguraMarca: z.number().min(10).max(80).default(36),
   accent: zColor().optional(),
 });
 
@@ -46,7 +42,8 @@ const Quadro: React.FC<{
   cena: z.infer<typeof cenaSchema>;
   variante: 'escura' | 'clara';
   accent: string;
-}> = ({cena, variante, accent}) => {
+  larguraMarca: number;
+}> = ({cena, variante, accent, larguraMarca}) => {
   const escura = variante === 'escura';
 
   const tratamento = escura
@@ -69,15 +66,12 @@ const Quadro: React.FC<{
         />
       ) : null}
 
-      <AbsoluteFill>
+      {/* a marca fica sempre no mesmo lugar: centro do quadro, mesmo tamanho */}
+      <AbsoluteFill style={{justifyContent: 'center', alignItems: 'center'}}>
         <Img
           src={staticFile(LOGO)}
           style={{
-            position: 'absolute',
-            width: `${cena.largura}%`,
-            left: `${cena.x}%`,
-            top: `${cena.y}%`,
-            transform: 'translate(-50%, -50%)',
+            width: `${larguraMarca}%`,
             filter: escura ? MARCA_BRANCA : undefined,
           }}
         />
@@ -86,37 +80,16 @@ const Quadro: React.FC<{
   );
 };
 
-const Fecho: React.FC<{fecho: string}> = ({fecho}) => {
-  const {width, height} = useVideoConfig();
-  const base = Math.min(width, height);
-
-  return (
-    <AbsoluteFill
-      style={{backgroundColor: '#050506', justifyContent: 'center', alignItems: 'center'}}
-    >
-      <Img src={staticFile(LOGO)} style={{width: base * 0.42}} />
-      {fecho ? (
-        <div
-          style={{
-            marginTop: base * 0.07,
-            fontFamily: fonte,
-            fontSize: base * 0.028,
-            fontWeight: 600,
-            letterSpacing: '0.28em',
-            textTransform: 'uppercase',
-            color: cores.textoFraco,
-            paddingLeft: '0.28em',
-          }}
-        >
-          {fecho}
-        </div>
-      ) : null}
-    </AbsoluteFill>
-  );
-};
+const Fecho: React.FC<{larguraMarca: number}> = ({larguraMarca}) => (
+  <AbsoluteFill
+    style={{backgroundColor: '#050506', justifyContent: 'center', alignItems: 'center'}}
+  >
+    <Img src={staticFile(LOGO)} style={{width: `${larguraMarca}%`}} />
+  </AbsoluteFill>
+);
 
 /** A marca aplicada em tudo, em corte seco: escura, clara, escura, clara. */
-export const Vitrine: React.FC<VitrineProps> = ({cenas, fecho, accent}) => {
+export const Vitrine: React.FC<VitrineProps> = ({cenas, larguraMarca, accent}) => {
   const a1 = accent ?? paletaDe('Astart').accent;
 
   return (
@@ -124,15 +97,15 @@ export const Vitrine: React.FC<VitrineProps> = ({cenas, fecho, accent}) => {
       {cenas.map((cena, i) => (
         <React.Fragment key={i}>
           <Sequence from={i * SEGURA * 2} durationInFrames={SEGURA}>
-            <Quadro cena={cena} variante="escura" accent={a1} />
+            <Quadro cena={cena} variante="escura" accent={a1} larguraMarca={larguraMarca} />
           </Sequence>
           <Sequence from={i * SEGURA * 2 + SEGURA} durationInFrames={SEGURA}>
-            <Quadro cena={cena} variante="clara" accent={a1} />
+            <Quadro cena={cena} variante="clara" accent={a1} larguraMarca={larguraMarca} />
           </Sequence>
         </React.Fragment>
       ))}
       <Sequence from={cenas.length * SEGURA * 2} durationInFrames={FECHO}>
-        <Fecho fecho={fecho} />
+        <Fecho larguraMarca={larguraMarca} />
       </Sequence>
     </AbsoluteFill>
   );

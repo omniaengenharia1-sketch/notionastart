@@ -47,9 +47,8 @@ Feita em cima da referencia (reel da @ownmediabr), medida frame a frame:
   na clara a imagem estoura para o branco (negativo, quando a foto e escura) e a
   logo entra na cor da marca.
 
-Cada cena diz onde a marca pousa — `x`, `y` (centro, em % do quadro) e `largura`
-(em % da largura). E assim que a logo cai em cima do outdoor, da camiseta ou do
-painel do abrigo em vez de flutuar no meio.
+A marca fica sempre no mesmo lugar: centro do quadro, mesmo tamanho em todas as
+cenas (`larguraMarca`, em % da largura). So a foto atras muda.
 
 `inverter` marca as fotos escuras: nelas a versao clara e o negativo. Em foto
 que ja e clara, o negativo daria preto — entao ali a versao clara e um estouro

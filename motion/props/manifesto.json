@@ -1,10 +1,39 @@
 {
   "blocos": [
-    {"imagem": "imagens/crew.jpg", "linhas": ["Aparecer", "não é sorte."]},
-    {"imagem": "imagens/operador.jpg", "linhas": ["É método."]},
-    {"imagem": "imagens/parede.jpg", "linhas": ["Antes da câmera,", "o planejamento."]},
-    {"imagem": "imagens/estudio.jpg", "linhas": ["Antes do post,", "a estratégia."]},
-    {"imagem": "imagens/reuniao.jpg", "linhas": ["Marca se constrói", "todo dia."]}
+    {
+      "imagem": "imagens/crew.jpg",
+      "linhas": [
+        "Aparecer",
+        "não é sorte."
+      ]
+    },
+    {
+      "imagem": "imagens/operador.jpg",
+      "linhas": [
+        "É método."
+      ]
+    },
+    {
+      "imagem": "imagens/parede.jpg",
+      "linhas": [
+        "Antes da câmera,",
+        "o planejamento."
+      ]
+    },
+    {
+      "imagem": "imagens/estudio.jpg",
+      "linhas": [
+        "Antes do post,",
+        "a estratégia."
+      ]
+    },
+    {
+      "imagem": "imagens/reuniao.jpg",
+      "linhas": [
+        "Marca se constrói",
+        "todo dia."
+      ]
+    }
   ],
-  "fecho": "conteúdo que sustenta marca"
+  "fecho": ""
 }
