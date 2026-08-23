@@ -1,0 +1,7 @@
+<!-- Marca geometrica generica, so para testar o modo `arquivo`.
+     Troque por public/logos/<cliente>.svg quando tiver o logo real. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" fill="none">
+  <circle cx="120" cy="120" r="96" stroke="#F4F4F6" stroke-width="14" />
+  <path d="M60 150 L120 54 L180 150" stroke="#F4F4F6" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M84 150 H156" stroke="#F4F4F6" stroke-width="14" stroke-linecap="round" />
+</svg>

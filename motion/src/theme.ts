@@ -11,6 +11,7 @@ export const cores = {
 
 /** Paleta por cliente — o `accent` tinge gradiente, numeros e barra de progresso. */
 export const paletas: Record<string, {accent: string; accent2: string}> = {
+  Astart: {accent: '#7C5CFF', accent2: '#22D3EE'},
   'Mor Marcas': {accent: '#4F8CFF', accent2: '#8A5CFF'},
   'Publika.ai': {accent: '#FF5C8A', accent2: '#FF9F5C'},
   'Confraria Somos': {accent: '#FFC44D', accent2: '#FF6B4D'},
