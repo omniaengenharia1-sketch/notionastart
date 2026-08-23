@@ -54,61 +54,6 @@
       "imagem": "imagens/evento_publico.jpg",
       "inverter": true,
       "brilho": 1.613
-    },
-    {
-      "imagem": "imagens/criador_dslr.jpg",
-      "inverter": false,
-      "brilho": 0.556
-    },
-    {
-      "imagem": "imagens/estudio_vazio.jpg",
-      "inverter": true,
-      "brilho": 1.605
-    },
-    {
-      "imagem": "imagens/ensaio_fotografo.jpg",
-      "inverter": false,
-      "brilho": 0.615
-    },
-    {
-      "imagem": "imagens/modelo_banco.jpg",
-      "inverter": true,
-      "brilho": 1.736
-    },
-    {
-      "imagem": "imagens/ensaio_parede.jpg",
-      "inverter": false,
-      "brilho": 0.559
-    },
-    {
-      "imagem": "imagens/show.jpg",
-      "inverter": true,
-      "brilho": 1.43
-    },
-    {
-      "imagem": "imagens/maquiagem.jpg",
-      "inverter": false,
-      "brilho": 0.735
-    },
-    {
-      "imagem": "imagens/fotografa.jpg",
-      "inverter": true,
-      "brilho": 2.393
-    },
-    {
-      "imagem": "imagens/estudio_homem.jpg",
-      "inverter": false,
-      "brilho": 0.55
-    },
-    {
-      "imagem": "imagens/evento_palestra.jpg",
-      "inverter": true,
-      "brilho": 1.292
-    },
-    {
-      "imagem": "imagens/flash_ensaio.jpg",
-      "inverter": false,
-      "brilho": 0.966
     }
   ],
   "larguraMarca": 29,

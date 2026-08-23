@@ -50,6 +50,10 @@ export const vitrineSchema = z.object({
   pulso: z.enum(['forte', 'suave']).default('forte'),
   /** Uma frase por tela, depois da vitrine e antes da marca. */
   frases: z.array(z.string()).max(8).default([]),
+  /** Marca do ultimo quadro — a versao com "Producoes" embaixo. */
+  marcaFecho: z.string().default('logos/astart-producoes.png'),
+  /** largura da marca do fecho, em % da largura do quadro */
+  larguraFecho: z.number().min(10).max(80).default(34),
   accent: zColor().optional(),
 });
 
@@ -60,8 +64,8 @@ export type VitrineProps = z.infer<typeof vitrineSchema>;
  * Nada se move dentro do quadro — o ritmo vem so do corte.
  */
 const SEGURA = 4;
-const FRASE = 16; // uma batida a 112,5 BPM — tempo de ler sem quebrar o ritmo
-const FECHO = 40; // ~1,3s com a marca sozinha no branco
+const FRASE = 12; // 0,4s por frase: le e sai, sem segurar o video
+const FECHO = 30; // 1s com a marca sozinha no branco
 
 export const duracaoVitrine = (cenas: number, frases = 0) =>
   cenas * SEGURA * 2 + frases * FRASE + FECHO;
@@ -167,11 +171,11 @@ const Frase: React.FC<{texto: string; corpo: number; suave: boolean}> = ({
   );
 };
 
-const Fecho: React.FC<{larguraMarca: number}> = ({larguraMarca}) => (
+const Fecho: React.FC<{marca: string; largura: number}> = ({marca, largura}) => (
   <AbsoluteFill
     style={{backgroundColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center'}}
   >
-    <Img src={staticFile(LOGO)} style={{width: `${larguraMarca}%`}} />
+    <Img src={staticFile(marca)} style={{width: `${largura}%`}} />
   </AbsoluteFill>
 );
 
@@ -182,6 +186,8 @@ export const Vitrine: React.FC<VitrineProps> = ({
   trilha,
   pulso,
   frases,
+  marcaFecho,
+  larguraFecho,
   accent,
 }) => {
   const {width: largura} = useVideoConfig();
@@ -230,7 +236,7 @@ export const Vitrine: React.FC<VitrineProps> = ({
         from={cenas.length * SEGURA * 2 + frases.length * FRASE}
         durationInFrames={FECHO}
       >
-        <Fecho larguraMarca={larguraMarca} />
+        <Fecho marca={marcaFecho} largura={larguraFecho} />
       </Sequence>
     </AbsoluteFill>
   );

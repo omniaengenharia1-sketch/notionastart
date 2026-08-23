@@ -165,7 +165,9 @@ const vitrineExemplo: VitrineProps = {
     "O que faltava",
     "No audiovisual",
     "Em Arujá"
-  ]
+  ],
+  marcaFecho: "logos/astart-producoes.png",
+  larguraFecho: 34
 };
 
 const calcularVitrine: CalculateMetadataFunction<VitrineProps> = ({props}) => ({

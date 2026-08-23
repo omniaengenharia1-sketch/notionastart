@@ -11,6 +11,8 @@ faixa e escrita nesse andamento e todo ataque cai junto com um corte.
 """
 
 import json
+import sys
+
 import numpy as np
 import wave
 from pathlib import Path
@@ -26,10 +28,13 @@ COMPASSO = BATIDA * 4
 # A duracao sai do proprio video: 8 frames por cena mais o fecho, a 30fps.
 # Assim a faixa acompanha quando cenas entram ou saem, sem ninguem lembrar
 # de ajustar dois numeros em lugares diferentes.
-_props = json.loads((RAIZ / 'props' / 'vitrine.json').read_text())
+ARQ_PROPS = RAIZ / (sys.argv[1] if len(sys.argv) > 1 else 'props/vitrine.json')
+DESTINO = RAIZ / (sys.argv[2] if len(sys.argv) > 2 else 'public/audio/trilha.wav')
+
+_props = json.loads(ARQ_PROPS.read_text())
 SEGURA_CENA = 8
-QUADROS_FRASE = 16
-QUADROS_FECHO = 40
+QUADROS_FRASE = 12
+QUADROS_FECHO = 30
 
 # Tres partes: a vitrine picotada, as frases (uma por batida) e a marca.
 FIM_VITRINE = len(_props['cenas']) * SEGURA_CENA / 30
@@ -195,7 +200,7 @@ dir_[atraso:] += 0.06 * mix[:-atraso]
 quadro = np.stack([esq, dir_], axis=1)
 quadro = np.clip(quadro, -1, 1)
 
-destino = Path(__file__).resolve().parent.parent / 'public' / 'audio' / 'trilha.wav'
+destino = DESTINO
 destino.parent.mkdir(parents=True, exist_ok=True)
 with wave.open(str(destino), 'w') as w:
     w.setnchannels(2)

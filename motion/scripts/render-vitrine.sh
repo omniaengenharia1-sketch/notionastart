@@ -7,19 +7,20 @@
 # clique chegando depois da imagem. Entao o video sai mudo e a trilha e casada
 # depois, que fica exato.
 #
-#   scripts/render-vitrine.sh                                   # padrao
-#   scripts/render-vitrine.sh out/suave.mp4 props/vitrine-suave.json
+#   scripts/render-vitrine.sh
+#   scripts/render-vitrine.sh out/curta.mp4 props/vitrine-curta.json public/audio/trilha-curta.wav
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
 SAIDA="${1:-out/astart-vitrine.mp4}"
 PROPS="${2:-props/vitrine.json}"
+TRILHA="${3:-public/audio/trilha.wav}"
 MUDO="out/.vitrine-mudo.mp4"
 
 npx remotion render src/index.ts Vitrine "$MUDO" --props="$PROPS" --muted
 
-npx remotion ffmpeg -y -i "$MUDO" -i public/audio/trilha.wav \
+npx remotion ffmpeg -y -i "$MUDO" -i "$TRILHA" \
   -c:v copy -c:a aac -b:a 192k -shortest "$SAIDA"
 
 rm -f "$MUDO"

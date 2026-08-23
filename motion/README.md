@@ -73,7 +73,7 @@ Por isso a composicao tem o prop `pulso`:
 | valor | o que faz | flashes no pior segundo |
 | --- | --- | --- |
 | `forte` | o da referencia: escuro e claro alternando | 8 (acima do limite) |
-| `suave` | mesma troca de quadro, luminancia igualada; o que alterna e a cor da marca sobre a foto | 2 (dentro do limite) |
+| `suave` | mesma troca de quadro, luminancia igualada; o que alterna e a cor da marca sobre a foto | 1 (dentro do limite) |
 
 No `suave` o corte continua caindo no clique, no mesmo ritmo — o que sai e o
 estroboscopio, nao o ritmo. Cada cena leva um `brilho` proprio para que todos os
@@ -86,6 +86,25 @@ python3 scripts/brilho-suave.py props/vitrine-suave.json
 ```bash
 scripts/render-vitrine.sh out/suave.mp4 props/vitrine-suave.json
 ```
+
+### Versoes
+
+| props | o que e | duracao |
+| --- | --- | --- |
+| `props/vitrine-suave.json` | vitrine de ~6s, frases, marca | 8,87s |
+| `props/vitrine-curta.json` | o video inteiro em ~6s | 5,93s |
+| `props/vitrine.json` | mesma montagem, pulso forte | 8,87s |
+
+Cada uma tem a sua trilha, porque a musica e escrita em cima da duracao:
+
+```bash
+python3 scripts/trilha.py props/vitrine-curta.json public/audio/trilha-curta.wav
+scripts/render-vitrine.sh out/curta.mp4 props/vitrine-curta.json public/audio/trilha-curta.wav
+```
+
+O ultimo quadro usa `logos/astart-producoes.png` — a marca com "Producoes"
+embaixo (prop `marcaFecho`). A marca que aparece sobre as fotos continua sendo
+o simbolo sozinho.
 
 ### Trilha
 
