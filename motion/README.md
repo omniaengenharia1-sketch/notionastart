@@ -59,6 +59,34 @@ npm run render:vitrine              # -> out/astart-vitrine.mp4, com trilha
 npm run render:vitrine out/x.mp4    # outro destino
 ```
 
+### Epilepsia fotossensivel — leia antes de publicar
+
+O pulso da referencia pisca **8 vezes por segundo** varrendo quase toda a escala
+de luminancia (medido no arquivo final: 0,03 a 0,98 de luminancia relativa, em
+100% da tela). O limite da WCAG 2.3.1 — o mesmo criterio das normas de TV — e de
+**3 flashes por segundo**. Isso e risco real de convulsao para quem tem
+epilepsia fotossensivel, e em feed de rede social o video ainda toca sozinho,
+sem ninguem escolher ver.
+
+Por isso a composicao tem o prop `pulso`:
+
+| valor | o que faz | flashes no pior segundo |
+| --- | --- | --- |
+| `forte` | o da referencia: escuro e claro alternando | 8 (acima do limite) |
+| `suave` | mesma troca de quadro, luminancia igualada; o que alterna e a cor da marca sobre a foto | 2 (dentro do limite) |
+
+No `suave` o corte continua caindo no clique, no mesmo ritmo — o que sai e o
+estroboscopio, nao o ritmo. Cada cena leva um `brilho` proprio para que todos os
+quadros fiquem na mesma faixa de luminancia; quem calcula e:
+
+```bash
+python3 scripts/brilho-suave.py props/vitrine-suave.json
+```
+
+```bash
+scripts/render-vitrine.sh out/suave.mp4 props/vitrine-suave.json
+```
+
 ### Trilha
 
 `public/audio/trilha.mp3` — composicao original (nao e a musica da referencia),

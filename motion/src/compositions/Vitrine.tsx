@@ -13,8 +13,15 @@ export const cenaSchema = z.object({
   /**
    * true para foto escura: a versao clara e o negativo dela.
    * false para foto ja clara: a versao clara e um estouro de luz.
+   * So vale no pulso 'forte'.
    */
   inverter: z.boolean(),
+  /**
+   * Correcao de brilho da foto, usada so no pulso 'suave': iguala a luminancia
+   * de todas as cenas para que a troca de quadro nao vire um flash.
+   * Calculada por `scripts/brilho-suave.py`.
+   */
+  brilho: z.number().min(0.2).max(3).optional(),
 });
 
 export const vitrineSchema = z.object({
@@ -23,6 +30,17 @@ export const vitrineSchema = z.object({
   trilha: z.string().default('audio/trilha.wav'),
   /** largura da marca, em % da largura do quadro — igual em todas as cenas */
   larguraMarca: z.number().min(10).max(80).default(36),
+  /**
+   * 'forte' e o da referencia: escuro e claro alternando a cada 4 frames.
+   * Sao 8 flashes por segundo com quase toda a escala de luminancia, muito
+   * acima do limite de 3/s da WCAG 2.3.1 — risco real para quem tem epilepsia
+   * fotossensivel.
+   *
+   * 'suave' mantem a troca de quadro no mesmo ritmo, mas iguala a luminancia
+   * de todos os quadros: o que alterna e a cor da marca sobre a foto, nao o
+   * brilho. O corte continua batendo no clique, sem o efeito estroboscopico.
+   */
+  pulso: z.enum(['forte', 'suave']).default('forte'),
   accent: zColor().optional(),
 });
 
@@ -45,26 +63,41 @@ const Quadro: React.FC<{
   variante: 'escura' | 'clara';
   accent: string;
   larguraMarca: number;
-}> = ({cena, variante, accent, larguraMarca}) => {
+  pulso: 'forte' | 'suave';
+}> = ({cena, variante, accent, larguraMarca, pulso}) => {
   const escura = variante === 'escura';
+  const suave = pulso === 'suave';
 
-  const tratamento = escura
-    ? 'grayscale(1) brightness(0.46) contrast(1.2)'
-    : cena.inverter
-      ? 'grayscale(1) invert(1) contrast(1.02) brightness(1.16)'
-      : 'grayscale(1) brightness(1.8) contrast(0.88)';
+  const brilho = cena.brilho ?? 1;
+  const tratamento = suave
+    ? `grayscale(1) brightness(${(brilho * (escura ? 1 : 1.12)).toFixed(3)}) contrast(1.02)`
+    : escura
+      ? 'grayscale(1) brightness(0.46) contrast(1.2)'
+      : cena.inverter
+        ? 'grayscale(1) invert(1) contrast(1.02) brightness(1.16)'
+        : 'grayscale(1) brightness(1.8) contrast(0.88)';
 
   return (
-    <AbsoluteFill style={{backgroundColor: escura ? '#050506' : '#FFFFFF'}}>
+    <AbsoluteFill
+      style={{backgroundColor: suave ? '#1A1A1C' : escura ? '#050506' : '#FFFFFF'}}
+    >
       <Img
         src={staticFile(cena.imagem)}
         style={{width: '100%', height: '100%', objectFit: 'cover', filter: tratamento}}
       />
 
-      {/* a cor da marca so entra na versao escura — na clara quem colore e o logo */}
-      {escura ? (
+      {/*
+        No pulso forte a cor entra so no quadro escuro. No suave ela e o proprio
+        batimento: alterna entre foto tingida e foto neutra, com a mesma
+        luminancia — o olho registra a troca sem levar o flash.
+      */}
+      {escura || suave ? (
         <AbsoluteFill
-          style={{backgroundColor: accent, opacity: 0.3, mixBlendMode: 'color'}}
+          style={{
+            backgroundColor: accent,
+            opacity: suave ? (escura ? 0.42 : 0.06) : 0.3,
+            mixBlendMode: 'color',
+          }}
         />
       ) : null}
 
@@ -74,7 +107,7 @@ const Quadro: React.FC<{
           src={staticFile(LOGO)}
           style={{
             width: `${larguraMarca}%`,
-            filter: escura ? MARCA_BRANCA : undefined,
+            filter: escura || suave ? MARCA_BRANCA : undefined,
           }}
         />
       </AbsoluteFill>
@@ -92,7 +125,13 @@ const Fecho: React.FC<{larguraMarca: number}> = ({larguraMarca}) => (
 );
 
 /** A marca aplicada em tudo, em corte seco: escura, clara, escura, clara. */
-export const Vitrine: React.FC<VitrineProps> = ({cenas, larguraMarca, trilha, accent}) => {
+export const Vitrine: React.FC<VitrineProps> = ({
+  cenas,
+  larguraMarca,
+  trilha,
+  pulso,
+  accent,
+}) => {
   const a1 = accent ?? paletaDe('Astart').accent;
 
   return (
@@ -101,10 +140,22 @@ export const Vitrine: React.FC<VitrineProps> = ({cenas, larguraMarca, trilha, ac
       {cenas.map((cena, i) => (
         <React.Fragment key={i}>
           <Sequence from={i * SEGURA * 2} durationInFrames={SEGURA}>
-            <Quadro cena={cena} variante="escura" accent={a1} larguraMarca={larguraMarca} />
+            <Quadro
+              cena={cena}
+              variante="escura"
+              accent={a1}
+              larguraMarca={larguraMarca}
+              pulso={pulso}
+            />
           </Sequence>
           <Sequence from={i * SEGURA * 2 + SEGURA} durationInFrames={SEGURA}>
-            <Quadro cena={cena} variante="clara" accent={a1} larguraMarca={larguraMarca} />
+            <Quadro
+              cena={cena}
+              variante="clara"
+              accent={a1}
+              larguraMarca={larguraMarca}
+              pulso={pulso}
+            />
           </Sequence>
         </React.Fragment>
       ))}

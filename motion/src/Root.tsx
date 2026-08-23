@@ -197,6 +197,7 @@ const vitrineExemplo: VitrineProps = {
     }
   ],
   larguraMarca: 36,
+  pulso: "forte",
   trilha: "audio/trilha.wav"
 };
 

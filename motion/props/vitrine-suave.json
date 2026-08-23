@@ -2,134 +2,166 @@
   "cenas": [
     {
       "imagem": "imagens/ensaio_luz.jpg",
-      "inverter": false
+      "inverter": false,
+      "brilho": 0.768
     },
     {
       "imagem": "imagens/dslr_estudio.jpg",
-      "inverter": true
+      "inverter": true,
+      "brilho": 2.6
     },
     {
       "imagem": "imagens/evento_palco.jpg",
-      "inverter": false
+      "inverter": false,
+      "brilho": 1.279
     },
     {
       "imagem": "imagens/ringlight.jpg",
-      "inverter": true
+      "inverter": true,
+      "brilho": 2.6
     },
     {
       "imagem": "imagens/ensaio_modelo.jpg",
-      "inverter": true
+      "inverter": true,
+      "brilho": 1.581
     },
     {
       "imagem": "imagens/estudio_backdrop.jpg",
-      "inverter": false
+      "inverter": false,
+      "brilho": 0.862
     },
     {
       "imagem": "imagens/gravando_celular.jpg",
-      "inverter": true
+      "inverter": true,
+      "brilho": 1.668
     },
     {
       "imagem": "imagens/evento_conferencia.jpg",
-      "inverter": false
+      "inverter": false,
+      "brilho": 1.038
     },
     {
       "imagem": "imagens/fotografo_dslr.jpg",
-      "inverter": true
+      "inverter": true,
+      "brilho": 2.6
     },
     {
       "imagem": "imagens/estudio_tripe.jpg",
-      "inverter": false
+      "inverter": false,
+      "brilho": 0.905
     },
     {
       "imagem": "imagens/evento_publico.jpg",
-      "inverter": true
+      "inverter": true,
+      "brilho": 1.882
     },
     {
       "imagem": "imagens/criador_dslr.jpg",
-      "inverter": false
+      "inverter": false,
+      "brilho": 0.648
     },
     {
       "imagem": "imagens/estudio_vazio.jpg",
-      "inverter": true
+      "inverter": true,
+      "brilho": 1.873
     },
     {
       "imagem": "imagens/ensaio_fotografo.jpg",
-      "inverter": false
+      "inverter": false,
+      "brilho": 0.718
     },
     {
       "imagem": "imagens/modelo_banco.jpg",
-      "inverter": true
+      "inverter": true,
+      "brilho": 2.025
     },
     {
       "imagem": "imagens/ensaio_parede.jpg",
-      "inverter": false
+      "inverter": false,
+      "brilho": 0.652
     },
     {
       "imagem": "imagens/show.jpg",
-      "inverter": true
+      "inverter": true,
+      "brilho": 1.668
     },
     {
       "imagem": "imagens/maquiagem.jpg",
-      "inverter": false
+      "inverter": false,
+      "brilho": 0.857
     },
     {
       "imagem": "imagens/fotografa.jpg",
-      "inverter": true
+      "inverter": true,
+      "brilho": 2.6
     },
     {
       "imagem": "imagens/estudio_homem.jpg",
-      "inverter": false
+      "inverter": false,
+      "brilho": 0.641
     },
     {
       "imagem": "imagens/evento_palestra.jpg",
-      "inverter": true
+      "inverter": true,
+      "brilho": 1.507
     },
     {
       "imagem": "imagens/dupla_camera.jpg",
-      "inverter": false
+      "inverter": false,
+      "brilho": 0.706
     },
     {
       "imagem": "imagens/tripe.jpg",
-      "inverter": true
+      "inverter": true,
+      "brilho": 1.446
     },
     {
       "imagem": "imagens/flash_ensaio.jpg",
-      "inverter": false
+      "inverter": false,
+      "brilho": 1.127
     },
     {
       "imagem": "imagens/brinde.jpg",
-      "inverter": true
+      "inverter": true,
+      "brilho": 1.602
     },
     {
       "imagem": "imagens/modelo_luz.jpg",
-      "inverter": false
+      "inverter": false,
+      "brilho": 1.122
     },
     {
       "imagem": "imagens/microfone.jpg",
-      "inverter": true
+      "inverter": true,
+      "brilho": 2.511
     },
     {
       "imagem": "imagens/set.jpg",
-      "inverter": false
+      "inverter": false,
+      "brilho": 0.983
     },
     {
       "imagem": "imagens/evento_jantar.jpg",
-      "inverter": true
+      "inverter": true,
+      "brilho": 1.515
     },
     {
       "imagem": "imagens/ringlight_dupla.jpg",
-      "inverter": false
+      "inverter": false,
+      "brilho": 0.738
     },
     {
       "imagem": "imagens/confete.jpg",
-      "inverter": true
+      "inverter": true,
+      "brilho": 2.6
     },
     {
       "imagem": "imagens/edicao_laptop.jpg",
-      "inverter": false
+      "inverter": false,
+      "brilho": 0.777
     }
   ],
   "larguraMarca": 36,
   "trilha": "audio/trilha.wav",
-  "pulso": "forte"
+  "pulso": "suave"
 }
