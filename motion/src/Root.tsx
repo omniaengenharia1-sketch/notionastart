@@ -12,6 +12,18 @@ import {
   logoSchema,
   type LogoProps,
 } from './compositions/LogoMotion';
+import {
+  duracaoManifesto,
+  Manifesto,
+  manifestoSchema,
+  type ManifestoProps,
+} from './compositions/Manifesto';
+import {
+  DURACAO_SURGINDO,
+  LogoSurgindo,
+  surgindoSchema,
+  type SurgindoProps,
+} from './compositions/LogoSurgindo';
 import {altura, fps, largura} from './theme';
 
 const exemplo: ReelProps = {
@@ -34,6 +46,23 @@ const logoExemplo: LogoProps = {
   marca: 'Astart',
   tagline: 'conteúdo que sustenta marca',
 };
+
+const manifestoExemplo: ManifestoProps = {
+  blocos: [
+    {imagem: 'imagens/crew.jpg', linhas: ['Aparecer', 'não é sorte.']},
+    {imagem: 'imagens/operador.jpg', linhas: ['É método.']},
+    {imagem: 'imagens/parede.jpg', linhas: ['Antes da câmera,', 'o planejamento.']},
+    {imagem: 'imagens/estudio.jpg', linhas: ['Antes do post,', 'a estratégia.']},
+    {imagem: 'imagens/reuniao.jpg', linhas: ['Marca se constrói', 'todo dia.']},
+  ],
+  fecho: 'conteúdo que sustenta marca',
+};
+
+const calcularManifesto: CalculateMetadataFunction<ManifestoProps> = ({props}) => ({
+  durationInFrames: duracaoManifesto(props.blocos.length),
+});
+
+const surgindoExemplo: SurgindoProps = {tagline: 'conteúdo que sustenta marca'};
 
 /** Mesmo componente em tres formatos: feed, story e capa de video. */
 const formatosLogo = [
@@ -66,6 +95,30 @@ export const RemotionRoot: React.FC = () => (
       width={formato.width}
       height={formato.height}
       durationInFrames={DURACAO_LOGO}
+    />
+  ))}
+  <Composition
+    id="Manifesto"
+    component={Manifesto}
+    schema={manifestoSchema}
+    defaultProps={manifestoExemplo}
+    fps={fps}
+    width={largura}
+    height={altura}
+    durationInFrames={duracaoManifesto(manifestoExemplo.blocos.length)}
+    calculateMetadata={calcularManifesto}
+  />
+  {formatosLogo.map((formato) => (
+    <Composition
+      key={`surgindo-${formato.id}`}
+      id={formato.id.replace('LogoMotion', 'LogoSurgindo')}
+      component={LogoSurgindo}
+      schema={surgindoSchema}
+      defaultProps={surgindoExemplo}
+      fps={fps}
+      width={formato.width}
+      height={formato.height}
+      durationInFrames={DURACAO_SURGINDO}
     />
   ))}
   </>

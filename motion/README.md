@@ -25,6 +25,42 @@ Renderizar com um conteudo proprio:
 npm run render -- ReelIdeia out/mor.mp4 --props=props/mor-dominio.json
 ```
 
+## O que tem aqui
+
+| composicao | formato | o que e |
+| --- | --- | --- |
+| `Manifesto` | 9:16, ~16s | frases em corte seco sobre b-roll, fechando na marca |
+| `LogoSurgindo` / `...Vertical` / `...Wide` | 1:1, 9:16, 16:9, 7s | a marca se formando devagar no escuro |
+| `LogoMotion` / `...Vertical` / `...Wide` | 1:1, 9:16, 16:9, 5s | assinatura tipografica (wordmark), sem depender do arquivo do logo |
+| `ReelIdeia` | 9:16, duracao variavel | reel de lista a partir de uma ideia de conteudo |
+
+## Composicao `Manifesto`
+
+Cada bloco e uma frase sobre uma foto: a imagem entra ja em movimento (o sentido
+alterna a cada bloco), o texto sobe de tras de uma mascara e a passagem para o
+bloco seguinte e corte seco — sem transicao, que e o que da o ritmo.
+
+As fotos sao tratadas em preto e branco com uma camada da cor da marca por cima
+(`mix-blend-mode: color`), entao qualquer foto nova entra no mesmo clima sem
+precisar de edicao.
+
+O corpo do texto se ajusta a linha mais longa antes de deixar a frase quebrar
+sozinha. Cada bloco dura 66 frames (2,2s) e a duracao total sai do numero de
+blocos.
+
+```bash
+npm run render -- Manifesto out/manifesto.mp4 --props=props/manifesto.json
+```
+
+## Composicoes de logo
+
+`LogoSurgindo` e a marca se formando: sai do desfoque enquanto uma mascara de
+gradiente sobe revelando o desenho, assenta a escala e leva um brilho metalico
+que usa o proprio PNG como mascara — a luz respeita o recorte do logo.
+
+O arquivo da marca fica em `public/logos/astart.png` (fundo transparente, ja
+aparado). Trocar o arquivo troca as duas composicoes.
+
 ## Composicao `ReelIdeia`
 
 Um reel de lista: gancho -> topicos numerados -> CTA. A duracao se ajusta
@@ -44,6 +80,10 @@ Props (validadas por zod, entao aparecem como formulario no Studio):
 
 Quebrar o gancho em linhas e proposital: em video, onde a linha corta muda o
 ritmo da leitura, e isso e decisao de quem escreve — nao do `word-wrap`.
+
+## Imagens de fundo
+
+`public/imagens/` — Unsplash, creditos e links em `public/imagens/CREDITOS.md`.
 
 ## Paletas
 
