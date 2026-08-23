@@ -58,6 +58,22 @@ de luz.
 npm run render -- Vitrine out/vitrine.mp4 --props=props/vitrine.json
 ```
 
+### Trilha
+
+`public/audio/trilha.mp3` — composicao original (nao e a musica da referencia),
+gerada por `scripts/trilha.py`. O andamento sai do corte: 4 frames a 30fps sao
+0,1333s, que e exatamente uma semicolcheia a **112,5 BPM**. Entao bumbo, palma e
+marcacao caem junto com o corte, e o ultimo compasso puxa para o fecho.
+
+Mesmo espirito da referencia: grave dominante, quase nada de agudo.
+
+```bash
+python3 scripts/trilha.py   # regrava public/audio/trilha.wav
+```
+
+Para rodar mudo ou trocar a faixa, e o prop `trilha` (caminho dentro de
+`public/`; vazio desliga o audio).
+
 ## Composicao `Manifesto`
 
 Cada bloco e uma frase sobre uma foto: a imagem entra ja em movimento (o sentido

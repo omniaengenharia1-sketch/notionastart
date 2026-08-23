@@ -1,19 +1,39 @@
 {
   "cenas": [
     {
+      "imagem": "imagens/ensaio_luz.jpg",
+      "inverter": false
+    },
+    {
+      "imagem": "imagens/dslr_estudio.jpg",
+      "inverter": true
+    },
+    {
+      "imagem": "imagens/evento_palco.jpg",
+      "inverter": false
+    },
+    {
+      "imagem": "imagens/ringlight.jpg",
+      "inverter": true
+    },
+    {
+      "imagem": "imagens/ensaio_modelo.jpg",
+      "inverter": true
+    },
+    {
       "imagem": "imagens/estudio_backdrop.jpg",
       "inverter": false
     },
     {
-      "imagem": "imagens/crew_escuro.jpg",
+      "imagem": "imagens/gravando_celular.jpg",
       "inverter": true
     },
     {
-      "imagem": "imagens/claquete.jpg",
+      "imagem": "imagens/evento_conferencia.jpg",
       "inverter": false
     },
     {
-      "imagem": "imagens/operador.jpg",
+      "imagem": "imagens/fotografo_dslr.jpg",
       "inverter": true
     },
     {
@@ -21,15 +41,11 @@
       "inverter": false
     },
     {
-      "imagem": "imagens/crew.jpg",
-      "inverter": false
-    },
-    {
-      "imagem": "imagens/mesa_som.jpg",
+      "imagem": "imagens/evento_publico.jpg",
       "inverter": true
     },
     {
-      "imagem": "imagens/videocam.jpg",
+      "imagem": "imagens/criador_dslr.jpg",
       "inverter": false
     },
     {
@@ -37,25 +53,10 @@
       "inverter": true
     },
     {
-      "imagem": "imagens/set.jpg",
-      "inverter": false
-    },
-    {
-      "imagem": "imagens/monitor_edicao.jpg",
-      "inverter": true
-    },
-    {
-      "imagem": "imagens/cameraman.jpg",
-      "inverter": false
-    },
-    {
-      "imagem": "imagens/tripe.jpg",
-      "inverter": true
-    },
-    {
-      "imagem": "imagens/estudio.jpg",
+      "imagem": "imagens/ensaio_fotografo.jpg",
       "inverter": false
     }
   ],
-  "larguraMarca": 36
+  "larguraMarca": 36,
+  "trilha": "audio/trilha.mp3"
 }

@@ -1,5 +1,5 @@
 import React from 'react';
-import {AbsoluteFill, Img, Sequence, staticFile} from 'remotion';
+import {AbsoluteFill, Audio, Img, Sequence, staticFile} from 'remotion';
 import {z} from 'zod';
 import {zColor} from '@remotion/zod-types';
 import {paletaDe} from '../theme';
@@ -19,6 +19,8 @@ export const cenaSchema = z.object({
 
 export const vitrineSchema = z.object({
   cenas: z.array(cenaSchema).min(1).max(24),
+  /** trilha dentro de public/ — vazio roda mudo */
+  trilha: z.string().default('audio/trilha.mp3'),
   /** largura da marca, em % da largura do quadro — igual em todas as cenas */
   larguraMarca: z.number().min(10).max(80).default(36),
   accent: zColor().optional(),
@@ -47,7 +49,7 @@ const Quadro: React.FC<{
   const escura = variante === 'escura';
 
   const tratamento = escura
-    ? 'grayscale(1) brightness(0.34) contrast(1.28)'
+    ? 'grayscale(1) brightness(0.46) contrast(1.2)'
     : cena.inverter
       ? 'grayscale(1) invert(1) contrast(1.02) brightness(1.16)'
       : 'grayscale(1) brightness(1.8) contrast(0.88)';
@@ -89,11 +91,12 @@ const Fecho: React.FC<{larguraMarca: number}> = ({larguraMarca}) => (
 );
 
 /** A marca aplicada em tudo, em corte seco: escura, clara, escura, clara. */
-export const Vitrine: React.FC<VitrineProps> = ({cenas, larguraMarca, accent}) => {
+export const Vitrine: React.FC<VitrineProps> = ({cenas, larguraMarca, trilha, accent}) => {
   const a1 = accent ?? paletaDe('Astart').accent;
 
   return (
     <AbsoluteFill style={{backgroundColor: '#050506'}}>
+      {trilha ? <Audio src={staticFile(trilha)} /> : null}
       {cenas.map((cena, i) => (
         <React.Fragment key={i}>
           <Sequence from={i * SEGURA * 2} durationInFrames={SEGURA}>

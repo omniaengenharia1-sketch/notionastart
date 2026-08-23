@@ -52,11 +52,11 @@ const logoExemplo: LogoProps = {marca: 'Astart', tagline: ''};
 
 const manifestoExemplo: ManifestoProps = {
   blocos: [
-    {imagem: 'imagens/crew.jpg', linhas: ['Aparecer', 'não é sorte.']},
-    {imagem: 'imagens/operador.jpg', linhas: ['É método.']},
+    {imagem: 'imagens/ensaio_modelo.jpg', linhas: ['Aparecer', 'não é sorte.']},
+    {imagem: 'imagens/dslr_estudio.jpg', linhas: ['É método.']},
     {imagem: 'imagens/estudio_vazio.jpg', linhas: ['Antes da câmera,', 'o planejamento.']},
-    {imagem: 'imagens/estudio.jpg', linhas: ['Antes do post,', 'a estratégia.']},
-    {imagem: 'imagens/crew_escuro.jpg', linhas: ['Marca se constrói', 'todo dia.']},
+    {imagem: 'imagens/evento_palco.jpg', linhas: ['Antes do post,', 'a estratégia.']},
+    {imagem: 'imagens/estudio_tripe.jpg', linhas: ['Marca se constrói', 'todo dia.']},
   ],
   fecho: '',
 };
@@ -68,19 +68,39 @@ const calcularManifesto: CalculateMetadataFunction<ManifestoProps> = ({props}) =
 const vitrineExemplo: VitrineProps = {
   cenas: [
     {
+      imagem: "imagens/ensaio_luz.jpg",
+      inverter: false
+    },
+    {
+      imagem: "imagens/dslr_estudio.jpg",
+      inverter: true
+    },
+    {
+      imagem: "imagens/evento_palco.jpg",
+      inverter: false
+    },
+    {
+      imagem: "imagens/ringlight.jpg",
+      inverter: true
+    },
+    {
+      imagem: "imagens/ensaio_modelo.jpg",
+      inverter: true
+    },
+    {
       imagem: "imagens/estudio_backdrop.jpg",
       inverter: false
     },
     {
-      imagem: "imagens/crew_escuro.jpg",
+      imagem: "imagens/gravando_celular.jpg",
       inverter: true
     },
     {
-      imagem: "imagens/claquete.jpg",
+      imagem: "imagens/evento_conferencia.jpg",
       inverter: false
     },
     {
-      imagem: "imagens/operador.jpg",
+      imagem: "imagens/fotografo_dslr.jpg",
       inverter: true
     },
     {
@@ -88,15 +108,11 @@ const vitrineExemplo: VitrineProps = {
       inverter: false
     },
     {
-      imagem: "imagens/crew.jpg",
-      inverter: false
-    },
-    {
-      imagem: "imagens/mesa_som.jpg",
+      imagem: "imagens/evento_publico.jpg",
       inverter: true
     },
     {
-      imagem: "imagens/videocam.jpg",
+      imagem: "imagens/criador_dslr.jpg",
       inverter: false
     },
     {
@@ -104,27 +120,12 @@ const vitrineExemplo: VitrineProps = {
       inverter: true
     },
     {
-      imagem: "imagens/set.jpg",
-      inverter: false
-    },
-    {
-      imagem: "imagens/monitor_edicao.jpg",
-      inverter: true
-    },
-    {
-      imagem: "imagens/cameraman.jpg",
-      inverter: false
-    },
-    {
-      imagem: "imagens/tripe.jpg",
-      inverter: true
-    },
-    {
-      imagem: "imagens/estudio.jpg",
+      imagem: "imagens/ensaio_fotografo.jpg",
       inverter: false
     }
   ],
-  larguraMarca: 36
+  larguraMarca: 36,
+  trilha: "audio/trilha.mp3"
 };
 
 const calcularVitrine: CalculateMetadataFunction<VitrineProps> = ({props}) => ({
