@@ -141,8 +141,10 @@ while compasso < FIM_FRASES:
     compasso += COMPASSO
     c += 1
 
+# o respiro so faz sentido em montagem longa; em vitrine curta ele come a
+# energia justamente onde ela precisa estar
 total_compassos = max(1, int(round(FIM_VITRINE / COMPASSO)))
-respiro = total_compassos - 2  # penultimo compasso: tira o bumbo e abre espaco
+respiro = total_compassos - 2 if total_compassos >= 4 else -1
 
 # bumbo e palma atravessam a vitrine e as frases: e a mesma musica, e cada
 # frase troca exatamente em uma batida
@@ -163,17 +165,13 @@ impacto(FIM_VITRINE, 0.8)
 
 # um clique em cada corte do video — sem excecao, e mais forte a cada quatro,
 # que e onde cai a batida
-# durante a vitrine, um clique em cada corte. Durante as frases o clique
-# continua, mais baixo, e so a troca de frase leva o acento.
+# um clique em cada semicolcheia do inicio ao fim, no mesmo volume — inclusive
+# durante as frases. Baixar o clique ali fazia a faixa parecer que tinha
+# desacelerado, mesmo com o andamento intacto.
 semi = 0.0
 k = 0
 while semi < FIM_FRASES:
-    na_vitrine = semi < FIM_VITRINE
-    acento = k % 4 == 0
-    if na_vitrine:
-        clique(semi, 0.58 if acento else 0.36)
-    else:
-        clique(semi, 0.5 if acento else 0.16)
+    clique(semi, 0.58 if k % 4 == 0 else 0.36)
     semi += SEMI
     k += 1
 
