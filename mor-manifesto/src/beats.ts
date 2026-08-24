@@ -64,6 +64,33 @@ export const GRAO = {
   sementes: 12,
 } as const;
 
+/**
+ * Tratamento das imagens de fundo. A imagem entra em negativo e monocromatica,
+ * tingida de vinho, com um drift lento de escala. Se o beat nao apontar para
+ * nenhuma imagem, ou o arquivo nao existir, o fundo continua chapado.
+ */
+export const FUNDO = {
+  pasta: 'fundos',
+  /** Vinho por cima, no blend de cor, para a imagem virar duotone da marca. */
+  opacidadeDaTinta: 0.9,
+  /** Drift de escala ao longo do beat, so para a imagem nao ficar parada. */
+  escalaInicial: 1.08,
+  escalaFinal: 1,
+  /**
+   * O negativo e tratado conforme a polaridade do beat: em fundo branco a
+   * imagem fica alta e lavada, em fundo vinho fica baixa e fechada. Assim o
+   * texto nunca disputa contraste com a foto.
+   */
+  claro: {
+    filtro: 'invert(1) grayscale(1) contrast(0.7) brightness(1.5)',
+    opacidade: 0.5,
+  },
+  escuro: {
+    filtro: 'invert(1) grayscale(1) contrast(0.85) brightness(0.45)',
+    opacidade: 0.75,
+  },
+} as const;
+
 /** Caminho do logo dentro de public/. Se o arquivo nao existir, entra o placeholder. */
 export const CAMINHO_DO_LOGO = 'logo-branco.png';
 
@@ -80,6 +107,11 @@ export type Beat = {
   readonly tipo: TipoDeBeat;
   /** Texto do beat. No beat de logo, e o placeholder usado quando nao ha arquivo. */
   readonly texto: string;
+  /**
+   * Nome do arquivo dentro de public/fundos. Sem imagem, o beat fica chapado
+   * na cor de fundo, que e o comportamento padrao.
+   */
+  readonly imagem?: string;
   readonly corDeFundo: string;
   readonly corDoTexto: string;
   /**
@@ -102,6 +134,7 @@ export const BEATS: readonly Beat[] = [
     id: 'mais',
     tipo: 'palavra',
     texto: 'mais',
+    imagem: 'teste-1.jpg',
     corDeFundo: CORES.branco,
     corDoTexto: CORES.vinho,
     duracaoEmTempos: 1,
@@ -120,6 +153,7 @@ export const BEATS: readonly Beat[] = [
     id: 'registrar',
     tipo: 'palavra',
     texto: 'registrar',
+    imagem: 'teste-2.jpg',
     corDeFundo: CORES.branco,
     corDoTexto: CORES.vinho,
     duracaoEmTempos: 1,
@@ -138,6 +172,7 @@ export const BEATS: readonly Beat[] = [
     id: 'a-gente-garante',
     tipo: 'palavra',
     texto: 'a gente garante',
+    imagem: 'teste-3.jpg',
     corDeFundo: CORES.vinho,
     corDoTexto: CORES.branco,
     duracaoEmTempos: 1,
@@ -186,6 +221,10 @@ export const DURACAO_TOTAL_EM_FRAMES = BEATS.reduce(
 export const CORTES_EM_FRAMES: readonly number[] = BEATS.map((_, indice) =>
   BEATS.slice(0, indice).reduce((total, beat) => total + duracaoDoBeat(beat), 0),
 );
+
+/** Tratamento da imagem conforme a polaridade do beat. */
+export const tratamentoDoFundo = (beat: Beat) =>
+  beat.corDeFundo === CORES.branco ? FUNDO.claro : FUNDO.escuro;
 
 /** Largura alvo do beat em pixels, respeitando a faixa de 78% a 90%. */
 export const larguraAlvoEmPx = (beat: Beat, larguraDoFrame: number): number => {

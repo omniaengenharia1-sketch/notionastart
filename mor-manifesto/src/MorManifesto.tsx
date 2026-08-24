@@ -18,13 +18,16 @@ import {loadFont} from '@remotion/google-fonts/RedHatDisplay';
 import {
   BEATS,
   CAMINHO_DO_LOGO,
+  CORES,
   ENTRADA,
+  FUNDO,
   GRAO,
   LOGO,
   TRILHA,
   TIPOGRAFIA,
   duracaoDoBeat,
   larguraAlvoEmPx,
+  tratamentoDoFundo,
   type Beat,
 } from './beats';
 
@@ -114,6 +117,60 @@ const Grao: React.FC = () => {
         <rect width="100%" height="100%" filter={`url(#${id})`} />
       </svg>
     </AbsoluteFill>
+  );
+};
+
+/**
+ * Imagem de fundo em negativo, tingida de vinho. Entra por baixo do grao e do
+ * texto, e some sozinha quando o beat nao aponta para arquivo nenhum.
+ */
+const Fundo: React.FC<{beat: Beat}> = ({beat}) => {
+  const frame = useCurrentFrame();
+  const caminho = beat.imagem ? `${FUNDO.pasta}/${beat.imagem}` : null;
+
+  const temArquivo = useMemo(
+    () =>
+      caminho !== null &&
+      getStaticFiles().some((arquivo) => arquivo.name === caminho),
+    [caminho],
+  );
+
+  const escala = interpolate(
+    frame,
+    [0, duracaoDoBeat(beat)],
+    [FUNDO.escalaInicial, FUNDO.escalaFinal],
+    {extrapolateRight: 'clamp'},
+  );
+
+  const tratamento = tratamentoDoFundo(beat);
+
+  if (caminho === null || !temArquivo) {
+    return null;
+  }
+
+  return (
+    <>
+      <AbsoluteFill>
+        <Img
+          src={staticFile(caminho)}
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            filter: tratamento.filtro,
+            opacity: tratamento.opacidade,
+            transform: `scale(${escala})`,
+          }}
+        />
+      </AbsoluteFill>
+      <AbsoluteFill
+        style={{
+          backgroundColor: CORES.vinho,
+          mixBlendMode: 'color',
+          opacity: FUNDO.opacidadeDaTinta,
+        }}
+      />
+    </>
   );
 };
 
@@ -259,6 +316,7 @@ export const MorManifesto: React.FC<PropsDoManifesto> = ({
             layout="none"
           >
             <AbsoluteFill style={{backgroundColor: beat.corDeFundo}}>
+              <Fundo beat={beat} />
               {renderizarBeat(beat)}
               <Grao />
             </AbsoluteFill>

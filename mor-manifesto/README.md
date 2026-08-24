@@ -63,6 +63,29 @@ Para regerar o WAV depois de mexer no ritmo:
 npm run trilha
 ```
 
+## Imagens de fundo
+
+Um beat pode trocar o fundo chapado por uma imagem em negativo, tingida de
+vinho. Basta jogar o arquivo em `public/fundos/` e apontar no beat:
+
+```ts
+{
+  id: 'mais',
+  texto: 'mais',
+  imagem: 'sala-de-reuniao.jpg',
+  ...
+}
+```
+
+Beat sem `imagem` continua chapado, que e o padrao. O tratamento fica em
+`FUNDO` (`src/beats.ts`) e muda conforme a polaridade do beat: em fundo branco
+a imagem entra alta e lavada, em fundo vinho entra baixa e fechada, para o
+texto nunca disputar contraste com a foto. Por cima vai uma camada de vinho no
+blend `color`, que transforma a imagem no duotone da marca.
+
+Formato recomendado: vertical, pelo menos 1080x1920, JPG. A imagem entra com um
+drift lento de escala ao longo do beat.
+
 ## Logo
 
 O beat final usa `public/logo-branco.png`, a versao monocromatica branca da
