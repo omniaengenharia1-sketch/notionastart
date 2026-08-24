@@ -35,13 +35,21 @@ npm run render
 
 O arquivo sai em `out/mor-manifesto.mp4`.
 
+Existe tambem a versao muda, para subir uma trilha licenciada no proprio
+Instagram em vez de usar a do projeto:
+
+```bash
+npm run render:mudo
+```
+
 ## Trilha e cortes
 
 A trilha e gerada por `scripts/gerar-trilha.mjs`, que importa os proprios beats
-de `src/beats.ts`. Sao cordas graves em ostinato, taiko e caixa marcial nos
-cortes, riser com prato invertido entrando no logo e um braam que abre na
-relativa maior com coro por cima, segurando ate o fim. Tudo sintetizado no
-proprio script, sem sample de terceiro.
+de `src/beats.ts`. E sound design, nao orquestra sintetizada: boom com queda de
+tom em cada corte, sub drop no logo, riser de ruido filtrado, prato invertido e
+uma cama de ar por baixo, tudo passando por um Freeverb. Oscilador imitando
+corda ou coro entrega plastico, entao a trilha fica so no material que
+sintetiza bem, que e percussao e ruido.
 
 Como o script le o mesmo array que a composicao, corte de video e ataque de
 musica caem no mesmo frame por construcao: a 120 BPM e 30fps, um tempo da

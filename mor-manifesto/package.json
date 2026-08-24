@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "remotion studio",
     "render": "remotion render MorManifesto out/mor-manifesto.mp4",
+    "render:mudo": "remotion render MorManifestoMudo out/mor-manifesto-mudo.mp4",
     "trilha": "node scripts/gerar-trilha.mjs",
     "typecheck": "tsc --noEmit"
   },

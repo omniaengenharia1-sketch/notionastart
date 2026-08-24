@@ -226,8 +226,15 @@ const Logo: React.FC<{beat: Beat; caminhoDoLogo: string}> = ({
   );
 };
 
-export const MorManifesto: React.FC<{caminhoDoLogo?: string}> = ({
+export type PropsDoManifesto = {
+  caminhoDoLogo?: string;
+  /** Desligue para exportar mudo e subir a trilha no proprio Instagram. */
+  comTrilha?: boolean;
+};
+
+export const MorManifesto: React.FC<PropsDoManifesto> = ({
   caminhoDoLogo = CAMINHO_DO_LOGO,
+  comTrilha = true,
 }) => {
   const renderizarBeat = useCallback(
     (beat: Beat) =>
@@ -241,7 +248,9 @@ export const MorManifesto: React.FC<{caminhoDoLogo?: string}> = ({
 
   return (
     <AbsoluteFill>
-      <Audio src={staticFile(TRILHA.arquivo)} volume={TRILHA.volume} />
+      {comTrilha ? (
+        <Audio src={staticFile(TRILHA.arquivo)} volume={TRILHA.volume} />
+      ) : null}
       <Series>
         {BEATS.map((beat) => (
           <Series.Sequence

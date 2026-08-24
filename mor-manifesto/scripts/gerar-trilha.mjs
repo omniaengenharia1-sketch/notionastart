@@ -1,12 +1,14 @@
 /**
- * Gera a trilha epica do Reels em public/trilha.wav.
+ * Gera a trilha do Reels em public/trilha.wav.
  *
- * Nada de sample de terceiro: tudo e sintetizado aqui. A trilha tem naipe de
- * cordas graves em ostinato, taiko nos cortes, coro sintetico, riser e um
- * braam longo quando o logo entra.
+ * A ideia aqui e sound design, nao orquestra sintetizada: oscilador tentando
+ * imitar corda ou coro sempre entrega o plastico. Entao a trilha e feita de
+ * percussao cinematografica e ruido, que e material que sintetiza bem: booms
+ * com queda de tom, sub drop, riser filtrado, prato invertido e uma cama de
+ * ar por baixo. Tudo passa por um Freeverb de verdade, nao por delay picado.
  *
  * O grid vem do proprio src/beats.ts, entao cada corte seco do video cai em
- * cima de um ataque da musica por construcao, nao por coincidencia.
+ * cima de um ataque por construcao, nao por coincidencia.
  */
 import {mkdirSync, writeFileSync} from 'node:fs';
 import {dirname, join} from 'node:path';
@@ -28,19 +30,12 @@ const DURACAO = DURACAO_TOTAL_EM_FRAMES / FPS;
 const AMOSTRAS = Math.round(DURACAO * SR);
 
 const indiceDoLogo = BEATS.findIndex((beat) => beat.tipo === 'logo');
-
-/** Frames em que o video corta para uma palavra. Cada um ganha um ataque. */
 const ATAQUES_EM_FRAMES = CORTES_EM_FRAMES.filter(
   (_, indice) => indice !== indiceDoLogo,
 );
-
-/** Frame em que o logo entra, ou seja, onde a trilha abre. */
 const FRAME_DO_LOGO = CORTES_EM_FRAMES[indiceDoLogo];
 
-/**
- * Tempos internos dos beats longos: nao tem corte em cima, entao levam um
- * ataque menor so para o pulso nao morrer no respiro.
- */
+/** Tempos internos dos beats longos, que levam um ataque menor. */
 const CONTRATEMPOS_EM_FRAMES = BEATS.flatMap((beat, indice) =>
   indice === indiceDoLogo
     ? []
@@ -50,21 +45,20 @@ const CONTRATEMPOS_EM_FRAMES = BEATS.flatMap((beat, indice) =>
       ),
 );
 
-/**
- * Harmonia: menor natural no corpo da frase, abrindo para a relativa maior no
- * logo. E o que da a virada epica no fim.
- */
-const TONICA = 55;
-const ACORDE_DA_FRASE = [1, 1.5, 2, 2.4]; // menor com quinta e terca menor
-const ACORDE_DO_LOGO = [1.2, 1.5, 1.8, 2.4, 3]; // relativa maior, mais aberta
-
 const emSegundos = (frame) => frame / FPS;
 const emAmostras = (segundos) => Math.round(segundos * SR);
 
-const esquerda = new Float64Array(AMOSTRAS);
-const direita = new Float64Array(AMOSTRAS);
+const seco = {
+  esquerda: new Float64Array(AMOSTRAS),
+  direita: new Float64Array(AMOSTRAS),
+};
+/** Barramento que vai para o reverb, para o grave nao lavar o espaco. */
+const molhado = {
+  esquerda: new Float64Array(AMOSTRAS),
+  direita: new Float64Array(AMOSTRAS),
+};
 
-const somar = (inicioEmSegundos, quantidade, render) => {
+const somar = (barramento, inicioEmSegundos, quantidade, render) => {
   const inicio = emAmostras(inicioEmSegundos);
 
   for (let i = 0; i < quantidade; i++) {
@@ -74,264 +68,265 @@ const somar = (inicioEmSegundos, quantidade, render) => {
       continue;
     }
 
-    const [l, r] = render(i / SR, i);
-    esquerda[indice] += l;
-    direita[indice] += r;
+    const [l, r] = render(i / SR);
+    barramento.esquerda[indice] += l;
+    barramento.direita[indice] += r;
   }
 };
 
 /** Ruido branco determinista, para a trilha sair igual em qualquer maquina. */
 let semente = 20260824;
-const ruido = () => {
+const aleatorio = () => {
   semente = (semente * 1664525 + 1013904223) % 4294967296;
-  return semente / 2147483648 - 1;
+
+  return semente / 4294967296;
 };
+const ruido = () => aleatorio() * 2 - 1;
 
 const decaimento = (t, tempo) => Math.exp(-t / tempo);
-const seno = (freq, t, fase = 0) => Math.sin(2 * Math.PI * freq * t + fase);
+const seno = (freq, t) => Math.sin(2 * Math.PI * freq * t);
 
-/** Serra suave, base do naipe de cordas. */
-const serra = (freq, t) => {
-  const ciclo = (freq * t) % 1;
+/**
+ * Filtro de estado variavel de 2 polos. Ressonancia e corte variando no tempo
+ * e o que faz ruido virar timbre em vez de chiado.
+ */
+const criarFiltro = () => {
+  let passaBaixa = 0;
+  let passaBanda = 0;
 
-  return 2 * ciclo - 1;
+  return (entrada, corte, q) => {
+    const f = 2 * Math.sin((Math.PI * Math.min(corte, SR / 2.5)) / SR);
+    const damp = 1 / q;
+    const passaAlta = entrada - passaBaixa - damp * passaBanda;
+    passaBanda += f * passaAlta;
+    passaBaixa += f * passaBanda;
+
+    return {passaBaixa, passaBanda, passaAlta};
+  };
 };
 
-/** Taiko: pele grave com queda de tom, o soco de cada corte. */
-const taiko = ({emFrame, ganho = 1, decay = 0.42, agudo = 150, grave = 52}) => {
-  somar(emSegundos(emFrame), emAmostras(decay * 4), (t) => {
+/** Variacao humana de ganho e de ataque, para nao soar sequenciado. */
+const humanizar = () => ({
+  ganho: 0.93 + aleatorio() * 0.14,
+  atraso: (aleatorio() - 0.5) * 0.004,
+});
+
+/**
+ * Boom cinematografico: sub com queda de tom, corpo de ruido ressonante e um
+ * estalo curto na frente. E o soco de cada corte.
+ */
+const boom = ({emFrame, ganho = 1, decay = 0.85, agudo = 78, grave = 38}) => {
+  const {ganho: variacao, atraso} = humanizar();
+  const filtroCorpo = criarFiltro();
+  const filtroEstalo = criarFiltro();
+  const total = ganho * variacao;
+
+  somar(seco, emSegundos(emFrame) + atraso, emAmostras(decay * 2.5), (t) => {
     const fase =
       2 *
       Math.PI *
-      (grave * t + (agudo - grave) * 0.05 * (1 - Math.exp(-t / 0.05)));
-    const pele = Math.sin(fase) * decaimento(t, decay);
-    const corpo = seno(grave * 1.5, t) * decaimento(t, decay * 0.5) * 0.3;
-    const estalo = ruido() * decaimento(t, 0.014) * 0.35;
-    const amostra = (pele * 0.95 + corpo + estalo) * ganho;
+      (grave * t + (agudo - grave) * 0.06 * (1 - Math.exp(-t / 0.06)));
+    const sub = Math.sin(fase) * decaimento(t, decay);
+
+    const corpo =
+      filtroCorpo(ruido(), 120 + 500 * decaimento(t, 0.05), 1.6).passaBanda *
+      decaimento(t, 0.16) *
+      0.5;
+
+    const estalo =
+      filtroEstalo(ruido(), 3200, 0.9).passaAlta * decaimento(t, 0.008) * 0.35;
+
+    const amostra = Math.tanh((sub * 1.15 + corpo + estalo) * total);
+
+    return [amostra, amostra];
+  });
+
+  // So o corpo e o estalo vao para o reverb: o sub fica seco e limpo.
+  const filtroEnvio = criarFiltro();
+
+  somar(molhado, emSegundos(emFrame) + atraso, emAmostras(0.5), (t) => {
+    const envio =
+      filtroEnvio(ruido(), 900 + 1800 * decaimento(t, 0.06), 1.1).passaBanda *
+      decaimento(t, 0.12) *
+      0.45 *
+      total;
+
+    return [envio, envio * 0.92];
+  });
+};
+
+/** Sub drop do logo: a queda longa que faz o vinho entrar pesado. */
+const subDrop = ({emFrame}) => {
+  const inicio = emSegundos(emFrame);
+  const duracao = DURACAO - inicio;
+
+  somar(seco, inicio, emAmostras(duracao), (t) => {
+    // Fase integrada da queda de 92 Hz para 30 Hz.
+    const fase = 2 * Math.PI * (30 * t + 62 * 0.5 * (1 - Math.exp(-t / 0.5)));
+    const env = Math.min(t / 0.01, 1) * decaimento(t, 1.7);
+    const saida = t > duracao - 0.6 ? Math.max(0, (duracao - t) / 0.6) : 1;
+    const amostra = Math.sin(fase) * env * saida * 0.85;
 
     return [amostra, amostra];
   });
 };
 
-/** Caixa marcial de trailer: ruido curto e seco por cima do taiko. */
-const caixa = ({emFrame, ganho = 1}) => {
-  somar(emSegundos(emFrame), emAmostras(0.35), (t) => {
-    const corpo = ruido() * decaimento(t, 0.09);
-    const tom = seno(190, t) * decaimento(t, 0.05) * 0.4;
-    const amostra = (corpo * 0.6 + tom) * ganho;
+/**
+ * Cama de ar: ruido bem filtrado, quase inaudivel, so para o silencio entre
+ * as palavras ter textura em vez de vazio digital.
+ */
+const cama = () => {
+  const filtroL = criarFiltro();
+  const filtroR = criarFiltro();
 
-    return [amostra * 0.9, amostra];
+  somar(seco, 0, AMOSTRAS, (t) => {
+    const entrada = Math.min(t / 1.2, 1);
+    const saida = t > DURACAO - 0.8 ? Math.max(0, (DURACAO - t) / 0.8) : 1;
+    const respiro = 0.7 + 0.3 * Math.sin(2 * Math.PI * 0.11 * t);
+    const env = entrada * saida * respiro;
+
+    const arL = filtroL(ruido(), 180 + 60 * Math.sin(2 * Math.PI * 0.07 * t), 0.8)
+      .passaBaixa;
+    const arR = filtroR(ruido(), 210 + 60 * Math.sin(2 * Math.PI * 0.09 * t), 0.8)
+      .passaBaixa;
+
+    const grave = (seno(41.2, t) * 0.5 + seno(61.7, t) * 0.22) * 0.16;
+
+    return [(arL * 0.5 + grave) * env, (arR * 0.5 + grave) * env];
   });
 };
 
-/**
- * Ostinato de cordas graves: staccato em cada meio tempo, o motor que segura
- * a tensao entre um corte e outro.
- */
-const ostinato = () => {
-  const passo = FRAMES_POR_TEMPO / 2;
-  const notas = [1, 1, 1.5, 1];
-
-  for (let indice = 0, frame = 0; frame < FRAME_DO_LOGO; indice++, frame += passo) {
-    const freq = TONICA * notas[indice % notas.length];
-    const acento = indice % 2 === 0 ? 1 : 0.62;
-    const abertura = Math.min(1, 0.35 + frame / FRAME_DO_LOGO);
-
-    somar(emSegundos(frame), emAmostras(0.3), (t) => {
-      const env = decaimento(t, 0.075) * Math.min(t / 0.006, 1);
-      const corda =
-        serra(freq, t) * 0.5 + serra(freq * 2.005, t) * 0.22 + seno(freq, t) * 0.5;
-      const amostra = corda * env * 0.3 * acento * abertura;
-
-      return [amostra, amostra * 0.95];
-    });
-  }
-};
-
-/** Naipe sustentado por baixo de tudo, com leve vibrato. */
-const cordas = ({deFrame, ateFrame, intervalos, ganho}) => {
+/** Riser: ruido subindo de banda, cortado seco no impacto do logo. */
+const riser = ({deFrame, ateFrame}) => {
   const inicio = emSegundos(deFrame);
   const duracao = emSegundos(ateFrame) - inicio;
+  const filtroL = criarFiltro();
+  const filtroR = criarFiltro();
 
-  somar(inicio, emAmostras(duracao), (t) => {
-    const entrada = Math.min(t / 0.5, 1);
-    const saida = t > duracao - 0.4 ? Math.max(0, (duracao - t) / 0.4) : 1;
-    const env = entrada * saida * ganho;
+  const render = (barramento, ganho) =>
+    somar(barramento, inicio, emAmostras(duracao), (t) => {
+      const progresso = t / duracao;
+      const env = Math.pow(progresso, 2.6) * ganho;
+      const corte = 220 + 5200 * Math.pow(progresso, 2.4);
 
-    let l = 0;
-    let r = 0;
+      const l = filtroL(ruido(), corte, 3.2).passaBanda;
+      const r = filtroR(ruido(), corte * 1.02, 3.2).passaBanda;
 
-    for (const intervalo of intervalos) {
-      const freq = TONICA * intervalo;
-      const vibrato = 1 + 0.0025 * seno(5.2, t);
-      l += serra(freq * vibrato, t) * 0.4 + seno(freq, t) * 0.5;
-      r += serra(freq * 1.006 * vibrato, t) * 0.4 + seno(freq * 1.002, t) * 0.5;
-    }
+      return [l * env, r * env];
+    });
 
-    const suavizar = (x) => Math.tanh(x * 0.7);
-
-    return [suavizar(l) * env, suavizar(r) * env];
-  });
+  render(seco, 0.5);
+  render(molhado, 0.25);
 };
 
-/** Coro sintetico: oitava acima do naipe, so para dar ar de trailer. */
-const coro = ({deFrame, intervalos, ganho}) => {
-  const inicio = emSegundos(deFrame);
-  const duracao = DURACAO - inicio;
+/** Prato invertido, o "shhh" que anuncia o corte para o logo. */
+const pratoInvertido = ({ateFrame, duracaoEmFrames}) => {
+  const inicio = emSegundos(ateFrame - duracaoEmFrames);
+  const duracao = emSegundos(duracaoEmFrames);
+  const filtroL = criarFiltro();
+  const filtroR = criarFiltro();
 
-  somar(inicio, emAmostras(duracao), (t) => {
-    const entrada = Math.min(t / 0.35, 1);
-    const saida = t > duracao - 0.7 ? Math.max(0, (duracao - t) / 0.7) : 1;
-    const env = entrada * saida * ganho;
+  somar(seco, inicio, emAmostras(duracao), (t) => {
+    const progresso = t / duracao;
+    const env = Math.pow(progresso, 3.4) * 0.3;
 
-    let l = 0;
-    let r = 0;
-
-    for (const intervalo of intervalos) {
-      const freq = TONICA * intervalo * 4;
-      const vibrato = 1 + 0.004 * seno(4.6, t);
-      l += seno(freq * vibrato, t) + seno(freq * 1.5, t) * 0.3;
-      r += seno(freq * 1.003 * vibrato, t, 0.7) + seno(freq * 1.503, t) * 0.3;
-    }
+    const l = filtroL(ruido(), 6000, 0.7).passaAlta;
+    const r = filtroR(ruido(), 6400, 0.7).passaAlta;
 
     return [l * env, r * env];
   });
 };
 
-/** Riser: puxa a tensao do ultimo verso e corta seco no impacto do logo. */
-const riser = ({deFrame, ateFrame}) => {
-  const inicio = emSegundos(deFrame);
-  const duracao = emSegundos(ateFrame) - inicio;
-  let filtradoL = 0;
-  let filtradoR = 0;
+/**
+ * Tique de metronomo bem baixo nos meios tempos, so para o pulso existir entre
+ * um boom e outro sem entrar melodia nenhuma.
+ */
+const tiques = () => {
+  const passo = FRAMES_POR_TEMPO / 2;
 
-  somar(inicio, emAmostras(duracao), (t) => {
-    const progresso = t / duracao;
-    const env = Math.pow(progresso, 2.2) * 0.5;
-    const corte = 0.02 + 0.55 * Math.pow(progresso, 2);
-
-    filtradoL += (ruido() - filtradoL) * corte;
-    filtradoR += (ruido() - filtradoR) * corte;
-
-    const varredura =
-      seno(180 + 1100 * Math.pow(progresso, 2.5), t) * 0.22 +
-      seno(90 + 550 * Math.pow(progresso, 2.5), t) * 0.18;
-
-    return [
-      (filtradoL * 2.2 + varredura) * env,
-      (filtradoR * 2.2 + varredura) * env,
-    ];
-  });
-};
-
-/** Braam do logo: acorde grave saturado com cauda longa. */
-const braam = ({emFrame, intervalos}) => {
-  const inicio = emSegundos(emFrame);
-  const duracao = DURACAO - inicio;
-
-  somar(inicio, emAmostras(duracao), (t) => {
-    const ataque = Math.min(t / 0.02, 1);
-    const cauda = 0.35 + 0.65 * decaimento(t, 1.6);
-    const saida = t > duracao - 0.5 ? Math.max(0, (duracao - t) / 0.5) : 1;
-    const env = ataque * cauda * saida;
-
-    let l = 0;
-    let r = 0;
-
-    for (const intervalo of intervalos) {
-      const freq = TONICA * intervalo;
-      l += seno(freq, t) + serra(freq, t) * 0.35;
-      r += seno(freq * 1.004, t) + serra(freq * 1.004, t) * 0.35;
+  for (let frame = passo; frame < FRAME_DO_LOGO; frame += passo) {
+    if (CORTES_EM_FRAMES.includes(frame)) {
+      continue;
     }
 
-    const saturar = (x) => Math.tanh(x * 0.8);
+    const filtro = criarFiltro();
+    const {ganho, atraso} = humanizar();
 
-    return [saturar(l * env) * 0.3, saturar(r * env) * 0.3];
-  });
+    somar(seco, emSegundos(frame) + atraso, emAmostras(0.12), (t) => {
+      const amostra =
+        filtro(ruido(), 2400, 1.4).passaBanda * decaimento(t, 0.02) * 0.16 * ganho;
+
+      return [amostra, amostra * 0.9];
+    });
+  }
 };
 
-/** Prato invertido entrando no logo, o "shhhh" antes do soco. */
-const pratoInvertido = ({ateFrame, duracaoEmFrames}) => {
-  const inicio = emSegundos(ateFrame - duracaoEmFrames);
-  const duracao = emSegundos(duracaoEmFrames);
-  let brilhoL = 0;
-  let brilhoR = 0;
+/** Freeverb: combos em paralelo e allpass em serie, o espaco de sala grande. */
+const reverb = (canal, deslocamento) => {
+  const combs = [1116, 1188, 1277, 1356, 1422, 1491, 1557, 1617];
+  const allpass = [556, 441, 341, 225];
+  const retorno = new Float64Array(canal.length);
+  const amortecimento = 0.28;
+  const realimentacao = 0.86;
 
-  somar(inicio, emAmostras(duracao), (t) => {
-    const progresso = t / duracao;
-    const env = Math.pow(progresso, 3) * 0.28;
+  for (const tamanhoBase of combs) {
+    const tamanho = tamanhoBase + deslocamento;
+    const buffer = new Float64Array(tamanho);
+    let indice = 0;
+    let filtrado = 0;
 
-    brilhoL += (ruido() - brilhoL) * 0.75;
-    brilhoR += (ruido() - brilhoR) * 0.75;
+    for (let i = 0; i < canal.length; i++) {
+      const lido = buffer[indice];
+      filtrado = lido * (1 - amortecimento) + filtrado * amortecimento;
+      buffer[indice] = canal[i] + filtrado * realimentacao;
+      indice = (indice + 1) % tamanho;
+      retorno[i] += lido * 0.16;
+    }
+  }
 
-    return [brilhoL * env, brilhoR * env];
-  });
+  for (const tamanhoBase of allpass) {
+    const tamanho = tamanhoBase + deslocamento;
+    const buffer = new Float64Array(tamanho);
+    let indice = 0;
+
+    for (let i = 0; i < retorno.length; i++) {
+      const lido = buffer[indice];
+      const saida = -retorno[i] + lido;
+      buffer[indice] = retorno[i] + lido * 0.5;
+      indice = (indice + 1) % tamanho;
+      retorno[i] = saida;
+    }
+  }
+
+  return retorno;
 };
 
-cordas({
-  deFrame: 0,
-  ateFrame: FRAME_DO_LOGO,
-  intervalos: ACORDE_DA_FRASE,
-  ganho: 0.14,
-});
-ostinato();
+cama();
+tiques();
 
 for (const frame of ATAQUES_EM_FRAMES) {
-  taiko({emFrame: frame, ganho: frame === 0 ? 0.95 : 0.85});
-  caixa({emFrame: frame, ganho: 0.16});
+  boom({emFrame: frame, ganho: frame === 0 ? 0.92 : 0.8});
 }
 
 for (const frame of CONTRATEMPOS_EM_FRAMES) {
-  taiko({emFrame: frame, ganho: 0.4, decay: 0.22, agudo: 120});
+  boom({emFrame: frame, ganho: 0.38, decay: 0.35, agudo: 62});
 }
 
 riser({deFrame: FRAME_DO_LOGO - 2 * FRAMES_POR_TEMPO, ateFrame: FRAME_DO_LOGO});
 pratoInvertido({ateFrame: FRAME_DO_LOGO, duracaoEmFrames: FRAMES_POR_TEMPO * 2});
-taiko({emFrame: FRAME_DO_LOGO, ganho: 1.2, decay: 0.6, agudo: 180, grave: 44});
-caixa({emFrame: FRAME_DO_LOGO, ganho: 0.3});
-braam({emFrame: FRAME_DO_LOGO, intervalos: ACORDE_DO_LOGO});
-cordas({
-  deFrame: FRAME_DO_LOGO,
-  ateFrame: DURACAO_TOTAL_EM_FRAMES,
-  intervalos: ACORDE_DO_LOGO,
-  ganho: 0.16,
-});
-coro({deFrame: FRAME_DO_LOGO, intervalos: ACORDE_DO_LOGO, ganho: 0.045});
+boom({emFrame: FRAME_DO_LOGO, ganho: 1.15, decay: 1.4, agudo: 95, grave: 34});
+subDrop({emFrame: FRAME_DO_LOGO});
 
-/** Reverb barato so nos medios: espaco de sala grande sem embolar o grave. */
-const aplicarReverb = (canal) => {
-  const grave = new Float64Array(canal.length);
-  let acumulado = 0;
-  const coeficiente = 1 - Math.exp((-2 * Math.PI * 260) / SR);
+const retornoL = reverb(molhado.esquerda, 0);
+const retornoR = reverb(molhado.direita, 23);
 
-  for (let i = 0; i < canal.length; i++) {
-    acumulado += (canal[i] - acumulado) * coeficiente;
-    grave[i] = acumulado;
-  }
+const mixL = new Float64Array(AMOSTRAS);
+const mixR = new Float64Array(AMOSTRAS);
 
-  const taps = [
-    [0.063, 0.34],
-    [0.097, 0.27],
-    [0.151, 0.2],
-    [0.223, 0.14],
-    [0.317, 0.09],
-  ];
-
-  const saida = Float64Array.from(canal);
-
-  for (const [atraso, ganho] of taps) {
-    const deslocamento = emAmostras(atraso);
-
-    for (let i = deslocamento; i < canal.length; i++) {
-      saida[i] += (canal[i - deslocamento] - grave[i - deslocamento]) * ganho;
-    }
-  }
-
-  return saida;
-};
-
-const mixL = aplicarReverb(esquerda);
-const mixR = aplicarReverb(direita);
+for (let i = 0; i < AMOSTRAS; i++) {
+  mixL[i] = seco.esquerda[i] + retornoL[i] * 0.9;
+  mixR[i] = seco.direita[i] + retornoR[i] * 0.9;
+}
 
 let pico = 0;
 
@@ -383,7 +378,7 @@ writeFileSync(destino, buffer);
 console.log(
   `trilha gerada: ${destino} (${(buffer.length / 1024).toFixed(0)} kB, ${DURACAO.toFixed(2)}s, ${TRILHA.bpm} BPM)`,
 );
-console.log(`ataques em frames: ${ATAQUES_EM_FRAMES.join(', ')}`);
+console.log(`booms em frames: ${ATAQUES_EM_FRAMES.join(', ')}`);
 console.log(
-  `contratempos: ${CONTRATEMPOS_EM_FRAMES.join(', ')} | logo: ${FRAME_DO_LOGO} | tempo = ${FRAMES_POR_TEMPO} frames`,
+  `contratempos: ${CONTRATEMPOS_EM_FRAMES.join(', ')} | logo: ${FRAME_DO_LOGO}`,
 );
