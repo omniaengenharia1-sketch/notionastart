@@ -1,6 +1,7 @@
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {
   AbsoluteFill,
+  Audio,
   Img,
   Series,
   continueRender,
@@ -20,6 +21,7 @@ import {
   ENTRADA,
   GRAO,
   LOGO,
+  TRILHA,
   TIPOGRAFIA,
   duracaoDoBeat,
   larguraAlvoEmPx,
@@ -236,6 +238,7 @@ export const MorManifesto: React.FC<{caminhoDoLogo?: string}> = ({
 
   return (
     <AbsoluteFill>
+      <Audio src={staticFile(TRILHA.arquivo)} volume={TRILHA.volume} />
       <Series>
         {BEATS.map((beat) => (
           <Series.Sequence
