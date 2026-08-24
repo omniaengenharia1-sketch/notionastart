@@ -17,17 +17,17 @@ import {fitText} from '@remotion/layout-utils';
 import {loadFont} from '@remotion/google-fonts/RedHatDisplay';
 import {
   BEATS,
-  CAMINHO_DO_LOGO,
-  CORES,
+  DRIFT,
   ENTRADA,
-  FUNDO,
   GRAO,
   LOGO,
-  TRILHA,
+  PASTA_DAS_IMAGENS,
   TIPOGRAFIA,
+  TRILHA,
+  arquivoDoLogo,
   duracaoDoBeat,
   larguraAlvoEmPx,
-  tratamentoDoFundo,
+  tratamentoDoBeat,
   type Beat,
 } from './beats';
 
@@ -126,7 +126,7 @@ const Grao: React.FC = () => {
  */
 const Fundo: React.FC<{beat: Beat}> = ({beat}) => {
   const frame = useCurrentFrame();
-  const caminho = beat.imagem ? `${FUNDO.pasta}/${beat.imagem}` : null;
+  const caminho = beat.imagem ? `${PASTA_DAS_IMAGENS}/${beat.imagem}` : null;
 
   const temArquivo = useMemo(
     () =>
@@ -138,11 +138,11 @@ const Fundo: React.FC<{beat: Beat}> = ({beat}) => {
   const escala = interpolate(
     frame,
     [0, duracaoDoBeat(beat)],
-    [FUNDO.escalaInicial, FUNDO.escalaFinal],
+    [DRIFT.escalaInicial, DRIFT.escalaFinal],
     {extrapolateRight: 'clamp'},
   );
 
-  const tratamento = tratamentoDoFundo(beat);
+  const tratamento = tratamentoDoBeat(beat);
 
   if (caminho === null || !temArquivo) {
     return null;
@@ -158,16 +158,16 @@ const Fundo: React.FC<{beat: Beat}> = ({beat}) => {
             height: '100%',
             objectFit: 'cover',
             filter: tratamento.filtro,
-            opacity: tratamento.opacidade,
+            opacity: tratamento.opacidadeDaImagem,
             transform: `scale(${escala})`,
           }}
         />
       </AbsoluteFill>
       <AbsoluteFill
         style={{
-          backgroundColor: CORES.vinho,
+          backgroundColor: tratamento.tinta,
           mixBlendMode: 'color',
-          opacity: FUNDO.opacidadeDaTinta,
+          opacity: tratamento.opacidadeDaTinta,
         }}
       />
     </>
@@ -212,7 +212,7 @@ const LinhaAjustada: React.FC<{beat: Beat; texto: string}> = ({
         letterSpacing: TIPOGRAFIA.tracking,
         fontSize,
         lineHeight: 1,
-        color: beat.corDoTexto,
+        color: tratamentoDoBeat(beat).texto,
         whiteSpace: 'nowrap',
       }}
     >
@@ -284,23 +284,19 @@ const Logo: React.FC<{beat: Beat; caminhoDoLogo: string}> = ({
 };
 
 export type PropsDoManifesto = {
-  caminhoDoLogo?: string;
   /** Desligue para exportar mudo e subir a trilha no proprio Instagram. */
   comTrilha?: boolean;
 };
 
-export const MorManifesto: React.FC<PropsDoManifesto> = ({
-  caminhoDoLogo = CAMINHO_DO_LOGO,
-  comTrilha = true,
-}) => {
+export const MorManifesto: React.FC<PropsDoManifesto> = ({comTrilha = true}) => {
   const renderizarBeat = useCallback(
     (beat: Beat) =>
       beat.tipo === 'logo' ? (
-        <Logo beat={beat} caminhoDoLogo={caminhoDoLogo} />
+        <Logo beat={beat} caminhoDoLogo={arquivoDoLogo(beat)} />
       ) : (
         <Palavra beat={beat} />
       ),
-    [caminhoDoLogo],
+    [],
   );
 
   return (
@@ -315,7 +311,9 @@ export const MorManifesto: React.FC<PropsDoManifesto> = ({
             durationInFrames={duracaoDoBeat(beat)}
             layout="none"
           >
-            <AbsoluteFill style={{backgroundColor: beat.corDeFundo}}>
+            <AbsoluteFill
+              style={{backgroundColor: tratamentoDoBeat(beat).fundo}}
+            >
               <Fundo beat={beat} />
               {renderizarBeat(beat)}
               <Grao />

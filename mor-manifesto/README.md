@@ -4,10 +4,10 @@ Reels de tipografia cinetica da Mor Marcas e Patentes, feito com Remotion.
 
 Frase: "Mais do que registrar um nome. A gente garante que ele seja so seu."
 
-- Formato: 1080x1920, 30fps, 210 frames (7,0s)
+- Formato: 1080x1920, 30fps, 168 frames (5,6s)
 - Fonte: Red Hat Display via `@remotion/google-fonts` (800 nas palavras, 500 no eyebrow)
-- Cores: branco `#FFFFFF` e vinho `#8A0808`, alternando fundo e texto a cada corte
-- Trilha: `public/trilha.wav`, epica, sintetizada pelo projeto a 120 BPM
+- Cores: branco `#FFFFFF`, preto `#000000` e vinho `#8A0808`
+- Corte metronomico a cada 12 frames, ou seja, 0,4s
 
 ## Instalar
 
@@ -24,98 +24,73 @@ npm run dev
 ## Render do MP4 em 1080x1920
 
 ```bash
-npx remotion render MorManifesto out/mor-manifesto.mp4
-```
-
-Ou, com o atalho do projeto:
-
-```bash
 npm run render
 ```
 
-O arquivo sai em `out/mor-manifesto.mp4`.
-
-Existe tambem a versao muda, para subir uma trilha licenciada no proprio
-Instagram em vez de usar a do projeto:
+O arquivo sai em `out/mor-manifesto.mp4`. Existe tambem a versao muda, para
+subir uma trilha licenciada no proprio Instagram:
 
 ```bash
 npm run render:mudo
 ```
 
-## Trilha e cortes
+## Tom dos beats
 
-A trilha e gerada por `scripts/gerar-trilha.mjs`, que importa os proprios beats
-de `src/beats.ts`. E sound design, nao orquestra sintetizada: boom com queda de
-tom em cada corte, sub drop no logo, riser de ruido filtrado, prato invertido e
-uma cama de ar por baixo, tudo passando por um Freeverb. Oscilador imitando
-corda ou coro entrega plastico, entao a trilha fica so no material que
-sintetiza bem, que e percussao e ruido.
+O visual e uma alternancia de tom, e cada beat declara o seu em `tom`:
 
-Como o script le o mesmo array que a composicao, corte de video e ataque de
-musica caem no mesmo frame por construcao: a 120 BPM e 30fps, um tempo da
-musica vale 15 frames, e cada beat dura um numero inteiro de tempos. Palavra
-comum leva 1 tempo, os dois pontos finais da frase levam 2 para respirar, e o
-logo segura 5.
+| tom | fundo | texto | foto |
+| --- | --- | --- | --- |
+| `claro` | branco | vinho | monocromatica e estourada no branco |
+| `escuro` | preto | branco | monocromatica, fechada e tingida de vinho |
+| `vinho` | vinho | branco | fechada, com o vinho por cima |
 
-Para regerar o WAV depois de mexer no ritmo:
-
-```bash
-npm run trilha
-```
+Os valores de cada tom ficam em `PALETA` (`src/beats.ts`): filtro da foto,
+opacidade e forca da tinta. Mexer ali muda o tratamento do video inteiro.
 
 ## Imagens de fundo
 
-Um beat pode trocar o fundo chapado por uma imagem em negativo, tingida de
-vinho. Basta jogar o arquivo em `public/fundos/` e apontar no beat:
+Cada beat aponta um arquivo de `public/fundos` no campo `imagem`. A foto entra
+em tela cheia com um drift lento de escala, tratada conforme o tom do beat.
+Beat sem `imagem` fica chapado na cor do tom.
 
-```ts
-{
-  id: 'mais',
-  texto: 'mais',
-  imagem: 'sala-de-reuniao.jpg',
-  ...
-}
+Formato: vertical, pelo menos 1080x1920, JPG. Foto com bastante contraste
+funciona melhor, porque o tratamento estoura os claros e fecha os escuros.
+
+## Trilha
+
+A trilha vive em `public/trilha.wav` e e preparada a partir de qualquer faixa:
+
+```bash
+npm run trilha -- caminho/da/faixa.mp3 [inicioEmSegundos]
 ```
 
-Beat sem `imagem` continua chapado, que e o padrao. O tratamento fica em
-`FUNDO` (`src/beats.ts`) e muda conforme a polaridade do beat: em fundo branco
-a imagem entra alta e lavada, em fundo vinho entra baixa e fechada, para o
-texto nunca disputar contraste com a foto. Por cima vai uma camada de vinho no
-blend `color`, que transforma a imagem no duotone da marca.
-
-Formato recomendado: vertical, pelo menos 1080x1920, JPG. A imagem entra com um
-drift lento de escala ao longo do beat.
+O script decodifica com o ffmpeg que ja vem no Remotion, corta na duracao exata
+da composicao e aplica fade de entrada e de saida. Trocar a musica e rodar de
+novo, sem tocar no codigo.
 
 ## Logo
 
-O beat final usa `public/logo-branco.png`, a versao monocromatica branca da
-marca. Ela e gerada a partir do PDF oficial em `assets/logo-mor.pdf`:
+`scripts/gerar-logo-branco.sh` gera as duas versoes do logo a partir do PDF
+oficial em `assets/logo-mor.pdf`:
 
-```bash
-./scripts/gerar-logo-branco.sh
-```
+- `public/logo-cor.png`, a arte original, usada em fundo claro
+- `public/logo-branco.png`, monocromatica, usada em fundo escuro e vinho
 
-O script rasteriza o PDF em 300 dpi, pinta toda a arte de branco mantendo o
-alpha original (por isso os filetes internos das letras continuam vazados,
-deixando o vinho aparecer), recorta na arte e salva com 1600px de largura.
-Precisa de `poppler-utils` e `pillow` instalados.
-
-O caminho fica em `CAMINHO_DO_LOGO` (`src/beats.ts`) e tambem pode ser passado
-como prop `caminhoDoLogo` da composicao. Se o arquivo nao existir, o beat cai
-no placeholder com a palavra MOR sobre o fundo vinho.
+Na versao branca o alpha original e mantido, entao os filetes internos das
+letras continuam vazados e deixam o fundo aparecer. Precisa de `poppler-utils`
+e `pillow` instalados.
 
 ## Onde mexer
 
-Todo o ritmo vive em `src/beats.ts`: texto, cor de fundo, cor do texto, duracao
-em tempos e escala de cada beat. A duracao da composicao e derivada da soma do
-array, entao mudar um beat ja ajusta o video inteiro (e o `npm run trilha`
-reajusta a musica junto).
+Todo o ritmo vive em `src/beats.ts`. A duracao da composicao e derivada da soma
+do array, entao mudar um beat ja ajusta o video inteiro.
 
 | campo | o que faz |
 | --- | --- |
 | `texto` | palavra ou trecho da frase no beat |
-| `corDeFundo` / `corDoTexto` | inversao branco e vinho a cada corte |
-| `duracaoEmTempos` | tamanho do beat em tempos da trilha, nunca em frames soltos |
+| `tom` | `claro`, `escuro` ou `vinho`, conforme a tabela acima |
+| `imagem` | arquivo em `public/fundos`, opcional |
+| `duracaoEmTempos` | tamanho do beat em tempos do grid, nunca em frames soltos |
 | `escala` | fracao da largura do frame que a linha ocupa (50% a 78% nas palavras); o `fitText` deriva o fontSize dai, entao palavra curta entra grande e frase longa entra menor |
 
 `src/MorManifesto.tsx` cuida da entrada (spring com damping alto, scale 0.94

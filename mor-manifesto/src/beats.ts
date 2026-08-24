@@ -5,6 +5,7 @@
 
 export const CORES = {
   branco: '#FFFFFF',
+  preto: '#000000',
   vinho: '#8A0808',
 } as const;
 
@@ -15,16 +16,17 @@ export const COMPOSICAO = {
 } as const;
 
 /**
- * Trilha de impacto gerada por scripts/gerar-trilha.mjs. O video corta no
- * grid dela, entao BPM aqui e BPM la precisam continuar iguais.
+ * A trilha vive em public/ e e preparada por scripts/preparar-trilha.mjs.
+ * O BPM aqui e o grid do corte, nao o andamento da faixa: como na referencia,
+ * o video corta a cada 12 frames, ou seja, 0,4s.
  */
 export const TRILHA = {
   arquivo: 'trilha.wav',
-  bpm: 120,
+  bpm: 150,
   volume: 1,
 } as const;
 
-/** Um tempo da trilha em frames. A 120 BPM e 30fps, sao 15 frames. */
+/** Um tempo do grid em frames. A 150 BPM e 30fps, sao 12 frames. */
 export const FRAMES_POR_TEMPO = (COMPOSICAO.fps * 60) / TRILHA.bpm;
 
 /**
@@ -64,38 +66,63 @@ export const GRAO = {
   sementes: 12,
 } as const;
 
-/**
- * Tratamento das imagens de fundo. A imagem entra em negativo e monocromatica,
- * tingida de vinho, com um drift lento de escala. Se o beat nao apontar para
- * nenhuma imagem, ou o arquivo nao existir, o fundo continua chapado.
- */
-export const FUNDO = {
-  pasta: 'fundos',
-  /** Vinho por cima, no blend de cor, para a imagem virar duotone da marca. */
-  opacidadeDaTinta: 0.9,
-  /** Drift de escala ao longo do beat, so para a imagem nao ficar parada. */
-  escalaInicial: 1.08,
+/** Pasta das imagens de fundo dentro de public/. */
+export const PASTA_DAS_IMAGENS = 'fundos';
+
+/** Drift lento de escala na imagem, para o corte nao ficar num quadro parado. */
+export const DRIFT = {
+  escalaInicial: 1.12,
   escalaFinal: 1,
-  /**
-   * O negativo e tratado conforme a polaridade do beat: em fundo branco a
-   * imagem fica alta e lavada, em fundo vinho fica baixa e fechada. Assim o
-   * texto nunca disputa contraste com a foto.
-   */
-  claro: {
-    filtro: 'invert(1) grayscale(1) contrast(0.7) brightness(1.5)',
-    opacidade: 0.5,
-  },
-  escuro: {
-    filtro: 'invert(1) grayscale(1) contrast(0.85) brightness(0.45)',
-    opacidade: 0.75,
-  },
 } as const;
 
-/** Caminho do logo dentro de public/. Se o arquivo nao existir, entra o placeholder. */
-export const CAMINHO_DO_LOGO = 'logo-branco.png';
+/**
+ * Tom do beat. E o motor do visual inteiro: os cortes alternam entre a foto
+ * estourada no branco e a foto fechada no preto, e o vinho fecha no logo.
+ */
+export type Tom = 'claro' | 'escuro' | 'vinho';
 
-/** Teto de altura do logo, para arquivo alto demais nao estourar o frame. */
+export type TratamentoDoTom = {
+  readonly fundo: string;
+  readonly texto: string;
+  /** Grade da foto: monocromatica, estourada no claro e fechada no escuro. */
+  readonly filtro: string;
+  readonly opacidadeDaImagem: number;
+  /** Tinta por cima da foto, no blend de cor. Zero deixa a foto neutra. */
+  readonly tinta: string;
+  readonly opacidadeDaTinta: number;
+};
+
+export const PALETA: Record<Tom, TratamentoDoTom> = {
+  claro: {
+    fundo: CORES.branco,
+    texto: CORES.vinho,
+    filtro: 'grayscale(1) brightness(1.85) contrast(1.1)',
+    opacidadeDaImagem: 1,
+    tinta: CORES.vinho,
+    opacidadeDaTinta: 0.12,
+  },
+  escuro: {
+    fundo: CORES.preto,
+    texto: CORES.branco,
+    filtro: 'grayscale(1) brightness(0.44) contrast(1.3)',
+    opacidadeDaImagem: 1,
+    tinta: CORES.vinho,
+    opacidadeDaTinta: 0.55,
+  },
+  vinho: {
+    fundo: CORES.vinho,
+    texto: CORES.branco,
+    filtro: 'grayscale(1) brightness(0.5) contrast(1.25)',
+    opacidadeDaImagem: 0.85,
+    tinta: CORES.vinho,
+    opacidadeDaTinta: 0.8,
+  },
+};
+
+/** Logo em duas versoes: a original para fundo claro, a branca para o resto. */
 export const LOGO = {
+  arquivoColorido: 'logo-cor.png',
+  arquivoBranco: 'logo-branco.png',
   alturaMaximaDoFrame: 0.3,
 } as const;
 
@@ -107,17 +134,15 @@ export type Beat = {
   readonly tipo: TipoDeBeat;
   /** Texto do beat. No beat de logo, e o placeholder usado quando nao ha arquivo. */
   readonly texto: string;
+  readonly tom: Tom;
   /**
    * Nome do arquivo dentro de public/fundos. Sem imagem, o beat fica chapado
-   * na cor de fundo, que e o comportamento padrao.
+   * na cor do tom.
    */
   readonly imagem?: string;
-  readonly corDeFundo: string;
-  readonly corDoTexto: string;
   /**
-   * Duracao em tempos da trilha, nao em frames soltos: e isso que amarra o
-   * corte seco ao ataque da musica. Os pontos finais da frase levam 2 tempos
-   * para respirar.
+   * Duracao em tempos do grid, nao em frames soltos: e isso que mantem o corte
+   * metronomico como na referencia. Os pontos finais da frase levam 2 tempos.
    */
   readonly duracaoEmTempos: number;
   /**
@@ -134,9 +159,8 @@ export const BEATS: readonly Beat[] = [
     id: 'mais',
     tipo: 'palavra',
     texto: 'mais',
-    imagem: 'teste-1.jpg',
-    corDeFundo: CORES.branco,
-    corDoTexto: CORES.vinho,
+    tom: 'claro',
+    imagem: 'fundo-1.jpg',
     duracaoEmTempos: 1,
     escala: 0.55,
   },
@@ -144,8 +168,8 @@ export const BEATS: readonly Beat[] = [
     id: 'do-que',
     tipo: 'palavra',
     texto: 'do que',
-    corDeFundo: CORES.vinho,
-    corDoTexto: CORES.branco,
+    tom: 'escuro',
+    imagem: 'fundo-2.jpg',
     duracaoEmTempos: 1,
     escala: 0.6,
   },
@@ -153,9 +177,8 @@ export const BEATS: readonly Beat[] = [
     id: 'registrar',
     tipo: 'palavra',
     texto: 'registrar',
-    imagem: 'teste-2.jpg',
-    corDeFundo: CORES.branco,
-    corDoTexto: CORES.vinho,
+    tom: 'claro',
+    imagem: 'fundo-3.jpg',
     duracaoEmTempos: 1,
     escala: 0.68,
   },
@@ -163,8 +186,8 @@ export const BEATS: readonly Beat[] = [
     id: 'um-nome',
     tipo: 'palavra',
     texto: 'um nome.',
-    corDeFundo: CORES.branco,
-    corDoTexto: CORES.vinho,
+    tom: 'escuro',
+    imagem: 'fundo-4.jpg',
     duracaoEmTempos: 2,
     escala: 0.62,
   },
@@ -172,9 +195,8 @@ export const BEATS: readonly Beat[] = [
     id: 'a-gente-garante',
     tipo: 'palavra',
     texto: 'a gente garante',
-    imagem: 'teste-3.jpg',
-    corDeFundo: CORES.vinho,
-    corDoTexto: CORES.branco,
+    tom: 'claro',
+    imagem: 'fundo-5.jpg',
     duracaoEmTempos: 1,
     escala: 0.78,
   },
@@ -182,8 +204,8 @@ export const BEATS: readonly Beat[] = [
     id: 'que-ele-seja',
     tipo: 'palavra',
     texto: 'que ele seja',
-    corDeFundo: CORES.vinho,
-    corDoTexto: CORES.branco,
+    tom: 'escuro',
+    imagem: 'fundo-6.jpg',
     duracaoEmTempos: 1,
     escala: 0.68,
   },
@@ -191,8 +213,8 @@ export const BEATS: readonly Beat[] = [
     id: 'so-seu',
     tipo: 'palavra',
     texto: 'só seu.',
-    corDeFundo: CORES.branco,
-    corDoTexto: CORES.vinho,
+    tom: 'claro',
+    imagem: 'fundo-7.jpg',
     duracaoEmTempos: 2,
     escala: 0.58,
   },
@@ -200,14 +222,13 @@ export const BEATS: readonly Beat[] = [
     id: 'logo',
     tipo: 'logo',
     texto: 'MOR',
-    corDeFundo: CORES.vinho,
-    corDoTexto: CORES.branco,
+    tom: 'vinho',
     duracaoEmTempos: 5,
     escala: 0.74,
   },
 ] as const;
 
-/** Duracao do beat em frames, derivada do grid da trilha. */
+/** Duracao do beat em frames, derivada do grid do corte. */
 export const duracaoDoBeat = (beat: Beat): number =>
   beat.duracaoEmTempos * FRAMES_POR_TEMPO;
 
@@ -222,11 +243,14 @@ export const CORTES_EM_FRAMES: readonly number[] = BEATS.map((_, indice) =>
   BEATS.slice(0, indice).reduce((total, beat) => total + duracaoDoBeat(beat), 0),
 );
 
-/** Tratamento da imagem conforme a polaridade do beat. */
-export const tratamentoDoFundo = (beat: Beat) =>
-  beat.corDeFundo === CORES.branco ? FUNDO.claro : FUNDO.escuro;
+/** Tratamento do beat, tirado do tom. */
+export const tratamentoDoBeat = (beat: Beat): TratamentoDoTom => PALETA[beat.tom];
 
-/** Largura alvo do beat em pixels, respeitando a faixa de 78% a 90%. */
+/** Caminho do logo conforme o tom: o colorido so entra em fundo claro. */
+export const arquivoDoLogo = (beat: Beat): string =>
+  beat.tom === 'claro' ? LOGO.arquivoColorido : LOGO.arquivoBranco;
+
+/** Largura alvo do beat em pixels, respeitando a faixa de 50% a 78%. */
 export const larguraAlvoEmPx = (beat: Beat, larguraDoFrame: number): number => {
   const fracao =
     beat.tipo === 'palavra'
