@@ -168,7 +168,7 @@ export const BEATS: readonly Beat[] = [
     corDeFundo: CORES.vinho,
     corDoTexto: CORES.branco,
     duracaoEmTempos: 5,
-    escala: 0.52,
+    escala: 0.74,
   },
 ] as const;
 
