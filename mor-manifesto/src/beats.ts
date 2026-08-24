@@ -5,7 +5,7 @@
 
 export const CORES = {
   branco: '#FFFFFF',
-  vinho: '#6B1229',
+  vinho: '#8A0808',
 } as const;
 
 export const COMPOSICAO = {
@@ -27,10 +27,13 @@ export const TRILHA = {
 /** Um tempo da trilha em frames. A 120 BPM e 30fps, sao 15 frames. */
 export const FRAMES_POR_TEMPO = (COMPOSICAO.fps * 60) / TRILHA.bpm;
 
-/** Cada linha de texto deve ocupar entre 78% e 90% da largura do frame. */
+/**
+ * Faixa de largura que uma linha pode ocupar no frame. E daqui que sai o
+ * tamanho do texto: quanto mais estreita a faixa, menor a tipografia.
+ */
 export const FAIXA_DE_LARGURA = {
-  minima: 0.78,
-  maxima: 0.9,
+  minima: 0.5,
+  maxima: 0.78,
 } as const;
 
 /** Entrada seca: leve scale + fade nos primeiros frames de cada beat. */
@@ -102,7 +105,7 @@ export const BEATS: readonly Beat[] = [
     corDeFundo: CORES.branco,
     corDoTexto: CORES.vinho,
     duracaoEmTempos: 1,
-    escala: 0.9,
+    escala: 0.55,
   },
   {
     id: 'do-que',
@@ -111,7 +114,7 @@ export const BEATS: readonly Beat[] = [
     corDeFundo: CORES.vinho,
     corDoTexto: CORES.branco,
     duracaoEmTempos: 1,
-    escala: 0.88,
+    escala: 0.6,
   },
   {
     id: 'registrar',
@@ -120,7 +123,7 @@ export const BEATS: readonly Beat[] = [
     corDeFundo: CORES.branco,
     corDoTexto: CORES.vinho,
     duracaoEmTempos: 1,
-    escala: 0.9,
+    escala: 0.68,
   },
   {
     id: 'um-nome',
@@ -129,7 +132,7 @@ export const BEATS: readonly Beat[] = [
     corDeFundo: CORES.branco,
     corDoTexto: CORES.vinho,
     duracaoEmTempos: 2,
-    escala: 0.88,
+    escala: 0.62,
   },
   {
     id: 'a-gente-garante',
@@ -138,7 +141,7 @@ export const BEATS: readonly Beat[] = [
     corDeFundo: CORES.vinho,
     corDoTexto: CORES.branco,
     duracaoEmTempos: 1,
-    escala: 0.82,
+    escala: 0.78,
   },
   {
     id: 'que-ele-seja',
@@ -147,7 +150,7 @@ export const BEATS: readonly Beat[] = [
     corDeFundo: CORES.vinho,
     corDoTexto: CORES.branco,
     duracaoEmTempos: 1,
-    escala: 0.84,
+    escala: 0.68,
   },
   {
     id: 'so-seu',
@@ -156,7 +159,7 @@ export const BEATS: readonly Beat[] = [
     corDeFundo: CORES.branco,
     corDoTexto: CORES.vinho,
     duracaoEmTempos: 2,
-    escala: 0.9,
+    escala: 0.58,
   },
   {
     id: 'logo',

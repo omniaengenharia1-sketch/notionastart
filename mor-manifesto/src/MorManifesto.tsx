@@ -136,6 +136,9 @@ const LinhaAjustada: React.FC<{beat: Beat; texto: string}> = ({
         fontFamily,
         fontWeight: TIPOGRAFIA.pesoDaPalavra,
         letterSpacing: TIPOGRAFIA.tracking,
+        // Quebra o render se a Red Hat Display nao tiver carregado, em vez de
+        // medir com a metrica da fonte de fallback e sair torto.
+        validateFontIsLoaded: true,
       }),
     [beat, texto, width],
   );

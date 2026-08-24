@@ -1,10 +1,12 @@
 /**
- * Gera a trilha de impacto do Reels em public/trilha.wav.
+ * Gera a trilha epica do Reels em public/trilha.wav.
  *
- * A trilha e sintetizada aqui mesmo, sem sample de terceiro: sub graves nos
- * cortes, drone baixo por baixo de tudo, riser entrando no logo e um braam
- * longo segurando ate o fim. O grid e o mesmo dos beats (120 BPM, 1 tempo =
- * 15 frames a 30fps), entao cada corte do video cai em cima de um ataque.
+ * Nada de sample de terceiro: tudo e sintetizado aqui. A trilha tem naipe de
+ * cordas graves em ostinato, taiko nos cortes, coro sintetico, riser e um
+ * braam longo quando o logo entra.
+ *
+ * O grid vem do proprio src/beats.ts, entao cada corte seco do video cai em
+ * cima de um ataque da musica por construcao, nao por coincidencia.
  */
 import {mkdirSync, writeFileSync} from 'node:fs';
 import {dirname, join} from 'node:path';
@@ -21,7 +23,6 @@ import {
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..');
 
 const SR = 44100;
-const BPM = TRILHA.bpm;
 const FPS = COMPOSICAO.fps;
 const DURACAO = DURACAO_TOTAL_EM_FRAMES / FPS;
 const AMOSTRAS = Math.round(DURACAO * SR);
@@ -33,14 +34,14 @@ const ATAQUES_EM_FRAMES = CORTES_EM_FRAMES.filter(
   (_, indice) => indice !== indiceDoLogo,
 );
 
-/** Frame em que o logo entra. */
+/** Frame em que o logo entra, ou seja, onde a trilha abre. */
 const FRAME_DO_LOGO = CORTES_EM_FRAMES[indiceDoLogo];
 
 /**
  * Tempos internos dos beats longos: nao tem corte em cima, entao levam um
- * ataque fantasma so para o pulso nao morrer no respiro.
+ * ataque menor so para o pulso nao morrer no respiro.
  */
-const PULSOS_FANTASMA_EM_FRAMES = BEATS.flatMap((beat, indice) =>
+const CONTRATEMPOS_EM_FRAMES = BEATS.flatMap((beat, indice) =>
   indice === indiceDoLogo
     ? []
     : Array.from(
@@ -48,6 +49,14 @@ const PULSOS_FANTASMA_EM_FRAMES = BEATS.flatMap((beat, indice) =>
         (_, tempo) => CORTES_EM_FRAMES[indice] + (tempo + 1) * FRAMES_POR_TEMPO,
       ),
 );
+
+/**
+ * Harmonia: menor natural no corpo da frase, abrindo para a relativa maior no
+ * logo. E o que da a virada epica no fim.
+ */
+const TONICA = 55;
+const ACORDE_DA_FRASE = [1, 1.5, 2, 2.4]; // menor com quinta e terca menor
+const ACORDE_DO_LOGO = [1.2, 1.5, 1.8, 2.4, 3]; // relativa maior, mais aberta
 
 const emSegundos = (frame) => frame / FPS;
 const emAmostras = (segundos) => Math.round(segundos * SR);
@@ -75,46 +84,121 @@ const somar = (inicioEmSegundos, quantidade, render) => {
 let semente = 20260824;
 const ruido = () => {
   semente = (semente * 1664525 + 1013904223) % 4294967296;
-  return (semente / 2147483648) - 1;
+  return semente / 2147483648 - 1;
 };
 
 const decaimento = (t, tempo) => Math.exp(-t / tempo);
+const seno = (freq, t, fase = 0) => Math.sin(2 * Math.PI * freq * t + fase);
 
-/** Sub grave com queda de tom: o "corte" que voce sente antes de ouvir. */
-const impacto = ({emFrame, ganho = 1, decay = 0.3, agudo = 92, grave = 44}) => {
-  const duracao = decay * 4;
+/** Serra suave, base do naipe de cordas. */
+const serra = (freq, t) => {
+  const ciclo = (freq * t) % 1;
 
-  somar(emSegundos(emFrame), emAmostras(duracao), (t) => {
-    // Fase integrada da queda de tom exponencial de `agudo` para `grave`.
-    const fase = 2 * Math.PI * (grave * t + (agudo - grave) * 0.045 * (1 - Math.exp(-t / 0.045)));
-    const corpo = Math.sin(fase) * decaimento(t, decay);
-    const estalo = ruido() * decaimento(t, 0.012) * 0.28;
-    const amostra = (corpo * 0.95 + estalo) * ganho;
+  return 2 * ciclo - 1;
+};
+
+/** Taiko: pele grave com queda de tom, o soco de cada corte. */
+const taiko = ({emFrame, ganho = 1, decay = 0.42, agudo = 150, grave = 52}) => {
+  somar(emSegundos(emFrame), emAmostras(decay * 4), (t) => {
+    const fase =
+      2 *
+      Math.PI *
+      (grave * t + (agudo - grave) * 0.05 * (1 - Math.exp(-t / 0.05)));
+    const pele = Math.sin(fase) * decaimento(t, decay);
+    const corpo = seno(grave * 1.5, t) * decaimento(t, decay * 0.5) * 0.3;
+    const estalo = ruido() * decaimento(t, 0.014) * 0.35;
+    const amostra = (pele * 0.95 + corpo + estalo) * ganho;
 
     return [amostra, amostra];
   });
 };
 
-/** Drone continuo, so para o silencio entre as palavras nao ficar seco. */
-const drone = () => {
-  somar(0, AMOSTRAS, (t) => {
-    const entrada = Math.min(t / 0.6, 1);
-    const saida = t > DURACAO - 0.5 ? Math.max(0, (DURACAO - t) / 0.5) : 1;
-    const respiro = 0.75 + 0.25 * Math.sin(2 * Math.PI * 0.18 * t);
-    const env = entrada * saida * respiro * 0.16;
+/** Caixa marcial de trailer: ruido curto e seco por cima do taiko. */
+const caixa = ({emFrame, ganho = 1}) => {
+  somar(emSegundos(emFrame), emAmostras(0.35), (t) => {
+    const corpo = ruido() * decaimento(t, 0.09);
+    const tom = seno(190, t) * decaimento(t, 0.05) * 0.4;
+    const amostra = (corpo * 0.6 + tom) * ganho;
 
-    const grave = Math.sin(2 * Math.PI * 55 * t);
-    const batimento = Math.sin(2 * Math.PI * 55.35 * t) * 0.6;
-    const quinta = Math.sin(2 * Math.PI * 82.5 * t) * 0.22;
-
-    return [
-      (grave + batimento + quinta) * env,
-      (grave + batimento * 0.85 + quinta * 1.1) * env,
-    ];
+    return [amostra * 0.9, amostra];
   });
 };
 
-/** Riser: puxa a tensao do ultimo verso ate o logo e corta seco no impacto. */
+/**
+ * Ostinato de cordas graves: staccato em cada meio tempo, o motor que segura
+ * a tensao entre um corte e outro.
+ */
+const ostinato = () => {
+  const passo = FRAMES_POR_TEMPO / 2;
+  const notas = [1, 1, 1.5, 1];
+
+  for (let indice = 0, frame = 0; frame < FRAME_DO_LOGO; indice++, frame += passo) {
+    const freq = TONICA * notas[indice % notas.length];
+    const acento = indice % 2 === 0 ? 1 : 0.62;
+    const abertura = Math.min(1, 0.35 + frame / FRAME_DO_LOGO);
+
+    somar(emSegundos(frame), emAmostras(0.3), (t) => {
+      const env = decaimento(t, 0.075) * Math.min(t / 0.006, 1);
+      const corda =
+        serra(freq, t) * 0.5 + serra(freq * 2.005, t) * 0.22 + seno(freq, t) * 0.5;
+      const amostra = corda * env * 0.3 * acento * abertura;
+
+      return [amostra, amostra * 0.95];
+    });
+  }
+};
+
+/** Naipe sustentado por baixo de tudo, com leve vibrato. */
+const cordas = ({deFrame, ateFrame, intervalos, ganho}) => {
+  const inicio = emSegundos(deFrame);
+  const duracao = emSegundos(ateFrame) - inicio;
+
+  somar(inicio, emAmostras(duracao), (t) => {
+    const entrada = Math.min(t / 0.5, 1);
+    const saida = t > duracao - 0.4 ? Math.max(0, (duracao - t) / 0.4) : 1;
+    const env = entrada * saida * ganho;
+
+    let l = 0;
+    let r = 0;
+
+    for (const intervalo of intervalos) {
+      const freq = TONICA * intervalo;
+      const vibrato = 1 + 0.0025 * seno(5.2, t);
+      l += serra(freq * vibrato, t) * 0.4 + seno(freq, t) * 0.5;
+      r += serra(freq * 1.006 * vibrato, t) * 0.4 + seno(freq * 1.002, t) * 0.5;
+    }
+
+    const suavizar = (x) => Math.tanh(x * 0.7);
+
+    return [suavizar(l) * env, suavizar(r) * env];
+  });
+};
+
+/** Coro sintetico: oitava acima do naipe, so para dar ar de trailer. */
+const coro = ({deFrame, intervalos, ganho}) => {
+  const inicio = emSegundos(deFrame);
+  const duracao = DURACAO - inicio;
+
+  somar(inicio, emAmostras(duracao), (t) => {
+    const entrada = Math.min(t / 0.35, 1);
+    const saida = t > duracao - 0.7 ? Math.max(0, (duracao - t) / 0.7) : 1;
+    const env = entrada * saida * ganho;
+
+    let l = 0;
+    let r = 0;
+
+    for (const intervalo of intervalos) {
+      const freq = TONICA * intervalo * 4;
+      const vibrato = 1 + 0.004 * seno(4.6, t);
+      l += seno(freq * vibrato, t) + seno(freq * 1.5, t) * 0.3;
+      r += seno(freq * 1.003 * vibrato, t, 0.7) + seno(freq * 1.503, t) * 0.3;
+    }
+
+    return [l * env, r * env];
+  });
+};
+
+/** Riser: puxa a tensao do ultimo verso e corta seco no impacto do logo. */
 const riser = ({deFrame, ateFrame}) => {
   const inicio = emSegundos(deFrame);
   const duracao = emSegundos(ateFrame) - inicio;
@@ -123,13 +207,15 @@ const riser = ({deFrame, ateFrame}) => {
 
   somar(inicio, emAmostras(duracao), (t) => {
     const progresso = t / duracao;
-    const env = Math.pow(progresso, 2.2) * 0.42;
-    const corte = 0.02 + 0.5 * Math.pow(progresso, 2);
+    const env = Math.pow(progresso, 2.2) * 0.5;
+    const corte = 0.02 + 0.55 * Math.pow(progresso, 2);
 
     filtradoL += (ruido() - filtradoL) * corte;
     filtradoR += (ruido() - filtradoR) * corte;
 
-    const varredura = Math.sin(2 * Math.PI * (180 + 900 * Math.pow(progresso, 2.5)) * t) * 0.25;
+    const varredura =
+      seno(180 + 1100 * Math.pow(progresso, 2.5), t) * 0.22 +
+      seno(90 + 550 * Math.pow(progresso, 2.5), t) * 0.18;
 
     return [
       (filtradoL * 2.2 + varredura) * env,
@@ -139,66 +225,80 @@ const riser = ({deFrame, ateFrame}) => {
 };
 
 /** Braam do logo: acorde grave saturado com cauda longa. */
-const braam = ({emFrame}) => {
+const braam = ({emFrame, intervalos}) => {
   const inicio = emSegundos(emFrame);
   const duracao = DURACAO - inicio;
-  const parciais = [55, 82.5, 110, 138.6, 164.8, 220];
-  const pesos = [1, 0.55, 0.42, 0.3, 0.22, 0.12];
 
   somar(inicio, emAmostras(duracao), (t) => {
-    const ataque = Math.min(t / 0.018, 1);
-    const cauda = decaimento(t, 1.9);
-    const saida = t > duracao - 0.45 ? Math.max(0, (duracao - t) / 0.45) : 1;
+    const ataque = Math.min(t / 0.02, 1);
+    const cauda = 0.35 + 0.65 * decaimento(t, 1.6);
+    const saida = t > duracao - 0.5 ? Math.max(0, (duracao - t) / 0.5) : 1;
     const env = ataque * cauda * saida;
 
     let l = 0;
     let r = 0;
 
-    for (let i = 0; i < parciais.length; i++) {
-      const desafinado = parciais[i] * 1.004;
-      l += Math.sin(2 * Math.PI * parciais[i] * t) * pesos[i];
-      r += Math.sin(2 * Math.PI * desafinado * t) * pesos[i];
+    for (const intervalo of intervalos) {
+      const freq = TONICA * intervalo;
+      l += seno(freq, t) + serra(freq, t) * 0.35;
+      r += seno(freq * 1.004, t) + serra(freq * 1.004, t) * 0.35;
     }
 
-    const saturar = (x) => Math.tanh(x * 1.35);
+    const saturar = (x) => Math.tanh(x * 0.8);
 
-    return [saturar(l * env) * 0.34, saturar(r * env) * 0.34];
+    return [saturar(l * env) * 0.3, saturar(r * env) * 0.3];
   });
 };
 
-/** Pad que segura o logo no ar depois que o braam abre. */
-const pad = ({deFrame}) => {
-  const inicio = emSegundos(deFrame);
-  const duracao = DURACAO - inicio;
+/** Prato invertido entrando no logo, o "shhhh" antes do soco. */
+const pratoInvertido = ({ateFrame, duracaoEmFrames}) => {
+  const inicio = emSegundos(ateFrame - duracaoEmFrames);
+  const duracao = emSegundos(duracaoEmFrames);
+  let brilhoL = 0;
+  let brilhoR = 0;
 
   somar(inicio, emAmostras(duracao), (t) => {
-    const entrada = Math.min(t / 0.5, 1);
-    const saida = t > duracao - 0.6 ? Math.max(0, (duracao - t) / 0.6) : 1;
-    const env = entrada * saida * 0.11;
+    const progresso = t / duracao;
+    const env = Math.pow(progresso, 3) * 0.28;
 
-    const l = Math.sin(2 * Math.PI * 110 * t) + Math.sin(2 * Math.PI * 164.8 * t) * 0.5;
-    const r = Math.sin(2 * Math.PI * 110.3 * t) + Math.sin(2 * Math.PI * 165.2 * t) * 0.5;
+    brilhoL += (ruido() - brilhoL) * 0.75;
+    brilhoR += (ruido() - brilhoR) * 0.75;
 
-    return [l * env, r * env];
+    return [brilhoL * env, brilhoR * env];
   });
 };
 
-drone();
+cordas({
+  deFrame: 0,
+  ateFrame: FRAME_DO_LOGO,
+  intervalos: ACORDE_DA_FRASE,
+  ganho: 0.14,
+});
+ostinato();
 
 for (const frame of ATAQUES_EM_FRAMES) {
-  impacto({emFrame: frame, ganho: frame === 0 ? 0.95 : 0.8});
+  taiko({emFrame: frame, ganho: frame === 0 ? 0.95 : 0.85});
+  caixa({emFrame: frame, ganho: 0.16});
 }
 
-for (const frame of PULSOS_FANTASMA_EM_FRAMES) {
-  impacto({emFrame: frame, ganho: 0.34, decay: 0.18, agudo: 70});
+for (const frame of CONTRATEMPOS_EM_FRAMES) {
+  taiko({emFrame: frame, ganho: 0.4, decay: 0.22, agudo: 120});
 }
 
 riser({deFrame: FRAME_DO_LOGO - 2 * FRAMES_POR_TEMPO, ateFrame: FRAME_DO_LOGO});
-impacto({emFrame: FRAME_DO_LOGO, ganho: 1.15, decay: 0.5, agudo: 110, grave: 40});
-braam({emFrame: FRAME_DO_LOGO});
-pad({deFrame: FRAME_DO_LOGO});
+pratoInvertido({ateFrame: FRAME_DO_LOGO, duracaoEmFrames: FRAMES_POR_TEMPO * 2});
+taiko({emFrame: FRAME_DO_LOGO, ganho: 1.2, decay: 0.6, agudo: 180, grave: 44});
+caixa({emFrame: FRAME_DO_LOGO, ganho: 0.3});
+braam({emFrame: FRAME_DO_LOGO, intervalos: ACORDE_DO_LOGO});
+cordas({
+  deFrame: FRAME_DO_LOGO,
+  ateFrame: DURACAO_TOTAL_EM_FRAMES,
+  intervalos: ACORDE_DO_LOGO,
+  ganho: 0.16,
+});
+coro({deFrame: FRAME_DO_LOGO, intervalos: ACORDE_DO_LOGO, ganho: 0.045});
 
-/** Reverb barato so nos medios: espaco sem embolar o grave. */
+/** Reverb barato so nos medios: espaco de sala grande sem embolar o grave. */
 const aplicarReverb = (canal) => {
   const grave = new Float64Array(canal.length);
   let acumulado = 0;
@@ -210,10 +310,11 @@ const aplicarReverb = (canal) => {
   }
 
   const taps = [
-    [0.071, 0.3],
-    [0.113, 0.22],
-    [0.167, 0.16],
-    [0.229, 0.1],
+    [0.063, 0.34],
+    [0.097, 0.27],
+    [0.151, 0.2],
+    [0.223, 0.14],
+    [0.317, 0.09],
   ];
 
   const saida = Float64Array.from(canal);
@@ -241,6 +342,7 @@ for (let i = 0; i < AMOSTRAS; i++) {
 const normalizador = 0.98 / pico;
 /** Joelho de compressao: so o que passa de 0.8 e amaciado, o resto vai limpo. */
 const JOELHO = 0.8;
+
 const buffer = Buffer.alloc(44 + AMOSTRAS * 4);
 
 buffer.write('RIFF', 0);
@@ -274,10 +376,14 @@ for (let i = 0; i < AMOSTRAS; i++) {
   buffer.writeInt16LE(paraInteiro(mixR[i]), 46 + i * 4);
 }
 
-const destino = join(RAIZ, 'public', 'trilha.wav');
+const destino = join(RAIZ, 'public', TRILHA.arquivo);
 mkdirSync(dirname(destino), {recursive: true});
 writeFileSync(destino, buffer);
 
-console.log(`trilha gerada: ${destino} (${(buffer.length / 1024).toFixed(0)} kB, ${DURACAO.toFixed(2)}s, ${BPM} BPM)`);
+console.log(
+  `trilha gerada: ${destino} (${(buffer.length / 1024).toFixed(0)} kB, ${DURACAO.toFixed(2)}s, ${TRILHA.bpm} BPM)`,
+);
 console.log(`ataques em frames: ${ATAQUES_EM_FRAMES.join(', ')}`);
-console.log(`fantasmas: ${PULSOS_FANTASMA_EM_FRAMES.join(', ')} | logo: ${FRAME_DO_LOGO} | tempo = ${FRAMES_POR_TEMPO} frames`);
+console.log(
+  `contratempos: ${CONTRATEMPOS_EM_FRAMES.join(', ')} | logo: ${FRAME_DO_LOGO} | tempo = ${FRAMES_POR_TEMPO} frames`,
+);
