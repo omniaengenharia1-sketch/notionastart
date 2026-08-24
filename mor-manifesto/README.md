@@ -58,15 +58,21 @@ funciona melhor, porque o tratamento estoura os claros e fecha os escuros.
 
 ## Trilha
 
-A trilha vive em `public/trilha.wav` e e preparada a partir de qualquer faixa:
+O projeto nao traz musica. Enquanto nao existir `public/trilha.wav`, o video
+renderiza mudo, e e so isso que muda.
+
+Para colocar uma faixa:
 
 ```bash
 npm run trilha -- caminho/da/faixa.mp3 [inicioEmSegundos]
 ```
 
 O script decodifica com o ffmpeg que ja vem no Remotion, corta na duracao exata
-da composicao e aplica fade de entrada e de saida. Trocar a musica e rodar de
-novo, sem tocar no codigo.
+da composicao e aplica fade de entrada e de saida, gravando `public/trilha.wav`.
+O segundo argumento e opcional e serve para comecar de um trecho no meio da
+faixa, quando o comeco dela nao serve.
+
+Trocar de musica e rodar o comando de novo, sem tocar em codigo nenhum.
 
 ## Logo
 

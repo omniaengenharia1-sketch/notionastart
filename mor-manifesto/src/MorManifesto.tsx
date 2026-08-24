@@ -289,6 +289,12 @@ export type PropsDoManifesto = {
 };
 
 export const MorManifesto: React.FC<PropsDoManifesto> = ({comTrilha = true}) => {
+  // Sem arquivo de trilha em public/, o video sai mudo em vez de quebrar.
+  const temTrilha = useMemo(
+    () => getStaticFiles().some((arquivo) => arquivo.name === TRILHA.arquivo),
+    [],
+  );
+
   const renderizarBeat = useCallback(
     (beat: Beat) =>
       beat.tipo === 'logo' ? (
@@ -301,7 +307,7 @@ export const MorManifesto: React.FC<PropsDoManifesto> = ({comTrilha = true}) => 
 
   return (
     <AbsoluteFill>
-      {comTrilha ? (
+      {comTrilha && temTrilha ? (
         <Audio src={staticFile(TRILHA.arquivo)} volume={TRILHA.volume} />
       ) : null}
       <Series>
