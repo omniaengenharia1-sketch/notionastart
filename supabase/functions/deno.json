@@ -1,0 +1,14 @@
+{
+  "lock": false,
+  "fmt": {
+    "lineWidth": 110,
+    "singleQuote": true
+  },
+  "lint": {
+    "rules": {
+      // Os especificadores jsr: sao explicitos de proposito: e o formato que o
+      // Supabase Edge Runtime resolve sem depender de import map no deploy.
+      "exclude": ["no-import-prefix"]
+    }
+  }
+}
