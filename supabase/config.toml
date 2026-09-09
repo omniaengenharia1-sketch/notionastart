@@ -1,8 +1,0 @@
-# Configuracao minima do projeto Supabase para o modulo de agendamento.
-# O restante fica nos defaults da CLI.
-
-project_id = "astart-agendamento"
-
-[functions.publicar-tick]
-# O pg_cron autentica com o header x-tick-secret, nao com JWT.
-verify_jwt = false
