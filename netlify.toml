@@ -1,0 +1,5 @@
+# Este repositório publica apenas páginas de proposta.
+# Sem esta trava, um deploy feito da raiz exporia clients_config.json e os scripts.
+[build]
+  publish = "propostas/supra-equipamentos"
+  command = ""

@@ -1,0 +1,5 @@
+# Proposta Supra Equipamentos — site estático, sem build.
+# publish = "." mantém a publicação restrita a esta pasta.
+[build]
+  publish = "."
+  command = ""
