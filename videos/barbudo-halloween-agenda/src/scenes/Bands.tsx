@@ -82,12 +82,13 @@ const BandReveal: React.FC<{item: HalloweenItem}> = ({item}) => {
         <Footage src={item.bandPhoto} w={AW} h={AH} start={0} />
       </div>
       <VhsHud stamp={`${item.weekday} ${item.date}  ${item.time.toUpperCase()}`} />
-      <div style={{position: 'absolute', top: 1230, width: '100%', display: 'flex', justifyContent: 'center'}}>
-        <RedTag p={pop(frame, 10, fps, 260, 22)}>
+      {/* etiqueta encaixada sobre a borda de baixo da arte (esconde o corte das pernas) */}
+      <div style={{position: 'absolute', top: 340 + AH - 70, width: '100%', display: 'flex', justifyContent: 'center'}}>
+        <RedTag p={pop(frame, 10, fps, 260, 22)} style={{width: AW + 20, textAlign: 'center', boxSizing: 'border-box'}}>
           <div style={heavy(104, COLORS.ink)}>SHOW AO VIVO • {item.time.toUpperCase()}</div>
         </RedTag>
       </div>
-      <div style={{position: 'absolute', top: 1400, width: '100%', textAlign: 'center', opacity: flick(frame, 18, 'bn')}}>
+      <div style={{position: 'absolute', top: 340 + AH + 90, width: '100%', textAlign: 'center', opacity: flick(frame, 18, 'bn')}}>
         <div style={thin(84, COLORS.bone)}>NOITE DE HALLOWEEN NO BARBUDO</div>
       </div>
       <div style={{position: 'absolute', left: -40, top: 1470}}>
