@@ -1,67 +1,41 @@
 import React from 'react';
-import {AbsoluteFill, interpolate, Sequence, useCurrentFrame} from 'remotion';
-import {HALLOWEEN_WINDOW, INTRO_FRAMES, OUTRO_FRAMES, TIMELINE} from './agenda';
-import {Bats, ClawCuts, FilmGrain, FloatingGhosts, Fog, Ground, Lightning, shakeOffset, Sky} from './fx/atmosphere';
+import {AbsoluteFill, Sequence} from 'remotion';
+import {INTRO_FRAMES, OUTRO_FRAMES, TIMELINE} from './agenda';
+import {Cuts, DuotoneDefs, Grain, OliveBg} from './fx/kit';
+import {HalloweenNight, ShowScene} from './scenes/Bands';
 import {Cemetery} from './scenes/Cemetery';
 import {DaySlide} from './scenes/DaySlide';
-import {HalloweenNight} from './scenes/HalloweenNight';
 import {Intro} from './scenes/Intro';
 import {Outro} from './scenes/Outro';
-import {ShowScene} from './scenes/ShowScene';
 
-const IMPACTS = [
-  {at: 22, amp: 18},
-  {at: 40, amp: 8},
-  ...TIMELINE.items.map(({from, item}) => ({at: from + (item.kind === 'day' ? 14 : item.kind === 'halloween' ? 16 : item.kind === 'show' ? 30 : 34), amp: 12})),
-  {at: TIMELINE.outroFrom + 34, amp: 8},
-];
+export const AgendaHalloween: React.FC = () => (
+  <AbsoluteFill style={{background: '#000', overflow: 'hidden'}}>
+    <DuotoneDefs />
+    <OliveBg />
 
-export const AgendaHalloween: React.FC = () => {
-  const frame = useCurrentFrame();
-  const shake = shakeOffset(frame, IMPACTS);
-  const endFade = interpolate(frame, [TIMELINE.total - 10, TIMELINE.total - 1], [0, 1], {
-    extrapolateLeft: 'clamp',
-    extrapolateRight: 'clamp',
-  });
+    <Sequence durationInFrames={INTRO_FRAMES} name="Abertura">
+      <Intro duration={INTRO_FRAMES} />
+    </Sequence>
 
-  return (
-    <AbsoluteFill style={{background: '#000', overflow: 'hidden'}}>
-      <AbsoluteFill style={{transform: `translate(${shake.x}px, ${shake.y}px) rotate(${shake.r}deg) scale(1.03)`}}>
-        <Sky />
-        <Fog />
-        <Bats />
-        {HALLOWEEN_WINDOW && <FloatingGhosts start={HALLOWEEN_WINDOW.from} count={3} />}
+    {TIMELINE.items.map(({item, from, duration}, i) => (
+      <Sequence
+        key={i}
+        from={from}
+        durationInFrames={duration}
+        name={item.kind === 'cemetery' ? 'Cemitério Maldito' : item.kind === 'day' ? `${item.weekday} ${item.date}` : item.band}
+      >
+        {item.kind === 'day' && <DaySlide item={item} duration={duration} />}
+        {item.kind === 'show' && <ShowScene item={item} duration={duration} />}
+        {item.kind === 'halloween' && <HalloweenNight item={item} duration={duration} />}
+        {item.kind === 'cemetery' && <Cemetery item={item} duration={duration} />}
+      </Sequence>
+    ))}
 
-        <Sequence durationInFrames={INTRO_FRAMES} name="Intro">
-          <Intro duration={INTRO_FRAMES} />
-        </Sequence>
+    <Sequence from={TIMELINE.outroFrom} durationInFrames={OUTRO_FRAMES} name="Encerramento">
+      <Outro duration={OUTRO_FRAMES} />
+    </Sequence>
 
-        {TIMELINE.items.map(({item, from, duration}, i) => (
-          <Sequence
-            key={i}
-            from={from}
-            durationInFrames={duration}
-            name={item.kind === 'cemetery' ? `Cemitério ${item.date}` : item.kind === 'show' ? item.band : `${item.weekday} ${item.date}`}
-          >
-            {item.kind === 'halloween' && <HalloweenNight item={item} duration={duration} />}
-            {item.kind === 'cemetery' && <Cemetery item={item} duration={duration} />}
-            {item.kind === 'day' && <DaySlide item={item} duration={duration} />}
-            {item.kind === 'show' && <ShowScene item={item} duration={duration} />}
-          </Sequence>
-        ))}
-
-        <Sequence from={TIMELINE.outroFrom} durationInFrames={OUTRO_FRAMES} name="Encerramento">
-          <Outro duration={OUTRO_FRAMES} />
-        </Sequence>
-
-        <Ground />
-        <Fog front />
-      </AbsoluteFill>
-
-      <Lightning />
-      <ClawCuts />
-      <FilmGrain />
-      <AbsoluteFill style={{background: '#000', opacity: endFade}} />
-    </AbsoluteFill>
-  );
-};
+    <Grain />
+    <Cuts />
+  </AbsoluteFill>
+);

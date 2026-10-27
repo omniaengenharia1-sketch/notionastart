@@ -9,29 +9,27 @@
 export const BRAND = {
   instagram: '@choppdobarbudo',
   location: 'Praça Gastronômica de Arujá',
-  weekRange: '28/10 a 31/10',
+  weekRange: '28/10 — 31/10',
 };
 
-// Visual de cada dia comum:
-//  'sign'      -> placa de madeira pendurada balançando
-//  'cauldron'  -> texto surge da fumaça de um caldeirão borbulhando
-//  'tomb'      -> lápide subindo da terra
-//  'tombHands' -> lápide + mãos de zumbi saindo do chão
-export type DayVariant = 'sign' | 'cauldron' | 'tomb' | 'tombHands';
+export type Entry = {text: string; time: string};
 
-// icon: 'ball' (futebol) | 'music' (show)
-export type Entry = {icon: 'ball' | 'music'; text: string; time: string};
+// Layout dos dias comuns (estética "poster editorial"):
+//  'blocks' -> grade de blocos: dia + selo da data + barra degradê + bloco retícula
+//  'bars'   -> barras empilhadas entrando alternadas
+export type DayLayout = 'blocks' | 'bars';
 
 export type DayItem = {
   kind: 'day';
   weekday: string;
   date: string;
   title: string;
+  sideLabel: string; // palavra fina gigante na lateral
   entries: Entry[];
-  variant: DayVariant;
+  layout: DayLayout;
 };
 
-// Cena de show com a foto recortada (PNG transparente) surgindo do caldeirão
+// Cena de show com foto recortada (PNG transparente)
 export type ShowItem = {
   kind: 'show';
   weekday: string;
@@ -47,10 +45,7 @@ export type HalloweenItem = {
   date: string;
   band: string;
   time: string;
-  // arquivo dentro de /public; null = silhueta provisória
-  bandPhoto: string | null;
-  // true quando a arte da banda já traz o nome escrito (não repete o texto)
-  photoHasName: boolean;
+  bandPhoto: string; // arquivo dentro de /public
 };
 
 export type CemeteryItem = {
@@ -67,40 +62,41 @@ export const AGENDA: AgendaItem[] = [
     kind: 'day',
     weekday: 'QUARTA',
     date: '28/10',
-    title: 'Quarta do Brasileirão',
+    title: 'Brasileirão',
+    sideLabel: 'FUTEBOL',
     entries: [
-      {icon: 'ball', text: 'Santos x Palmeiras', time: '19h30'},
-      {icon: 'ball', text: 'Bahia x São Paulo', time: '21h30'},
+      {text: 'Santos x Palmeiras', time: '19h30'},
+      {text: 'Bahia x São Paulo', time: '21h30'},
     ],
-    variant: 'sign',
+    layout: 'blocks',
   },
   {
     kind: 'day',
     weekday: 'SEXTA',
     date: '30/10',
     title: 'Sexta Sangrenta',
+    sideLabel: 'SEXTA',
     entries: [
-      {icon: 'ball', text: 'Corinthians x Mirassol', time: '20h'},
-      {icon: 'music', text: 'LMC Acústico', time: '20h'},
+      {text: 'Corinthians x Mirassol', time: '20h'},
+      {text: 'LMC Acústico', time: '20h'},
     ],
-    variant: 'cauldron',
+    layout: 'bars',
   },
   {
     kind: 'show',
     weekday: 'SEXTA',
     date: '30/10',
     band: 'LMC Acústico',
-    time: 'Ao vivo • 20h',
+    time: '20h',
     photo: 'bandas/lmc-acustico.png',
   },
   {
     kind: 'halloween',
     weekday: 'SÁBADO',
     date: '31/10',
-    band: 'Banda La Fortune',
-    time: 'Ao vivo • 20h',
+    band: 'La Fortune',
+    time: '20h',
     bandPhoto: 'bandas/la-fortune.png',
-    photoHasName: true,
   },
   {
     kind: 'cemetery',
@@ -112,12 +108,12 @@ export const AGENDA: AgendaItem[] = [
 
 // Duração das cenas (em frames, 30fps)
 export const FPS = 30;
-export const INTRO_FRAMES = 120;
-export const DAY_FRAMES = 90;
-export const HALLOWEEN_FRAMES = 126;
-export const CEMETERY_FRAMES = 100;
-export const SHOW_FRAMES = 96;
-export const OUTRO_FRAMES = 126;
+export const INTRO_FRAMES = 135;
+export const DAY_FRAMES = 96;
+export const SHOW_FRAMES = 90;
+export const HALLOWEEN_FRAMES = 135;
+export const CEMETERY_FRAMES = 105;
+export const OUTRO_FRAMES = 110;
 
 export const itemFrames = (item: AgendaItem) =>
   item.kind === 'halloween'
@@ -139,28 +135,23 @@ export const TIMELINE = (() => {
   return {items, outroFrom: t, total: t + OUTRO_FRAMES};
 })();
 
-// Frames onde há corte de cena (usados para transição de garras + flash)
-export const CUTS = [INTRO_FRAMES, ...TIMELINE.items.slice(1).map((i) => i.from), TIMELINE.outroFrom];
-
-// Janela da "noite de Halloween" (lua de sangue): do show até o fim do cemitério
-export const HALLOWEEN_WINDOW = (() => {
-  const hw = TIMELINE.items.filter((i) => i.item.kind === 'halloween' || i.item.kind === 'cemetery');
-  if (!hw.length) return null;
-  const last = hw[hw.length - 1];
-  return {from: hw[0].from, to: last.from + last.duration};
-})();
-
-export const CEMETERY_FROM = TIMELINE.items.find((i) => i.item.kind === 'cemetery')?.from ?? null;
-export const SHOW_FROMS = TIMELINE.items.filter((i) => i.item.kind === 'show').map((i) => i.from);
+// Cortes de cena: alternam entre morcego desfocado passando na câmera e glitch
+export const CUTS = [
+  {at: 50, type: 'glitch' as const}, // fim das mãos no vidro → título
+  ...[INTRO_FRAMES, ...TIMELINE.items.slice(1).map((i) => i.from), TIMELINE.outroFrom].map((at, i) => ({
+    at,
+    type: i % 2 === 0 ? ('bat' as const) : ('glitch' as const),
+  })),
+  // troca pôster → arte da La Fortune dentro do sábado
+  ...TIMELINE.items.filter((i) => i.item.kind === 'halloween').map((i) => ({at: i.from + 64, type: 'glitch' as const})),
+];
 
 export const COLORS = {
-  night: '#07040c',
-  purple: '#1d0b33',
-  plum: '#3a0f3d',
-  orange: '#ff7a00',
-  pumpkin: '#ff9a1f',
-  toxic: '#9dff3a',
-  blood: '#b3001b',
-  brandRed: '#ee2b36',
-  bone: '#f3ead2',
+  olive: '#25241a',
+  oliveDark: '#17160f',
+  orange: '#ec4f17',
+  pink: '#f7a3df',
+  maroon: '#3b0d08',
+  red: '#d10a0a',
+  bone: '#f4ecdc',
 };
