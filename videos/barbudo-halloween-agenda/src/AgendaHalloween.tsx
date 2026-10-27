@@ -1,7 +1,7 @@
 import React from 'react';
 import {AbsoluteFill, Sequence} from 'remotion';
 import {INTRO_FRAMES, OUTRO_FRAMES, TIMELINE} from './agenda';
-import {Cuts, DuotoneDefs, Grain, OliveBg} from './fx/kit';
+import {Cuts, DarkBg, Grain} from './fx/kit';
 import {HalloweenNight, ShowScene} from './scenes/Bands';
 import {Cemetery} from './scenes/Cemetery';
 import {DaySlide} from './scenes/DaySlide';
@@ -10,8 +10,7 @@ import {Outro} from './scenes/Outro';
 
 export const AgendaHalloween: React.FC = () => (
   <AbsoluteFill style={{background: '#000', overflow: 'hidden'}}>
-    <DuotoneDefs />
-    <OliveBg />
+    <DarkBg />
 
     <Sequence durationInFrames={INTRO_FRAMES} name="Abertura">
       <Intro duration={INTRO_FRAMES} />

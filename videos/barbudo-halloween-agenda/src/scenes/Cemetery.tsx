@@ -2,9 +2,9 @@ import React from 'react';
 import {AbsoluteFill, random, useCurrentFrame, useVideoConfig} from 'remotion';
 import {CemeteryItem, COLORS} from '../agenda';
 import {FONT} from '../fonts';
-import {pop, RedGlass, Thin} from '../fx/kit';
+import {HangingSpider, pop, RedGlass, thin} from '../fx/kit';
 
-const INK = '#120000';
+const INK = COLORS.ink;
 
 // Texto preto com glitch de cor esporádico
 const GlitchWord: React.FC<{text: string; size: number; seed: string}> = ({text, size, seed}) => {
@@ -54,9 +54,10 @@ export const Cemetery: React.FC<{item: CemeteryItem; duration: number}> = ({item
           {x: 900, y: 1300, rot: 26, scale: 1.2, at: 44, drag: 120},
         ]}
       >
+        <HangingSpider x={140} drop={380} start={30} />
         <div style={{position: 'absolute', top: 250, width: '100%', display: 'flex', justifyContent: 'center', opacity: p(6)}}>
           <div style={{background: INK, padding: '12px 30px 6px'}}>
-            <Thin text={`ESPECIAL HALLOWEEN • SÁBADO ${item.date}`} size={60} color={COLORS.bone} />
+            <div style={thin(60, COLORS.bone)}>{`ESPECIAL HALLOWEEN • SÁBADO ${item.date}`}</div>
           </div>
         </div>
         <div style={{position: 'absolute', top: 560, width: '100%', textAlign: 'center', transform: `scale(${1.6 - 0.6 * p(14)})`, opacity: p(14)}}>
@@ -67,7 +68,7 @@ export const Cemetery: React.FC<{item: CemeteryItem; duration: number}> = ({item
         </div>
         <div style={{position: 'absolute', top: 1110, width: '100%', display: 'flex', justifyContent: 'center', opacity: p(40)}}>
           <div style={{background: INK, padding: '16px 40px 8px', transform: `scale(${0.6 + 0.4 * p(40)})`}}>
-            <Thin text={item.subtitle.toUpperCase()} size={120} color={COLORS.bone} />
+            <div style={thin(120, COLORS.bone)}>{item.subtitle.toUpperCase()}</div>
           </div>
         </div>
       </RedGlass>

@@ -1,16 +1,13 @@
 import React from 'react';
-import {AbsoluteFill, Img, interpolate, Sequence, staticFile, useCurrentFrame, useVideoConfig} from 'remotion';
+import {AbsoluteFill, Img, Sequence, staticFile, useCurrentFrame, useVideoConfig} from 'remotion';
 import {BRAND, COLORS} from '../agenda';
-import {FONT} from '../fonts';
-import {clamp, EchoText, gradientBar, Outline, pop, RedGlass, Starburst, Thin, twos, wipe} from '../fx/kit';
+import {BatSwarm, Claws, Cobweb, EvilPumpkin, flick, heavy, HorrorText, pop, RedGlass, RedTag, thin} from '../fx/kit';
 
 const COLD_OPEN = 50;
 
 // Abertura: mãos batendo no vidro vermelho
 const ColdOpen: React.FC = () => {
   const frame = useCurrentFrame();
-  const txt = interpolate(frame, [26, 32], [0, 1], clamp);
-  const flicker = frame > 32 && frame % 11 < 1 ? 0.2 : 1;
   return (
     <RedGlass
       hands={[
@@ -18,8 +15,8 @@ const ColdOpen: React.FC = () => {
         {x: 720, y: 1180, rot: 14, scale: 1.3, at: 18, drag: 90},
       ]}
     >
-      <div style={{position: 'absolute', top: 1420, width: '100%', textAlign: 'center', opacity: txt * flicker}}>
-        <Thin text="ESSA SEMANA NO BARBUDO..." size={78} color={COLORS.bone} />
+      <div style={{position: 'absolute', top: 1420, width: '100%', textAlign: 'center', opacity: flick(frame, 26, 'co')}}>
+        <div style={thin(78, COLORS.bone)}>ESSA SEMANA NO BARBUDO...</div>
       </div>
     </RedGlass>
   );
@@ -28,72 +25,38 @@ const ColdOpen: React.FC = () => {
 const Title: React.FC = () => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
-  const badge = pop(frame, 0, fps);
-  const spread = interpolate(twos(frame), [0, 16], [46, 10], clamp);
-  const bar = pop(frame, 12, fps, 220, 20);
-  const block = pop(frame, 20, fps, 220, 20);
-  const logo = pop(frame, 30, fps);
   return (
     <AbsoluteFill>
-      <Outline x={160} y={200} w={760} h={740} r={130} p={badge} />
-      <div style={{position: 'absolute', left: 200, top: 230, transform: `scale(${badge})`}}>
-        <Starburst size={680} rotation={twos(frame) * 0.6} points={24}>
-          <EchoText text="AGENDA" size={210} spread={spread} echo="#7a1a08" />
-        </Starburst>
+      <BatSwarm count={9} />
+      <Cobweb size={360} corner="tl" start={2} />
+      <Cobweb size={300} corner="tr" start={6} />
+
+      <div style={{position: 'absolute', top: 300, width: '100%', textAlign: 'center'}}>
+        <HorrorText text="AGENDA" size={330} start={2} seed="ag" />
+      </div>
+      <div style={{position: 'absolute', left: 110, top: 360}}>
+        <Claws start={16} width={860} angle={-12} gap={78} />
+      </div>
+      <div style={{position: 'absolute', top: 610, width: '100%', textAlign: 'center'}}>
+        <HorrorText text="DA SEMANA" size={150} start={12} seed="ds" weight={100} />
+      </div>
+      <div style={{position: 'absolute', top: 800, width: '100%', display: 'flex', justifyContent: 'center'}}>
+        <RedTag p={pop(frame, 22, fps, 260, 22)}>
+          <div style={heavy(118, COLORS.ink)}>EDIÇÃO HALLOWEEN</div>
+        </RedTag>
+      </div>
+      <div style={{position: 'absolute', top: 1010, width: '100%', display: 'flex', justifyContent: 'center', opacity: flick(frame, 30, 'lg')}}>
+        <Img src={staticFile('logo-rango.png')} style={{width: 560, filter: 'drop-shadow(0 0 24px rgba(210,10,10,0.6))'}} />
+      </div>
+      <div style={{position: 'absolute', top: 1230, width: '100%', textAlign: 'center', opacity: flick(frame, 36, 'dr')}}>
+        <div style={thin(92, COLORS.bone)}>{BRAND.weekRange}</div>
       </div>
 
-      <div
-        style={{
-          position: 'absolute',
-          left: 60,
-          top: 990,
-          width: 960,
-          height: 170,
-          background: gradientBar,
-          clipPath: wipe(bar, 'left'),
-          display: 'flex',
-          alignItems: 'center',
-          paddingLeft: 36,
-        }}
-      >
-        <EchoText text="DA SEMANA" size={150} />
+      <div style={{position: 'absolute', left: -30, top: 1360}}>
+        <EvilPumpkin size={330} start={10} seed="i1" />
       </div>
-
-      <div
-        style={{
-          position: 'absolute',
-          left: 60,
-          top: 1180,
-          width: 960,
-          height: 250,
-          background: COLORS.maroon,
-          clipPath: wipe(block, 'right'),
-          overflow: 'hidden',
-        }}
-      >
-        <div style={{position: 'absolute', left: 36, top: 26, fontFamily: FONT, fontWeight: 900, fontSize: 64, color: COLORS.orange}}>
-          EDIÇÃO
-        </div>
-        <Thin text="HALLOWEEN" size={238} style={{position: 'absolute', left: 30, top: 34, transform: `translateX(${(1 - block) * 200}px)`}} />
-      </div>
-
-      <div
-        style={{
-          position: 'absolute',
-          left: 60,
-          top: 1455,
-          width: 960,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          opacity: logo,
-          transform: `translateY(${(1 - logo) * 40}px)`,
-        }}
-      >
-        <Img src={staticFile('logo-rango.png')} style={{width: 420}} />
-        <div style={{fontFamily: FONT, fontWeight: 900, fontSize: 84, color: COLORS.pink, transform: 'skewX(-8deg)'}}>
-          {BRAND.weekRange}
-        </div>
+      <div style={{position: 'absolute', left: 760, top: 1400}}>
+        <EvilPumpkin size={300} start={18} seed="i2" />
       </div>
     </AbsoluteFill>
   );

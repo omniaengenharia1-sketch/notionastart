@@ -12,21 +12,15 @@ export const BRAND = {
   weekRange: '28/10 — 31/10',
 };
 
-export type Entry = {text: string; time: string};
-
-// Layout dos dias comuns (estética "poster editorial"):
-//  'blocks' -> grade de blocos: dia + selo da data + barra degradê + bloco retícula
-//  'bars'   -> barras empilhadas entrando alternadas
-export type DayLayout = 'blocks' | 'bars';
+// tag: etiqueta pequena acima do item (ex.: 'Transmissão ao vivo', 'Show ao vivo')
+export type Entry = {text: string; time: string; tag: string};
 
 export type DayItem = {
   kind: 'day';
   weekday: string;
   date: string;
   title: string;
-  sideLabel: string; // palavra fina gigante na lateral
   entries: Entry[];
-  layout: DayLayout;
 };
 
 // Cena de show com foto recortada (PNG transparente)
@@ -63,24 +57,20 @@ export const AGENDA: AgendaItem[] = [
     weekday: 'QUARTA',
     date: '28/10',
     title: 'Brasileirão',
-    sideLabel: 'FUTEBOL',
     entries: [
-      {text: 'Santos x Palmeiras', time: '19h30'},
-      {text: 'Bahia x São Paulo', time: '21h30'},
+      {text: 'Santos x Palmeiras', time: '19h30', tag: 'Transmissão ao vivo'},
+      {text: 'Bahia x São Paulo', time: '21h30', tag: 'Transmissão ao vivo'},
     ],
-    layout: 'blocks',
   },
   {
     kind: 'day',
     weekday: 'SEXTA',
     date: '30/10',
     title: 'Sexta Sangrenta',
-    sideLabel: 'SEXTA',
     entries: [
-      {text: 'Corinthians x Mirassol', time: '20h'},
-      {text: 'LMC Acústico', time: '20h'},
+      {text: 'Corinthians x Mirassol', time: '20h', tag: 'Transmissão ao vivo'},
+      {text: 'LMC Acústico', time: '20h', tag: 'Show ao vivo'},
     ],
-    layout: 'bars',
   },
   {
     kind: 'show',
@@ -147,11 +137,9 @@ export const CUTS = [
 ];
 
 export const COLORS = {
-  olive: '#25241a',
-  oliveDark: '#17160f',
-  orange: '#ec4f17',
-  pink: '#f7a3df',
-  maroon: '#3b0d08',
+  black: '#050404',
   red: '#d10a0a',
-  bone: '#f4ecdc',
+  blood: '#7a0000',
+  bone: '#f5f3ef', // branco
+  ink: '#120000',
 };
