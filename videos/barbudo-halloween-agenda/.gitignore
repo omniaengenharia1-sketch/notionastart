@@ -1,2 +1,4 @@
 node_modules/
 out/
+# música com direitos autorais: não versionar
+public/musica/

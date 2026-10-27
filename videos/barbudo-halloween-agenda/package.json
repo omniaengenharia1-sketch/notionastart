@@ -4,7 +4,9 @@
   "private": true,
   "scripts": {
     "studio": "remotion studio",
-    "render": "remotion render AgendaHalloween out/agenda-halloween-barbudo.mp4",
+    "render": "scripts/render.sh AgendaHalloween out/agenda-halloween-barbudo.mp4",
+    "render:sem-musica": "scripts/render.sh AgendaHalloweenSemMusica out/agenda-halloween-barbudo-sem-musica.mp4",
+    "sfx": "python3 scripts/gerar_sfx.py",
     "still": "remotion still AgendaHalloween out/preview.png"
   },
   "dependencies": {

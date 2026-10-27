@@ -9,7 +9,7 @@ import {Intro} from './scenes/Intro';
 import {Outro} from './scenes/Outro';
 import {SoundTrack} from './SoundTrack';
 
-export const AgendaHalloween: React.FC = () => (
+export const AgendaHalloween: React.FC<{music: boolean}> = ({music}) => (
   <AbsoluteFill style={{background: '#000', overflow: 'hidden'}}>
     <DarkBg />
 
@@ -37,6 +37,6 @@ export const AgendaHalloween: React.FC = () => (
 
     <Grain />
     <Cuts />
-    <SoundTrack />
+    <SoundTrack music={music} />
   </AbsoluteFill>
 );
