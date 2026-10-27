@@ -31,14 +31,26 @@ export type DayItem = {
   variant: DayVariant;
 };
 
+// Cena de show com a foto recortada (PNG transparente) surgindo do caldeirão
+export type ShowItem = {
+  kind: 'show';
+  weekday: string;
+  date: string;
+  band: string;
+  time: string;
+  photo: string; // arquivo dentro de /public
+};
+
 export type HalloweenItem = {
   kind: 'halloween';
   weekday: string;
   date: string;
   band: string;
   time: string;
-  // arquivo dentro de /public (ex.: 'banda-la-fortune.jpg'); null = silhueta provisória
+  // arquivo dentro de /public; null = silhueta provisória
   bandPhoto: string | null;
+  // true quando a arte da banda já traz o nome escrito (não repete o texto)
+  photoHasName: boolean;
 };
 
 export type CemeteryItem = {
@@ -48,7 +60,7 @@ export type CemeteryItem = {
   subtitle: string;
 };
 
-export type AgendaItem = DayItem | HalloweenItem | CemeteryItem;
+export type AgendaItem = DayItem | ShowItem | HalloweenItem | CemeteryItem;
 
 export const AGENDA: AgendaItem[] = [
   {
@@ -74,12 +86,21 @@ export const AGENDA: AgendaItem[] = [
     variant: 'cauldron',
   },
   {
+    kind: 'show',
+    weekday: 'SEXTA',
+    date: '30/10',
+    band: 'LMC Acústico',
+    time: 'Ao vivo • 20h',
+    photo: 'bandas/lmc-acustico.png',
+  },
+  {
     kind: 'halloween',
     weekday: 'SÁBADO',
     date: '31/10',
     band: 'Banda La Fortune',
     time: 'Ao vivo • 20h',
-    bandPhoto: null,
+    bandPhoto: 'bandas/la-fortune.png',
+    photoHasName: true,
   },
   {
     kind: 'cemetery',
@@ -95,10 +116,17 @@ export const INTRO_FRAMES = 120;
 export const DAY_FRAMES = 90;
 export const HALLOWEEN_FRAMES = 126;
 export const CEMETERY_FRAMES = 100;
+export const SHOW_FRAMES = 96;
 export const OUTRO_FRAMES = 126;
 
 export const itemFrames = (item: AgendaItem) =>
-  item.kind === 'halloween' ? HALLOWEEN_FRAMES : item.kind === 'cemetery' ? CEMETERY_FRAMES : DAY_FRAMES;
+  item.kind === 'halloween'
+    ? HALLOWEEN_FRAMES
+    : item.kind === 'cemetery'
+      ? CEMETERY_FRAMES
+      : item.kind === 'show'
+        ? SHOW_FRAMES
+        : DAY_FRAMES;
 
 // Início de cada cena na timeline global
 export const TIMELINE = (() => {
@@ -116,13 +144,14 @@ export const CUTS = [INTRO_FRAMES, ...TIMELINE.items.slice(1).map((i) => i.from)
 
 // Janela da "noite de Halloween" (lua de sangue): do show até o fim do cemitério
 export const HALLOWEEN_WINDOW = (() => {
-  const hw = TIMELINE.items.filter((i) => i.item.kind !== 'day');
+  const hw = TIMELINE.items.filter((i) => i.item.kind === 'halloween' || i.item.kind === 'cemetery');
   if (!hw.length) return null;
   const last = hw[hw.length - 1];
   return {from: hw[0].from, to: last.from + last.duration};
 })();
 
 export const CEMETERY_FROM = TIMELINE.items.find((i) => i.item.kind === 'cemetery')?.from ?? null;
+export const SHOW_FROMS = TIMELINE.items.filter((i) => i.item.kind === 'show').map((i) => i.from);
 
 export const COLORS = {
   night: '#07040c',

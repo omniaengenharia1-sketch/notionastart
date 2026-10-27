@@ -1,6 +1,6 @@
 import React from 'react';
 import {AbsoluteFill, interpolate, random, useCurrentFrame} from 'remotion';
-import {CEMETERY_FROM, COLORS, CUTS, HALLOWEEN_WINDOW, TIMELINE} from '../agenda';
+import {CEMETERY_FROM, COLORS, CUTS, HALLOWEEN_WINDOW, SHOW_FROMS, TIMELINE} from '../agenda';
 import {Bat, Ghost} from './shapes';
 
 const clamp = {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'} as const;
@@ -17,6 +17,7 @@ const LIGHTNING: number[] = [
   7,
   ...(HALLOWEEN_WINDOW ? [HALLOWEEN_WINDOW.from + 1, HALLOWEEN_WINDOW.from + 5] : []),
   ...(CEMETERY_FROM !== null ? [CEMETERY_FROM + 1] : []),
+  ...SHOW_FROMS.map((f) => f + 30),
   TIMELINE.outroFrom + 2,
   TIMELINE.total - 22,
 ];

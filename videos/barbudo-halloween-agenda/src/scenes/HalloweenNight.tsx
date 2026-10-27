@@ -8,6 +8,8 @@ const clamp = {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'} as const;
 
 const FRAME_W = 700;
 const FRAME_H = 640;
+const ART_W = 860;
+const ART_H = Math.round((1266 / 1242) * ART_W);
 
 // Silhueta provisória enquanto a foto da banda não chega
 const BandSilhouette: React.FC = () => (
@@ -138,95 +140,141 @@ export const HalloweenNight: React.FC<{item: HalloweenItem; duration: number}> =
         <Drips width={780} progress={interpolate(frame, [20, 90], [0, 1], clamp)} seed="hw" count={12} maxLen={60} />
       </div>
 
-      {/* foto da banda em moldura de capela */}
-      <div
-        style={{
-          position: 'absolute',
-          left: 540 - FRAME_W / 2 - 14,
-          top: 620,
-          transform: `scale(${0.3 + 0.7 * photo}) rotate(${(1 - photo) * -14 + Math.sin(frame / 18) * 1.2}deg)`,
-          opacity: Math.min(1, photo * 1.5),
-        }}
-      >
+      {/* arte da banda (PNG recortado) solta na cena */}
+      {item.bandPhoto && item.photoHasName ? (
         <div
           style={{
-            padding: 14,
-            borderRadius: `${FRAME_W / 2 + 14}px ${FRAME_W / 2 + 14}px 26px 26px`,
-            background: `linear-gradient(180deg, ${COLORS.pumpkin}, ${COLORS.blood})`,
-            boxShadow: `0 0 ${50 + glow * 40}px rgba(255,110,0,0.75), 0 30px 60px rgba(0,0,0,0.7)`,
+            position: 'absolute',
+            left: 540 - ART_W / 2,
+            top: 585,
+            width: ART_W,
+            height: ART_H,
+            transform: `translateY(${Math.sin(frame / 14) * 8}px) scale(${0.3 + 0.7 * photo}) rotate(${(1 - photo) * -14 + Math.sin(frame / 18) * 1.2}deg)`,
+            opacity: Math.min(1, photo * 1.5),
           }}
         >
-          <div
-            style={{
-              position: 'relative',
-              width: FRAME_W,
-              height: FRAME_H,
-              overflow: 'hidden',
-              borderRadius: `${FRAME_W / 2}px ${FRAME_W / 2}px 14px 14px`,
-              background: '#12040a',
-            }}
-          >
-            <div style={{position: 'absolute', inset: 0, transform: `translateX(${gOff}px) scale(${1.04 + frame / 1500})`}}>
-              {item.bandPhoto ? (
-                <Img
-                  src={staticFile(item.bandPhoto)}
-                  style={{width: '100%', height: '100%', objectFit: 'cover', filter: 'contrast(1.12) saturate(1.05)'}}
-                />
-              ) : (
-                <BandSilhouette />
-              )}
-            </div>
-            {glitch && (
-              <div
-                style={{
-                  position: 'absolute',
-                  left: 0,
-                  right: 0,
-                  top: random(`gt${frame}`) * FRAME_H * 0.8,
-                  height: 40 + random(`gh${frame}`) * 60,
-                  background: 'rgba(157,255,58,0.25)',
-                  mixBlendMode: 'screen',
-                  transform: `translateX(${-gOff * 2}px)`,
-                }}
+          {glitch && (
+            <>
+              <Img
+                src={staticFile(item.bandPhoto)}
+                style={{position: 'absolute', inset: 0, width: '100%', height: '100%', transform: `translateX(${gOff}px)`, opacity: 0.6, filter: 'brightness(0) invert(1) sepia(1) saturate(8) hue-rotate(140deg)', mixBlendMode: 'screen'}}
               />
-            )}
-            {/* tom alaranjado/vermelho de baixo + vinheta interna */}
-            <div
-              style={{
-                position: 'absolute',
-                inset: 0,
-                background:
-                  'linear-gradient(0deg, rgba(120,0,10,0.75) 0%, rgba(255,90,0,0.15) 35%, rgba(0,0,0,0) 60%), radial-gradient(ellipse at 50% 40%, rgba(0,0,0,0) 55%, rgba(0,0,0,0.55) 100%)',
-              }}
-            />
-            <div style={{position: 'absolute', inset: 0, background: '#fff', opacity: flash * 0.9}} />
+              <Img
+                src={staticFile(item.bandPhoto)}
+                style={{position: 'absolute', inset: 0, width: '100%', height: '100%', transform: `translateX(${-gOff}px)`, opacity: 0.6, filter: 'brightness(0) invert(1) sepia(1) saturate(8) hue-rotate(-50deg)', mixBlendMode: 'screen'}}
+              />
+            </>
+          )}
+          <Img
+            src={staticFile(item.bandPhoto)}
+            style={{
+              position: 'absolute',
+              inset: 0,
+              width: '100%',
+              height: '100%',
+              filter: `drop-shadow(0 0 ${24 + glow * 30}px rgba(255,110,0,0.85)) brightness(${1 + flash * 1.5})`,
+            }}
+          />
+          <div style={{position: 'absolute', left: ART_W - 40, top: -20, width: 2, height: 140 + Math.sin(frame / 9) * 30, background: 'rgba(230,230,255,0.6)'}} />
+          <div style={{position: 'absolute', left: ART_W - 80, top: 80 + Math.sin(frame / 9) * 30}}>
+            <Spider size={80} wiggle={Math.sin(frame / 3)} />
           </div>
         </div>
-        {/* aranha pendurada na moldura */}
-        <div style={{position: 'absolute', left: FRAME_W - 30, top: 120, width: 2, height: 110 + Math.sin(frame / 9) * 30, background: 'rgba(230,230,255,0.6)'}} />
-        <div style={{position: 'absolute', left: FRAME_W - 70, top: 200 + Math.sin(frame / 9) * 30}}>
-          <Spider size={80} wiggle={Math.sin(frame / 3)} />
-        </div>
-      </div>
+      ) : (
+        <>
+          <div
+            style={{
+              position: 'absolute',
+              left: 540 - FRAME_W / 2 - 14,
+              top: 620,
+              transform: `scale(${0.3 + 0.7 * photo}) rotate(${(1 - photo) * -14 + Math.sin(frame / 18) * 1.2}deg)`,
+              opacity: Math.min(1, photo * 1.5),
+            }}
+          >
+            <div
+              style={{
+                padding: 14,
+                borderRadius: `${FRAME_W / 2 + 14}px ${FRAME_W / 2 + 14}px 26px 26px`,
+                background: `linear-gradient(180deg, ${COLORS.pumpkin}, ${COLORS.blood})`,
+                boxShadow: `0 0 ${50 + glow * 40}px rgba(255,110,0,0.75), 0 30px 60px rgba(0,0,0,0.7)`,
+              }}
+            >
+              <div
+                style={{
+                  position: 'relative',
+                  width: FRAME_W,
+                  height: FRAME_H,
+                  overflow: 'hidden',
+                  borderRadius: `${FRAME_W / 2}px ${FRAME_W / 2}px 14px 14px`,
+                  background: '#12040a',
+                }}
+              >
+                <div style={{position: 'absolute', inset: 0, transform: `translateX(${gOff}px) scale(${1.04 + frame / 1500})`}}>
+                  {item.bandPhoto ? (
+                    <Img
+                      src={staticFile(item.bandPhoto)}
+                      style={{width: '100%', height: '100%', objectFit: 'cover', filter: 'contrast(1.12) saturate(1.05)'}}
+                    />
+                  ) : (
+                    <BandSilhouette />
+                  )}
+                </div>
+                {glitch && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      left: 0,
+                      right: 0,
+                      top: random(`gt${frame}`) * FRAME_H * 0.8,
+                      height: 40 + random(`gh${frame}`) * 60,
+                      background: 'rgba(157,255,58,0.25)',
+                      mixBlendMode: 'screen',
+                      transform: `translateX(${-gOff * 2}px)`,
+                    }}
+                  />
+                )}
+                {/* tom alaranjado/vermelho de baixo + vinheta interna */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    background:
+                      'linear-gradient(0deg, rgba(120,0,10,0.75) 0%, rgba(255,90,0,0.15) 35%, rgba(0,0,0,0) 60%), radial-gradient(ellipse at 50% 40%, rgba(0,0,0,0) 55%, rgba(0,0,0,0.55) 100%)',
+                  }}
+                />
+                <div style={{position: 'absolute', inset: 0, background: '#fff', opacity: flash * 0.9}} />
+              </div>
+            </div>
+            {/* aranha pendurada na moldura */}
+            <div style={{position: 'absolute', left: FRAME_W - 30, top: 120, width: 2, height: 110 + Math.sin(frame / 9) * 30, background: 'rgba(230,230,255,0.6)'}} />
+            <div style={{position: 'absolute', left: FRAME_W - 70, top: 200 + Math.sin(frame / 9) * 30}}>
+              <Spider size={80} wiggle={Math.sin(frame / 3)} />
+            </div>
+          </div>
+
+        </>
+      )}
 
       {/* nome da banda */}
-      <div
-        style={{
-          position: 'absolute',
-          top: 1300,
-          width: '100%',
-          textAlign: 'center',
-          fontFamily: HORROR,
-          fontSize: item.band.length > 14 ? 104 : 120,
-          lineHeight: 1,
-          color: COLORS.bone,
-          transform: `scale(${nameIn})`,
-          textShadow: `0 0 26px rgba(255,120,0,0.95), 0 0 70px rgba(255,40,0,0.6), 5px 7px 0 #2a0008`,
-        }}
-      >
-        {item.band.toUpperCase()}
-      </div>
-      <div style={{position: 'absolute', top: 1435, width: '100%', display: 'flex', justifyContent: 'center'}}>
+      {!item.photoHasName && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 1300,
+            width: '100%',
+            textAlign: 'center',
+            fontFamily: HORROR,
+            fontSize: item.band.length > 14 ? 104 : 120,
+            lineHeight: 1,
+            color: COLORS.bone,
+            transform: `scale(${nameIn})`,
+            textShadow: `0 0 26px rgba(255,120,0,0.95), 0 0 70px rgba(255,40,0,0.6), 5px 7px 0 #2a0008`,
+          }}
+        >
+          {item.band.toUpperCase()}
+        </div>
+      )}
+      <div style={{position: 'absolute', top: item.photoHasName ? 1475 : 1435, width: '100%', display: 'flex', justifyContent: 'center'}}>
         <div
           style={{
             transform: `scale(${timeIn}) rotate(${-3 + Math.sin(frame / 6) * 1.5}deg)`,

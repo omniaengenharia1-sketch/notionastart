@@ -7,11 +7,12 @@ import {DaySlide} from './scenes/DaySlide';
 import {HalloweenNight} from './scenes/HalloweenNight';
 import {Intro} from './scenes/Intro';
 import {Outro} from './scenes/Outro';
+import {ShowScene} from './scenes/ShowScene';
 
 const IMPACTS = [
   {at: 22, amp: 18},
   {at: 40, amp: 8},
-  ...TIMELINE.items.map(({from, item}) => ({at: from + (item.kind === 'day' ? 14 : item.kind === 'halloween' ? 16 : 34), amp: 12})),
+  ...TIMELINE.items.map(({from, item}) => ({at: from + (item.kind === 'day' ? 14 : item.kind === 'halloween' ? 16 : item.kind === 'show' ? 30 : 34), amp: 12})),
   {at: TIMELINE.outroFrom + 34, amp: 8},
 ];
 
@@ -40,11 +41,12 @@ export const AgendaHalloween: React.FC = () => {
             key={i}
             from={from}
             durationInFrames={duration}
-            name={item.kind === 'cemetery' ? `Cemitério ${item.date}` : `${item.weekday} ${item.date}`}
+            name={item.kind === 'cemetery' ? `Cemitério ${item.date}` : item.kind === 'show' ? item.band : `${item.weekday} ${item.date}`}
           >
             {item.kind === 'halloween' && <HalloweenNight item={item} duration={duration} />}
             {item.kind === 'cemetery' && <Cemetery item={item} duration={duration} />}
             {item.kind === 'day' && <DaySlide item={item} duration={duration} />}
+            {item.kind === 'show' && <ShowScene item={item} duration={duration} />}
           </Sequence>
         ))}
 
