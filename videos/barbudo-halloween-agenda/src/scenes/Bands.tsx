@@ -1,6 +1,6 @@
 import React from 'react';
 import {AbsoluteFill, Sequence, useCurrentFrame, useVideoConfig} from 'remotion';
-import {COLORS, HalloweenItem, ShowItem} from '../agenda';
+import {COLORS, HalloweenItem, PUMPKIN_PHASE, ShowItem} from '../agenda';
 import {BatSwarm, Claws, Cobweb, EvilPumpkin, flick, Footage, heavy, HorrorText, pop, RedTag, thin, VhsHud} from '../fx/kit';
 
 // ---------- LMC Acústico: "filmagem encontrada" ----------
@@ -32,7 +32,6 @@ export const ShowScene: React.FC<{item: ShowItem; duration: number}> = ({item}) 
 };
 
 // ---------- Sábado: abóboras malignas + La Fortune ----------
-const PUMPKIN_PHASE = 64;
 
 const PumpkinNight: React.FC<{item: HalloweenItem}> = ({item}) => {
   const frame = useCurrentFrame();

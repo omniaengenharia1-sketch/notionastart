@@ -97,12 +97,13 @@ export const AGENDA: AgendaItem[] = [
 
 // Duração das cenas (em frames, 30fps)
 export const FPS = 30;
-export const INTRO_FRAMES = 135;
-export const DAY_FRAMES = 96;
-export const SHOW_FRAMES = 90;
-export const HALLOWEEN_FRAMES = 135;
-export const CEMETERY_FRAMES = 105;
-export const OUTRO_FRAMES = 150;
+export const INTRO_FRAMES = 170;
+export const DAY_FRAMES = 150;
+export const SHOW_FRAMES = 120;
+export const HALLOWEEN_FRAMES = 195;
+export const PUMPKIN_PHASE = 90; // sábado: abóboras antes da arte da banda
+export const CEMETERY_FRAMES = 135;
+export const OUTRO_FRAMES = 165;
 // fade final (imagem e música encerrando juntas)
 export const END_FADE_FRAMES = 75;
 
@@ -134,7 +135,7 @@ export const CUTS = [
     type: i % 2 === 0 ? ('bat' as const) : ('glitch' as const),
   })),
   // troca pôster → arte da La Fortune dentro do sábado
-  ...TIMELINE.items.filter((i) => i.item.kind === 'halloween').map((i) => ({at: i.from + 64, type: 'glitch' as const})),
+  ...TIMELINE.items.filter((i) => i.item.kind === 'halloween').map((i) => ({at: i.from + PUMPKIN_PHASE, type: 'glitch' as const})),
 ];
 
 export const COLORS = {

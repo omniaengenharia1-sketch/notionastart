@@ -1,6 +1,6 @@
 import React from 'react';
 import {Audio, interpolate, Sequence, staticFile} from 'remotion';
-import {CUTS, END_FADE_FRAMES, FPS, TIMELINE} from './agenda';
+import {CUTS, END_FADE_FRAMES, FPS, PUMPKIN_PHASE, TIMELINE} from './agenda';
 
 // Música de fundo (arquivo fornecido pelo cliente, fora do git: public/musica/thriller.mp3).
 // O groove de Thriller entra aos 41,7s; começamos em 40,03s para ele cair junto com o título (frame 50).
@@ -14,7 +14,6 @@ type Hit = {at: number; sfx: string; volume: number};
 const MASTER = 0.78;
 
 const COLD_OPEN = 50; // ver scenes/Intro.tsx
-const PUMPKIN_PHASE = 64; // ver scenes/Bands.tsx
 
 const hits: Hit[] = [
   // abertura: porta rangendo, sussurros e mãos batendo no vidro
