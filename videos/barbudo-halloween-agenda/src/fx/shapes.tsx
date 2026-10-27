@@ -184,3 +184,31 @@ export const Drips: React.FC<{
     </svg>
   );
 };
+
+export const SoccerBall: React.FC<{size: number; spin?: number}> = ({size, spin = 0}) => (
+  <svg width={size} height={size} viewBox="-50 -50 100 100" style={{overflow: 'visible'}}>
+    <circle r={46} fill="#f7f3ea" stroke="#111" strokeWidth={4} />
+    <g transform={`rotate(${spin})`}>
+      <path d="M0,-16 L15,-5 L9,13 L-9,13 L-15,-5 Z" fill="#111" />
+      {[0, 72, 144, 216, 288].map((a) => (
+        <g key={a} transform={`rotate(${a})`}>
+          <line x1={0} y1={-16} x2={0} y2={-30} stroke="#111" strokeWidth={4} />
+          <path d="M-10,-30 L10,-30 L14,-42 C6,-46 -6,-46 -14,-42 Z" fill="#111" />
+        </g>
+      ))}
+    </g>
+  </svg>
+);
+
+export const Guitar: React.FC<{size: number; color?: string}> = ({size, color = '#111'}) => (
+  <svg width={size} height={size} viewBox="0 0 100 100">
+    <g transform="rotate(-40 50 50)">
+      <rect x={45} y={2} width={10} height={50} rx={2} fill={color} />
+      <rect x={41} y={0} width={18} height={10} rx={3} fill={color} />
+      <circle cx={50} cy={64} r={18} fill={color} />
+      <circle cx={50} cy={82} r={16} fill={color} />
+      <circle cx={50} cy={68} r={6} fill="#f3ead2" opacity={0.8} />
+      <rect x={42} y={84} width={16} height={4} fill="#f3ead2" opacity={0.8} />
+    </g>
+  </svg>
+);

@@ -1,6 +1,6 @@
 import React from 'react';
 import {AbsoluteFill, interpolate, random, useCurrentFrame} from 'remotion';
-import {COLORS, CUTS, HALLOWEEN_WINDOW, TIMELINE} from '../agenda';
+import {CEMETERY_FROM, COLORS, CUTS, HALLOWEEN_WINDOW, TIMELINE} from '../agenda';
 import {Bat, Ghost} from './shapes';
 
 const clamp = {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'} as const;
@@ -16,6 +16,7 @@ const LIGHTNING: number[] = [
   3,
   7,
   ...(HALLOWEEN_WINDOW ? [HALLOWEEN_WINDOW.from + 1, HALLOWEEN_WINDOW.from + 5] : []),
+  ...(CEMETERY_FROM !== null ? [CEMETERY_FROM + 1] : []),
   TIMELINE.outroFrom + 2,
   TIMELINE.total - 22,
 ];
@@ -206,7 +207,7 @@ export const FloatingGhosts: React.FC<{start: number; count?: number}> = ({start
   return (
     <AbsoluteFill style={{pointerEvents: 'none'}}>
       {new Array(count).fill(0).map((_, i) => {
-        const t = (local - i * 25) / 110;
+        const t = (local - i * 70) / 110;
         if (t < 0 || t > 1) return null;
         const dir = i % 2 ? -1 : 1;
         const x = dir > 0 ? -250 + t * 1500 : 1250 - t * 1500;

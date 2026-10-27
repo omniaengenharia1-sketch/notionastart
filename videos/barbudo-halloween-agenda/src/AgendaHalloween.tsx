@@ -2,6 +2,7 @@ import React from 'react';
 import {AbsoluteFill, interpolate, Sequence, useCurrentFrame} from 'remotion';
 import {HALLOWEEN_WINDOW, INTRO_FRAMES, OUTRO_FRAMES, TIMELINE} from './agenda';
 import {Bats, ClawCuts, FilmGrain, FloatingGhosts, Fog, Ground, Lightning, shakeOffset, Sky} from './fx/atmosphere';
+import {Cemetery} from './scenes/Cemetery';
 import {DaySlide} from './scenes/DaySlide';
 import {HalloweenNight} from './scenes/HalloweenNight';
 import {Intro} from './scenes/Intro';
@@ -10,7 +11,7 @@ import {Outro} from './scenes/Outro';
 const IMPACTS = [
   {at: 22, amp: 18},
   {at: 40, amp: 8},
-  ...TIMELINE.items.map(({from, item}) => ({at: from + (item.kind === 'halloween' ? 10 : 14), amp: 12})),
+  ...TIMELINE.items.map(({from, item}) => ({at: from + (item.kind === 'day' ? 14 : item.kind === 'halloween' ? 16 : 34), amp: 12})),
   {at: TIMELINE.outroFrom + 34, amp: 8},
 ];
 
@@ -28,19 +29,22 @@ export const AgendaHalloween: React.FC = () => {
         <Sky />
         <Fog />
         <Bats />
-        {HALLOWEEN_WINDOW && <FloatingGhosts start={HALLOWEEN_WINDOW.from} count={2} />}
+        {HALLOWEEN_WINDOW && <FloatingGhosts start={HALLOWEEN_WINDOW.from} count={3} />}
 
         <Sequence durationInFrames={INTRO_FRAMES} name="Intro">
           <Intro duration={INTRO_FRAMES} />
         </Sequence>
 
-        {TIMELINE.items.map(({item, from, duration}) => (
-          <Sequence key={item.date} from={from} durationInFrames={duration} name={`${item.weekday} ${item.date}`}>
-            {item.kind === 'halloween' ? (
-              <HalloweenNight item={item} duration={duration} />
-            ) : (
-              <DaySlide item={item} duration={duration} />
-            )}
+        {TIMELINE.items.map(({item, from, duration}, i) => (
+          <Sequence
+            key={i}
+            from={from}
+            durationInFrames={duration}
+            name={item.kind === 'cemetery' ? `Cemitério ${item.date}` : `${item.weekday} ${item.date}`}
+          >
+            {item.kind === 'halloween' && <HalloweenNight item={item} duration={duration} />}
+            {item.kind === 'cemetery' && <Cemetery item={item} duration={duration} />}
+            {item.kind === 'day' && <DaySlide item={item} duration={duration} />}
           </Sequence>
         ))}
 

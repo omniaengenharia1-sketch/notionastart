@@ -2,7 +2,7 @@ import React from 'react';
 import {AbsoluteFill, interpolate, random, spring, useCurrentFrame, useVideoConfig} from 'remotion';
 import {COLORS, DayItem} from '../agenda';
 import {DISPLAY, HORROR} from '../fonts';
-import {Skull, ZombieHand} from '../fx/shapes';
+import {Guitar, Skull, SoccerBall, ZombieHand} from '../fx/shapes';
 
 const clamp = {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'} as const;
 
@@ -56,27 +56,49 @@ const DayInfo: React.FC<{item: DayItem; look: Look; start: number; width: number
         <Skull size={58} color={look === 'ecto' ? COLORS.toxic : L.main} />
         <div style={{width: 150, height: 5, background: L.main, opacity: 0.7, borderRadius: 3}} />
       </div>
-      <div style={{...pop(3), fontFamily: HORROR, fontSize: 84, lineHeight: 1.02, color: L.accent, textShadow: L.accentShadow, padding: '0 10px'}}>
+      <div style={{...pop(3), fontFamily: HORROR, fontSize: item.title.length > 16 ? 74 : 84, lineHeight: 1.02, color: L.accent, textShadow: L.accentShadow, padding: '0 10px'}}>
         {item.title}
       </div>
-      <div style={{...pop(4), fontFamily: DISPLAY, fontSize: 52, lineHeight: 1.1, color: L.sub, textShadow: L.shadow, letterSpacing: 2, marginTop: 14, padding: '0 20px'}}>
-        {item.subtitle}
-      </div>
-      <div
-        style={{
-          ...pop(5),
-          marginTop: 18,
-          fontFamily: DISPLAY,
-          fontSize: 58,
-          letterSpacing: 4,
-          padding: '6px 30px',
-          borderRadius: 12,
-          color: look === 'ecto' ? '#0d1a05' : COLORS.bone,
-          background: look === 'ecto' ? COLORS.toxic : look === 'burned' ? COLORS.blood : '#1a1420',
-          boxShadow: look === 'ecto' ? '0 0 30px rgba(157,255,58,0.8)' : '0 6px 0 rgba(0,0,0,0.45)',
-        }}
-      >
-        {item.time}
+      <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, marginTop: 22}}>
+        {item.entries.map((e, i) => (
+          <div
+            key={i}
+            style={{
+              ...pop(4 + i),
+              display: 'flex',
+              alignItems: 'center',
+              gap: 16,
+              padding: '8px 26px 8px 14px',
+              borderRadius: 16,
+              background: look === 'ecto' ? 'rgba(10,30,4,0.72)' : look === 'burned' ? 'rgba(40,14,4,0.82)' : '#1a1420',
+              border: `3px solid ${look === 'ecto' ? COLORS.toxic : look === 'burned' ? COLORS.blood : '#4a4352'}`,
+              boxShadow: look === 'ecto' ? '0 0 26px rgba(157,255,58,0.55)' : '0 6px 0 rgba(0,0,0,0.45)',
+            }}
+          >
+            {e.icon === 'ball' ? (
+              <SoccerBall size={58} spin={frame * 6} />
+            ) : (
+              <Guitar size={58} color={look === 'ecto' ? COLORS.toxic : COLORS.pumpkin} />
+            )}
+            <span style={{fontFamily: DISPLAY, fontSize: 58, letterSpacing: 2, color: COLORS.bone, lineHeight: 1.05}}>
+              {e.text.toUpperCase()}
+            </span>
+            <span
+              style={{
+                fontFamily: DISPLAY,
+                fontSize: 52,
+                letterSpacing: 2,
+                lineHeight: 1,
+                padding: '6px 14px',
+                borderRadius: 10,
+                background: look === 'ecto' ? COLORS.toxic : COLORS.orange,
+                color: '#14051c',
+              }}
+            >
+              {e.time.toUpperCase()}
+            </span>
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -210,7 +232,7 @@ const Cauldron: React.FC<{item: DayItem}> = ({item}) => {
       <div
         style={{
           position: 'absolute',
-          top: 300,
+          top: 470,
           left: 90,
           transform: `translateY(${(1 - rise) * 600}px) scale(${0.4 + 0.6 * rise})`,
           filter: `blur(${(1 - rise) * 24}px)`,
@@ -361,10 +383,48 @@ const Tomb: React.FC<{item: DayItem; hands: boolean}> = ({item, hands}) => {
   );
 };
 
+// Bola pegando fogo que quica pelo chão nos dias de jogo
+const BouncingBall: React.FC = () => {
+  const frame = useCurrentFrame();
+  const t = frame - 18;
+  if (t < 0) return null;
+  const x = interpolate(t, [0, 60], [1180, 140], clamp);
+  const bounce = Math.abs(Math.cos(t / 7)) * 420 * Math.exp(-t / 40);
+  const y = 1600 - bounce;
+  return (
+    <>
+      {new Array(6).fill(0).map((_, k) => {
+        const tt = t - k * 2;
+        const px = interpolate(tt, [0, 60], [1180, 140], clamp);
+        const py = 1600 - Math.abs(Math.cos(tt / 7)) * 420 * Math.exp(-tt / 40);
+        return (
+          <div
+            key={k}
+            style={{
+              position: 'absolute',
+              left: px - 40 + 20,
+              top: py - 40 + 20,
+              width: 80 - k * 8,
+              height: 80 - k * 8,
+              borderRadius: '50%',
+              background: `radial-gradient(circle, rgba(255,220,80,${0.7 - k * 0.1}) 0%, rgba(255,90,0,${0.5 - k * 0.07}) 50%, rgba(255,0,0,0) 75%)`,
+              filter: 'blur(6px)',
+            }}
+          />
+        );
+      })}
+      <div style={{position: 'absolute', left: x - 60, top: y - 60, filter: 'drop-shadow(0 0 22px rgba(255,120,0,0.9))'}}>
+        <SoccerBall size={120} spin={-t * 14} />
+      </div>
+    </>
+  );
+};
+
 export const DaySlide: React.FC<{item: DayItem; duration: number}> = ({item}) => {
   return (
     <AbsoluteFill>
       <GhostDate date={item.date} />
+      {item.entries.some((e) => e.icon === 'ball') && <BouncingBall />}
       {item.variant === 'sign' && <HangingSign item={item} />}
       {item.variant === 'cauldron' && <Cauldron item={item} />}
       {(item.variant === 'tomb' || item.variant === 'tombHands') && <Tomb item={item} hands={item.variant === 'tombHands'} />}

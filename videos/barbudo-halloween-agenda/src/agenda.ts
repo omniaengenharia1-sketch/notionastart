@@ -9,7 +9,7 @@
 export const BRAND = {
   instagram: '@choppdobarbudo',
   location: 'Praça Gastronômica de Arujá',
-  weekRange: '28/10 a 01/11',
+  weekRange: '28/10 a 31/10',
 };
 
 // Visual de cada dia comum:
@@ -19,13 +19,15 @@ export const BRAND = {
 //  'tombHands' -> lápide + mãos de zumbi saindo do chão
 export type DayVariant = 'sign' | 'cauldron' | 'tomb' | 'tombHands';
 
+// icon: 'ball' (futebol) | 'music' (show)
+export type Entry = {icon: 'ball' | 'music'; text: string; time: string};
+
 export type DayItem = {
   kind: 'day';
   weekday: string;
   date: string;
   title: string;
-  subtitle: string;
-  time: string;
+  entries: Entry[];
   variant: DayVariant;
 };
 
@@ -33,67 +35,70 @@ export type HalloweenItem = {
   kind: 'halloween';
   weekday: string;
   date: string;
+  band: string;
   time: string;
-  highlights: string[];
+  // arquivo dentro de /public (ex.: 'banda-la-fortune.jpg'); null = silhueta provisória
+  bandPhoto: string | null;
 };
 
-export type AgendaItem = DayItem | HalloweenItem;
+export type CemeteryItem = {
+  kind: 'cemetery';
+  date: string;
+  title: [string, string];
+  subtitle: string;
+};
+
+export type AgendaItem = DayItem | HalloweenItem | CemeteryItem;
 
 export const AGENDA: AgendaItem[] = [
   {
     kind: 'day',
     weekday: 'QUARTA',
     date: '28/10',
-    title: 'Happy Hour Assombrado',
-    subtitle: 'Chopp artesanal + espetos do Rangô',
-    time: 'A partir das 17h',
+    title: 'Quarta do Brasileirão',
+    entries: [
+      {icon: 'ball', text: 'Santos x Palmeiras', time: '19h30'},
+      {icon: 'ball', text: 'Bahia x São Paulo', time: '21h30'},
+    ],
     variant: 'sign',
-  },
-  {
-    kind: 'day',
-    weekday: 'QUINTA',
-    date: '29/10',
-    title: 'Quinta Sinistra',
-    subtitle: 'Música ao vivo',
-    time: 'A partir das 19h',
-    variant: 'cauldron',
   },
   {
     kind: 'day',
     weekday: 'SEXTA',
     date: '30/10',
     title: 'Sexta Sangrenta',
-    subtitle: 'Esquenta de Halloween com música ao vivo',
-    time: 'A partir das 20h',
-    variant: 'tomb',
+    entries: [
+      {icon: 'ball', text: 'Corinthians x Mirassol', time: '20h'},
+      {icon: 'music', text: 'LMC Acústico', time: '20h'},
+    ],
+    variant: 'cauldron',
   },
   {
     kind: 'halloween',
     weekday: 'SÁBADO',
     date: '31/10',
-    time: 'A partir das 20h',
-    highlights: ['Música ao vivo', 'Concurso de fantasia', 'Chopp artesanal gelado'],
+    band: 'Banda La Fortune',
+    time: 'Ao vivo • 20h',
+    bandPhoto: null,
   },
   {
-    kind: 'day',
-    weekday: 'DOMINGO',
-    date: '01/11',
-    title: 'Domingo dos Mortos-Vivos',
-    subtitle: 'Espeto e chopp pra ressuscitar',
-    time: 'A partir das 16h',
-    variant: 'tombHands',
+    kind: 'cemetery',
+    date: '31/10',
+    title: ['Cemitério', 'Maldito'],
+    subtitle: 'Ao lado do chopp',
   },
 ];
 
 // Duração das cenas (em frames, 30fps)
 export const FPS = 30;
 export const INTRO_FRAMES = 120;
-export const DAY_FRAMES = 78;
-export const HALLOWEEN_FRAMES = 140;
+export const DAY_FRAMES = 90;
+export const HALLOWEEN_FRAMES = 126;
+export const CEMETERY_FRAMES = 100;
 export const OUTRO_FRAMES = 126;
 
 export const itemFrames = (item: AgendaItem) =>
-  item.kind === 'halloween' ? HALLOWEEN_FRAMES : DAY_FRAMES;
+  item.kind === 'halloween' ? HALLOWEEN_FRAMES : item.kind === 'cemetery' ? CEMETERY_FRAMES : DAY_FRAMES;
 
 // Início de cada cena na timeline global
 export const TIMELINE = (() => {
@@ -109,10 +114,15 @@ export const TIMELINE = (() => {
 // Frames onde há corte de cena (usados para transição de garras + flash)
 export const CUTS = [INTRO_FRAMES, ...TIMELINE.items.slice(1).map((i) => i.from), TIMELINE.outroFrom];
 
+// Janela da "noite de Halloween" (lua de sangue): do show até o fim do cemitério
 export const HALLOWEEN_WINDOW = (() => {
-  const h = TIMELINE.items.find((i) => i.item.kind === 'halloween');
-  return h ? {from: h.from, to: h.from + h.duration} : null;
+  const hw = TIMELINE.items.filter((i) => i.item.kind !== 'day');
+  if (!hw.length) return null;
+  const last = hw[hw.length - 1];
+  return {from: hw[0].from, to: last.from + last.duration};
 })();
+
+export const CEMETERY_FROM = TIMELINE.items.find((i) => i.item.kind === 'cemetery')?.from ?? null;
 
 export const COLORS = {
   night: '#07040c',
