@@ -205,7 +205,7 @@ def riser():
 
 
 def drone():  # grave de tensão de fundo, vídeo inteiro
-    d = 26.0
+    d = 28.0
     t = t_axis(d)
     tones = sum(
         a * np.sin(2 * np.pi * f * t + p)

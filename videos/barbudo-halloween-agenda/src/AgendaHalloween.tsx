@@ -1,6 +1,6 @@
 import React from 'react';
-import {AbsoluteFill, Sequence} from 'remotion';
-import {INTRO_FRAMES, OUTRO_FRAMES, TIMELINE} from './agenda';
+import {AbsoluteFill, interpolate, Sequence, useCurrentFrame} from 'remotion';
+import {END_FADE_FRAMES, INTRO_FRAMES, OUTRO_FRAMES, TIMELINE} from './agenda';
 import {Cuts, DarkBg, Grain} from './fx/kit';
 import {HalloweenNight, ShowScene} from './scenes/Bands';
 import {Cemetery} from './scenes/Cemetery';
@@ -8,6 +8,16 @@ import {DaySlide} from './scenes/DaySlide';
 import {Intro} from './scenes/Intro';
 import {Outro} from './scenes/Outro';
 import {SoundTrack} from './SoundTrack';
+
+// Escurece aos poucos até o preto no fim do vídeo
+const EndFade: React.FC = () => {
+  const frame = useCurrentFrame();
+  const o = interpolate(frame, [TIMELINE.total - END_FADE_FRAMES, TIMELINE.total - 1], [0, 1], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
+  return <AbsoluteFill style={{background: '#000', opacity: o}} />;
+};
 
 export const AgendaHalloween: React.FC<{music: boolean}> = ({music}) => (
   <AbsoluteFill style={{background: '#000', overflow: 'hidden'}}>
@@ -37,6 +47,7 @@ export const AgendaHalloween: React.FC<{music: boolean}> = ({music}) => (
 
     <Grain />
     <Cuts />
+    <EndFade />
     <SoundTrack music={music} />
   </AbsoluteFill>
 );

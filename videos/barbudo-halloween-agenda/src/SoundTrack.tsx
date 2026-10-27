@@ -1,6 +1,6 @@
 import React from 'react';
 import {Audio, interpolate, Sequence, staticFile} from 'remotion';
-import {CUTS, FPS, OUTRO_FRAMES, TIMELINE} from './agenda';
+import {CUTS, END_FADE_FRAMES, FPS, TIMELINE} from './agenda';
 
 // Música de fundo (arquivo fornecido pelo cliente, fora do git: public/musica/thriller.mp3).
 // O groove de Thriller entra aos 41,7s; começamos em 40,03s para ele cair junto com o título (frame 50).
@@ -15,7 +15,6 @@ const MASTER = 0.78;
 
 const COLD_OPEN = 50; // ver scenes/Intro.tsx
 const PUMPKIN_PHASE = 64; // ver scenes/Bands.tsx
-const SCARE = 22; // ver scenes/Outro.tsx
 
 const hits: Hit[] = [
   // abertura: porta rangendo, sussurros e mãos batendo no vidro
@@ -78,28 +77,28 @@ for (const {item, from} of TIMELINE.items) {
 }
 
 const o = TIMELINE.outroFrom;
-const scareHit = o + OUTRO_FRAMES - SCARE + 3;
 hits.push(
   {at: o, sfx: 'heartbeat', volume: 0.7},
   {at: o + 4, sfx: 'ia/sussurros', volume: 0.5},
   {at: o + 12, sfx: 'buzz', volume: 0.3},
   {at: o + 22, sfx: 'ia/garras', volume: 0.7},
-  {at: scareHit - 43, sfx: 'riser', volume: 0.6},
-  {at: scareHit, sfx: 'ia/tapa_vidro', volume: 1},
-  {at: scareHit, sfx: 'ia/grito', volume: 1},
-  {at: scareHit, sfx: 'ia/impacto', volume: 1},
+  {at: o + 40, sfx: 'ia/lobo', volume: 0.55},
 );
 
-// Com música: a trilha corta seco logo antes do susto final
-const musicVolume = (f: number) =>
-  interpolate(f, [0, 8, scareHit - 10, scareHit - 1], [0, 0.85 * MASTER, 0.85 * MASTER, 0], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
+// Fundo (música ou grave) entra suave e encerra em fade junto com a imagem
+const fadeStart = TIMELINE.total - END_FADE_FRAMES;
+const bedVolume = (level: number) => (f: number) =>
+  interpolate(f, [0, 8, fadeStart, TIMELINE.total - 1], [0, level * MASTER, level * MASTER, 0], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
 
 export const SoundTrack: React.FC<{music: boolean}> = ({music}) => (
   <>
     {music ? (
-      <Audio src={staticFile(MUSIC_FILE)} trimBefore={Math.round(MUSIC_START_SECONDS * FPS)} volume={musicVolume} />
+      <Audio src={staticFile(MUSIC_FILE)} trimBefore={Math.round(MUSIC_START_SECONDS * FPS)} volume={bedVolume(0.85)} />
     ) : (
-      <Audio src={staticFile('sfx/drone.wav')} volume={0.55 * MASTER} />
+      <Audio src={staticFile('sfx/drone.wav')} volume={bedVolume(0.55)} />
     )}
     {hits.map((h, i) => (
       <Sequence key={i} from={Math.max(0, h.at)} name={`som: ${h.sfx}`} layout="none">

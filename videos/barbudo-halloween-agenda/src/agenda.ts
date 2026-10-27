@@ -7,7 +7,6 @@
 // =====================================================================
 
 export const BRAND = {
-  instagram: '@choppdobarbudo',
   location: 'Praça Gastronômica de Arujá',
   weekRange: '28/10 — 31/10',
 };
@@ -103,7 +102,9 @@ export const DAY_FRAMES = 96;
 export const SHOW_FRAMES = 90;
 export const HALLOWEEN_FRAMES = 135;
 export const CEMETERY_FRAMES = 105;
-export const OUTRO_FRAMES = 110;
+export const OUTRO_FRAMES = 150;
+// fade final (imagem e música encerrando juntas)
+export const END_FADE_FRAMES = 75;
 
 export const itemFrames = (item: AgendaItem) =>
   item.kind === 'halloween'
