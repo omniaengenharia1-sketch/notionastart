@@ -50,38 +50,57 @@ const Background: React.FC = () => {
   );
 };
 
-// ---------- Chamada gigante empilhada + listras ----------
-const StackedHeadline: React.FC<{text: string}> = ({text}) => {
+// ---------- Câmera 3D ----------
+const P = 1300;
+const useCamera = () => {
+  const frame = useCurrentFrame();
+  const push = interpolate(frame, [0, 40], [-450, 0], {...clamp, easing: ease});
+  const drift = interpolate(frame, [40, PARTY_FRAMES], [0, 40], clamp);
+  const ry = interpolate(frame, [0, 40], [-14, 0], {...clamp, easing: ease}) + Math.sin(frame / 45) * 7;
+  const rx = interpolate(frame, [0, 40], [8, 2], {...clamp, easing: ease}) + Math.sin(frame / 60) * 2.5;
+  return {z: push + drift, rx, ry};
+};
+
+// Camada no espaço 3D; scale compensa a profundidade (no repouso o layout fica igual ao desenhado)
+const Layer: React.FC<{z: number; children: React.ReactNode}> = ({z, children}) => (
+  <div style={{position: 'absolute', left: 0, top: 0, width: 1080, height: 1920, transform: `translateZ(${z}px) scale(${(P - z) / P})`, transformStyle: 'preserve-3d'}}>
+    {children}
+  </div>
+);
+
+// ---------- Chamada gigante empilhada (cada linha mais ao fundo) + listras ----------
+const HEADLINE_ROWS = 6;
+const HeadlineRow: React.FC<{text: string; k: number}> = ({text, k}) => {
+  const frame = useCurrentFrame();
+  const p = interpolate(frame - 4 - k * 3, [0, 16], [0, 1], {...clamp, easing: ease});
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        top: 215 + k * 150,
+        left: 0,
+        width: '100%',
+        textAlign: 'center',
+        fontFamily: WIDE,
+        fontWeight: 800,
+        fontSize: 168,
+        lineHeight: 1,
+        letterSpacing: -6,
+        color: WHITE,
+        opacity: p * (k === 0 ? 1 : 0.55 - k * 0.08),
+        transform: `translateY(${(1 - p) * 60}px) translateZ(${(1 - p) * -600}px)`,
+        WebkitMaskImage: k === 0 ? undefined : 'linear-gradient(180deg, #000 30%, rgba(0,0,0,0.25))',
+      }}
+    >
+      {text}
+    </div>
+  );
+};
+
+const Stripes: React.FC = () => {
   const frame = useCurrentFrame();
   return (
     <>
-      {[0, 1, 2, 3, 4, 5].map((k) => {
-        const p = interpolate(frame - 4 - k * 3, [0, 16], [0, 1], {...clamp, easing: ease});
-        return (
-          <div
-            key={k}
-            style={{
-              position: 'absolute',
-              top: 190 + k * 150,
-              left: 0,
-              width: '100%',
-              textAlign: 'center',
-              fontFamily: WIDE,
-              fontWeight: 800,
-              fontSize: 168,
-              lineHeight: 1,
-              letterSpacing: -6,
-              color: WHITE,
-              opacity: p * (k === 0 ? 1 : 0.55 - k * 0.08),
-              transform: `translateY(${(1 - p) * 60}px)`,
-              WebkitMaskImage: k === 0 ? undefined : 'linear-gradient(180deg, #000 30%, rgba(0,0,0,0.25))',
-            }}
-          >
-            {text}
-          </div>
-        );
-      })}
-      {/* listras horizontais nas laterais */}
       {[0, 1].map((side) => (
         <div key={side} style={{position: 'absolute', top: 520, [side ? 'right' : 'left']: 0, width: 150}}>
           {new Array(14).fill(0).map((_, i) => {
@@ -155,6 +174,7 @@ const Duo: React.FC<{photo: string; aspect: number}> = ({photo, aspect}) => {
               borderRadius: random(`pr${i}`) > 0.5 ? '50%' : 1,
               background: i % 3 ? WHITE : '#ffb0a0',
               opacity: (1 - t / 1.4) * 0.85,
+              transform: `translateZ(${(random(`pz${i}`) - 0.3) * 500}px)`,
             }}
           />
         );
@@ -190,12 +210,13 @@ const Bottom: React.FC<PartyFlyerProps> = (props) => {
   const p = (d: number) => spring({frame: frame - TEXT - d, fps, config: {damping: 16, stiffness: 140}});
   const [first, ...rest] = props.band.toUpperCase().split(' ');
   const glitch = frame >= TEXT + 6 && frame < TEXT + 12 ? (random(`bg${frame}`) - 0.5) * 30 : 0;
+  const flip = (d: number) => `perspective(900px) rotateX(${(1 - p(d)) * -85}deg)`;
   return (
     <>
-      <div style={{position: 'absolute', top: 1325, width: '100%', textAlign: 'center', opacity: p(0), transform: `translateY(${(1 - p(0)) * 30}px)`}}>
+      <div style={{position: 'absolute', top: 1325, width: '100%', textAlign: 'center', opacity: p(0), transform: flip(0), transformOrigin: '50% 100%'}}>
         <div style={{fontFamily: WIDE, fontWeight: 400, fontSize: 46, color: WHITE, letterSpacing: 4}}>SHOW AO VIVO COM</div>
       </div>
-      <div style={{position: 'absolute', top: 1385, width: '100%', textAlign: 'center', opacity: p(4), transform: `translateY(${(1 - p(4)) * 40}px) translateX(${glitch}px)`}}>
+      <div style={{position: 'absolute', top: 1385, width: '100%', textAlign: 'center', opacity: p(4), transform: `${flip(4)} translateX(${glitch}px)`, transformOrigin: '50% 100%'}}>
         <div style={{fontFamily: WIDE, fontWeight: 800, fontSize: 132, color: WHITE, lineHeight: 1, letterSpacing: -3, textShadow: glitch ? `${glitch / 2}px 0 0 rgba(0,255,255,0.6), ${-glitch / 2}px 0 0 rgba(255,0,0,0.8)` : '0 8px 30px rgba(0,0,0,0.45)'}}>
           {first}
         </div>
@@ -206,7 +227,7 @@ const Bottom: React.FC<PartyFlyerProps> = (props) => {
       <div style={{position: 'absolute', top: 1640, left: 120, width: 840, display: 'flex', justifyContent: 'center'}}>
         <div style={{background: '#4a0000', border: `2px solid rgba(245,243,239,0.35)`, padding: '12px 26px 8px', clipPath: `inset(0 ${(1 - p(10)) * 100}% 0 0)`}}>
           <div style={heavy(38, WHITE, {letterSpacing: 2, whiteSpace: 'nowrap'})}>
-            {props.dateLine.toUpperCase()} • {props.time.toUpperCase()} • {props.location.toUpperCase()}
+            {props.location.toUpperCase()}
           </div>
         </div>
       </div>
@@ -259,14 +280,36 @@ const PartySound: React.FC<{music: boolean; file: string; onset: number}> = ({mu
   </>
 );
 
+const World: React.FC<{children: React.ReactNode}> = ({children}) => {
+  const cam = useCamera();
+  return (
+    <AbsoluteFill style={{perspective: P, perspectiveOrigin: '50% 42%'}}>
+      <div style={{position: 'absolute', inset: 0, transformStyle: 'preserve-3d', transform: `translateZ(${cam.z}px) rotateX(${cam.rx}deg) rotateY(${cam.ry}deg)`}}>
+        {children}
+      </div>
+    </AbsoluteFill>
+  );
+};
+
 export const FlyerParty: React.FC<PartyFlyerProps> = (props) => {
   const frame = useCurrentFrame();
   const end = interpolate(frame, [PARTY_FRAMES - 30, PARTY_FRAMES - 1], [0, 1], clamp);
   return (
     <AbsoluteFill style={{background: '#000', overflow: 'hidden'}}>
       <Background />
-      <StackedHeadline text={props.headline} />
-      <Duo photo={props.photo} aspect={props.photoAspect} />
+      <World>
+        {new Array(HEADLINE_ROWS).fill(0).map((_, k) => (
+          <Layer key={k} z={-260 - k * 170}>
+            <HeadlineRow text={props.headline} k={k} />
+          </Layer>
+        ))}
+        <Layer z={-160}>
+          <Stripes />
+        </Layer>
+        <Layer z={0}>
+          <Duo photo={props.photo} aspect={props.photoAspect} />
+        </Layer>
+      </World>
       <AbsoluteFill style={{background: 'linear-gradient(180deg, rgba(26,0,0,0) 58%, rgba(26,0,0,0.88) 70%, #140000 80%)'}} />
       <LightSweep />
       <TopBar {...props} />
