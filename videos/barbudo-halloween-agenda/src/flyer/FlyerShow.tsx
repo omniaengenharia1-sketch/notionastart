@@ -29,6 +29,8 @@ const REVEAL = 48; // fim do "apresenta" → raio revela a cena
 const RISE = 72; // banda começa a subir da terra
 const TITLE = 130; // nome se escreve (cai junto com o groove da música)
 const INFO = 172;
+// sobe a cena inteira para o rodapé ficar fora da área da legenda/botões do Reels
+const WORLD_SHIFT = -125;
 
 const ease = (x: number) => 1 - Math.pow(1 - x, 3);
 
@@ -404,13 +406,13 @@ const BrushTitle: React.FC<{text: string}> = ({text}) => {
 };
 
 // ---------- Infos (caixas estilo flyer P&B) e barra inferior ----------
-const Info: React.FC<Pick<FlyerProps, 'weekday' | 'date' | 'time' | 'tag' | 'location'>> = ({weekday, date, time, tag, location}) => {
+const Info: React.FC<Pick<FlyerProps, 'weekday' | 'date' | 'time' | 'location'>> = ({weekday, date, time, location}) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
   const p = (d: number) => spring({frame: frame - INFO - d, fps, config: {damping: 18, stiffness: 160}});
   return (
     <AbsoluteFill>
-      <div style={{position: 'absolute', top: 1475, width: '100%', display: 'flex', justifyContent: 'center', gap: 16}}>
+      <div style={{position: 'absolute', top: 1318, width: '100%', display: 'flex', justifyContent: 'center', gap: 16}}>
         <div style={{background: COLORS.bone, padding: '8px 22px 2px', clipPath: `inset(0 ${(1 - p(0)) * 100}% 0 0)`}}>
           <div style={heavy(66, COLORS.ink)}>SHOW AO VIVO</div>
         </div>
@@ -418,17 +420,16 @@ const Info: React.FC<Pick<FlyerProps, 'weekday' | 'date' | 'time' | 'tag' | 'loc
           <div style={heavy(66, COLORS.ink)}>{time.toUpperCase()}</div>
         </div>
       </div>
-      <div style={{position: 'absolute', top: 1580, width: '100%', textAlign: 'center', opacity: p(8)}}>
-        <div style={thin(44, COLORS.bone, {letterSpacing: 8})}>
-          {tag.toUpperCase()} • {location.toUpperCase()}
-        </div>
+      {/* "Noite de Halloween" já está no topo: aqui fica só o endereço */}
+      <div style={{position: 'absolute', top: 1408, width: '100%', textAlign: 'center', opacity: p(8)}}>
+        <div style={thin(42, COLORS.bone, {letterSpacing: 8})}>{location.toUpperCase()}</div>
       </div>
       <div
         style={{
           position: 'absolute',
-          top: 1650,
-          left: 90,
-          width: 900,
+          top: 1462,
+          left: 160,
+          width: 760,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
@@ -436,9 +437,9 @@ const Info: React.FC<Pick<FlyerProps, 'weekday' | 'date' | 'time' | 'tag' | 'loc
           transform: `translateY(${(1 - p(12)) * 40}px)`,
         }}
       >
-        <div style={heavy(82, COLORS.bone)}>{weekday}</div>
-        <Img src={staticFile('logo-rango.png')} style={{width: 330, filter: 'drop-shadow(0 0 14px rgba(209,10,10,0.7))'}} />
-        <div style={heavy(82, COLORS.bone)}>{date}</div>
+        <div style={heavy(74, COLORS.bone)}>{weekday}</div>
+        <Img src={staticFile('logo-rango.png')} style={{width: 280, filter: 'drop-shadow(0 0 14px rgba(209,10,10,0.7))'}} />
+        <div style={heavy(74, COLORS.bone)}>{date}</div>
       </div>
     </AbsoluteFill>
   );
@@ -460,7 +461,7 @@ const Header: React.FC<{tag: string}> = ({tag}) => {
   const frame = useCurrentFrame();
   const o = interpolate(frame, [150, 166], [0, 1], clamp);
   return (
-    <div style={{position: 'absolute', top: 120, width: '100%', textAlign: 'center', opacity: o}}>
+    <div style={{position: 'absolute', top: 62, width: '100%', textAlign: 'center', opacity: o}}>
       <div style={thin(40, COLORS.bone, {letterSpacing: 18})}>CHOPP DO BARBUDO & RANGÔ APRESENTAM</div>
       <div style={{fontFamily: BRUSH, fontSize: 78, color: COLORS.bone, marginTop: 10, textShadow: '0 0 20px rgba(209,10,10,0.8)'}}>{tag}</div>
     </div>
@@ -525,7 +526,7 @@ export const FlyerShow: React.FC<FlyerProps> = (props) => {
             position: 'absolute',
             inset: 0,
             transformStyle: 'preserve-3d',
-            transform: `translateZ(${cam.z}px) rotateX(${cam.rx}deg) rotateY(${cam.ry}deg)`,
+            transform: `translateY(${WORLD_SHIFT}px) translateZ(${cam.z}px) rotateX(${cam.rx}deg) rotateY(${cam.ry}deg)`,
           }}
         >
           <Layer z={-900}>
