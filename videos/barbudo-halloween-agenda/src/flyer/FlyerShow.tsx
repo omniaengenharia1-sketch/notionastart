@@ -210,6 +210,9 @@ const BandRise: React.FC<{photo: string; aspect: number}> = ({photo, aspect}) =>
             <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves={3} seed={4} result="n" />
             <feDisplacementMap in="SourceGraphic" in2="n" scale={60} />
           </filter>
+          <filter id="whiteSilhouette" colorInterpolationFilters="sRGB">
+            <feColorMatrix type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1 0" />
+          </filter>
           <mask id="brushMask">
             <rect x={-20} y={-20} width={W + 40} height={H - 30} fill="#fff" filter="url(#brushEdge)" />
           </mask>
@@ -217,7 +220,8 @@ const BandRise: React.FC<{photo: string; aspect: number}> = ({photo, aspect}) =>
         <g filter="url(#bandRim)">
           <image href={staticFile(photo)} width={W} height={H} mask="url(#brushMask)" filter="url(#bwBand)" />
         </g>
-        <rect width={W} height={H} fill="#fff" opacity={flash * 0.8} mask="url(#brushMask)" />
+        {/* flash só na silhueta dos músicos (não no retângulo da imagem) */}
+        <image href={staticFile(photo)} width={W} height={H} mask="url(#brushMask)" filter="url(#whiteSilhouette)" opacity={flash * 0.85} />
       </svg>
     </div>
   );
