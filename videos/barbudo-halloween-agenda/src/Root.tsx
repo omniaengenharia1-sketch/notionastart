@@ -3,6 +3,7 @@ import {Composition} from 'remotion';
 import './fonts';
 import {FPS, TIMELINE} from './agenda';
 import {AgendaHalloween} from './AgendaHalloween';
+import {FlyerParty, PARTY_FRAMES} from './flyer/FlyerParty';
 import {FLYER_FRAMES, FlyerShow} from './flyer/FlyerShow';
 
 export const RemotionRoot: React.FC = () => (
@@ -47,6 +48,31 @@ export const RemotionRoot: React.FC = () => (
         music: true,
         musicFile: 'musica/clint-eastwood.mp3',
         musicOnset: 2.07,
+      }}
+    />
+    {/* flyer animado do LMC Acústico (estilo festa, sem Halloween) */}
+    <Composition
+      id="FlyerLMC"
+      component={FlyerParty}
+      durationInFrames={PARTY_FRAMES}
+      fps={FPS}
+      width={1080}
+      height={1920}
+      defaultProps={{
+        band: 'LMC Acústico',
+        headline: 'É SEXTA',
+        weekdayShort: 'SEX',
+        day: '30',
+        monthShort: 'OUT',
+        dateLine: 'Sexta, 30 de outubro',
+        time: '20h',
+        location: 'Praça Gastronômica de Arujá',
+        pill: 'Chopp artesanal • Espetos • Música ao vivo',
+        photo: 'bandas/lmc-acustico.png',
+        photoAspect: 1086 / 1448,
+        music: false,
+        musicFile: '',
+        musicOnset: 0,
       }}
     />
   </>
