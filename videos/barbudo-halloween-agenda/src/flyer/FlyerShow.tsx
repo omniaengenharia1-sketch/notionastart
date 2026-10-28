@@ -19,6 +19,8 @@ export type FlyerProps = {
   photo: string; // PNG recortado em /public
   photoAspect: number; // largura / altura do PNG
   music: boolean;
+  musicFile: string; // em /public (fora do git por direitos autorais)
+  musicOnset: number; // segundo da música que deve cair no raio que revela a cena
 };
 
 export const FLYER_FRAMES = 450;
@@ -471,8 +473,7 @@ const Lightning: React.FC = () => {
 };
 
 // ---------- Som ----------
-// Groove de Thriller (41,7s no arquivo) cai junto com o título
-const MUSIC_TRIM = Math.round((41.7 - TITLE / 30) * 30);
+const MUSIC_CUE = REVEAL - 2; // a música entra junto com o raio/trovão
 const SFX: [number, string, number][] = [
   [0, 'ia/porta', 0.7],
   [REVEAL - 2, 'ia/trovao', 0.9],
@@ -488,12 +489,12 @@ const SFX: [number, string, number][] = [
   [384, 'ia/risada', 0.6],
 ];
 
-const FlyerSound: React.FC<{music: boolean}> = ({music}) => (
+const FlyerSound: React.FC<{music: boolean; file: string; onset: number}> = ({music, file, onset}) => (
   <>
     {music ? (
       <Audio
-        src={staticFile('musica/thriller.mp3')}
-        trimBefore={MUSIC_TRIM}
+        src={staticFile(file)}
+        trimBefore={Math.max(0, Math.round((onset - MUSIC_CUE / 30) * 30))}
         volume={(f) => interpolate(f, [0, 10, FLYER_FRAMES - 50, FLYER_FRAMES - 1], [0, 0.7, 0.7, 0], clamp)}
       />
     ) : (
@@ -562,7 +563,7 @@ export const FlyerShow: React.FC<FlyerProps> = (props) => {
       <Grain />
       <Presents />
       <AbsoluteFill style={{background: '#000', opacity: end}} />
-      <FlyerSound music={props.music} />
+      <FlyerSound music={props.music} file={props.musicFile} onset={props.musicOnset} />
     </AbsoluteFill>
   );
 };

@@ -45,6 +45,8 @@ export const RemotionRoot: React.FC = () => (
         photo: 'bandas/la-fortune-banda.png',
         photoAspect: 1242 / 921,
         music: true,
+        musicFile: 'musica/clint-eastwood.mp3',
+        musicOnset: 2.07,
       }}
     />
   </>
