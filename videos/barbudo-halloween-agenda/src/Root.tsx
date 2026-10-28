@@ -69,9 +69,10 @@ export const RemotionRoot: React.FC = () => (
         pill: 'Chopp artesanal • Espetos • Música ao vivo',
         photo: 'bandas/lmc-acustico-cintura-hd.png',
         photoAspect: 2360 / 1717,
-        music: false,
-        musicFile: '',
-        musicOnset: 0,
+        music: true,
+        musicFile: 'musica/vicios-e-virtudes.mp3',
+        musicOnset: 6.74, // entrada da banda cai quando a dupla aparece
+        musicBpm: 123,
       }}
     />
   </>

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useContext} from 'react';
 import {AbsoluteFill, Audio, Img, interpolate, random, Sequence, spring, staticFile, useCurrentFrame, useVideoConfig} from 'remotion';
 import {COLORS} from '../agenda';
 import {WIDE} from '../fonts';
@@ -23,19 +23,22 @@ export type PartyFlyerProps = {
   music: boolean;
   musicFile: string;
   musicOnset: number; // segundo da música que deve cair quando a dupla aparece
+  musicBpm: number; // andamento da música (os pulsos visuais seguem a batida)
 };
 
 export const PARTY_FRAMES = 450;
 const REVEAL = 14; // dupla se forma a partir da poeira
 const TEXT = 40; // chamada de baixo
-const BEAT = 15; // pulso visual (120 bpm)
 const SWAPS = [165, 290]; // trocas da chamada gigante
 const PUNCHES = [118, 228, 350]; // "socos" de zoom da câmera
 const ease = (x: number) => 1 - Math.pow(1 - x, 3);
 const WHITE = '#f5f3ef';
 
-// 0..1, pico em cada batida
-const beat = (frame: number) => (frame < 60 ? 0 : Math.exp(-((frame - 60) % BEAT) / 3.5));
+// Duração de uma batida em frames (vem do BPM da música)
+const BeatCtx = React.createContext(15);
+// 0..1, pico em cada batida (fase alinhada com a entrada da música em REVEAL)
+const beat = (frame: number, period: number) =>
+  frame < 60 ? 0 : Math.exp(-((((frame - REVEAL) % period) + period) % period) / 3.5);
 // 0..1 decaindo depois de cada evento
 const hit = (frame: number, events: number[], len = 8) =>
   events.reduce((a, e) => (frame >= e && frame < e + len * 3 ? Math.max(a, Math.exp(-(frame - e) / len)) : a), 0);
@@ -43,7 +46,8 @@ const hit = (frame: number, events: number[], len = 8) =>
 // ---------- Fundo vermelho com luz pulsando ----------
 const Background: React.FC = () => {
   const frame = useCurrentFrame();
-  const glow = 0.8 + 0.2 * beat(frame);
+  const period = useContext(BeatCtx);
+  const glow = 0.8 + 0.2 * beat(frame, period);
   return (
     <AbsoluteFill>
       <AbsoluteFill style={{background: 'linear-gradient(180deg, #5c0000 0%, #a80606 38%, #6a0000 70%, #1a0000 100%)'}} />
@@ -63,6 +67,7 @@ const Background: React.FC = () => {
 const P = 1300;
 const useCamera = () => {
   const frame = useCurrentFrame();
+  const period = useContext(BeatCtx);
   const push = interpolate(frame, [0, 40], [-450, 0], {...clamp, easing: ease});
   const punch = PUNCHES.reduce((a, p) => (frame >= p ? a + 150 * Math.exp(-(frame - p) / 7) * Math.min(1, (frame - p + 1) / 2) : a), 0);
   const ry = interpolate(frame, [0, 40], [-16, 0], {...clamp, easing: ease}) + Math.sin(frame / 40) * 7;
@@ -81,8 +86,9 @@ const Layer: React.FC<{z: number; children: React.ReactNode}> = ({z, children}) 
 // ---------- Luzes de palco varrendo atrás ----------
 const StageBeams: React.FC = () => {
   const frame = useCurrentFrame();
+  const period = useContext(BeatCtx);
   const appear = interpolate(frame, [40, 60], [0, 1], clamp);
-  const b = beat(frame);
+  const b = beat(frame, period);
   return (
     <>
       {new Array(7).fill(0).map((_, i) => {
@@ -116,6 +122,7 @@ const StageBeams: React.FC = () => {
 const HEADLINE_ROWS = 6;
 const HeadlineRow: React.FC<{texts: string[]; k: number}> = ({texts, k}) => {
   const frame = useCurrentFrame();
+  const period = useContext(BeatCtx);
   const p = interpolate(frame - 4 - k * 3, [0, 16], [0, 1], {...clamp, easing: ease});
   const f = frame - k; // linhas de trás trocam um pouco depois
   const idx = SWAPS.filter((s) => f >= s).length;
@@ -126,7 +133,7 @@ const HeadlineRow: React.FC<{texts: string[]; k: number}> = ({texts, k}) => {
     return a;
   }, 0);
   const run = k === 0 ? 0 : interpolate(frame, [50, 80], [0, 1], clamp) * Math.sin((frame - 50) / 28 + k) * 110 * (k % 2 ? 1 : -1);
-  const bump = k === 0 ? 1 + beat(frame) * 0.035 : 1;
+  const bump = k === 0 ? 1 + beat(frame, period) * 0.035 : 1;
   return (
     <div
       style={{
@@ -154,7 +161,8 @@ const HeadlineRow: React.FC<{texts: string[]; k: number}> = ({texts, k}) => {
 
 const Stripes: React.FC = () => {
   const frame = useCurrentFrame();
-  const b = beat(frame);
+  const period = useContext(BeatCtx);
+  const b = beat(frame, period);
   return (
     <>
       {[0, 1].map((side) => (
@@ -184,6 +192,7 @@ const Stripes: React.FC = () => {
 // ---------- Faíscas subindo em profundidade ----------
 const Sparks: React.FC = () => {
   const frame = useCurrentFrame();
+  const period = useContext(BeatCtx);
   if (frame < 40) return null;
   return (
     <>
@@ -219,13 +228,14 @@ const Sparks: React.FC = () => {
 // ---------- Dupla: se forma da poeira, ganha rastro nos "socos" e glitch nas trocas ----------
 const Duo: React.FC<{photo: string; aspect: number}> = ({photo, aspect}) => {
   const frame = useCurrentFrame();
+  const period = useContext(BeatCtx);
   const {fps} = useVideoConfig();
   const W = 1180;
   const H = Math.round(W / aspect);
   const left = 540 - W / 2;
   const top = 455;
   const sweep = interpolate(frame, [REVEAL, REVEAL + 26], [-20, 120], {...clamp, easing: ease});
-  const zoom = interpolate(frame, [REVEAL, PARTY_FRAMES], [1.06, 1.0], clamp) * (1 + beat(frame) * 0.012);
+  const zoom = interpolate(frame, [REVEAL, PARTY_FRAMES], [1.06, 1.0], clamp) * (1 + beat(frame, period) * 0.012);
   const mask = `linear-gradient(90deg, #000 ${sweep - 12}%, rgba(0,0,0,0) ${sweep + 6}%)`;
   const ghost = hit(frame, PUNCHES, 6);
   const glitch = SWAPS.some((s) => frame >= s - 2 && frame < s + 4) ? (random(`dg${frame}`) - 0.5) * 50 : 0;
@@ -299,9 +309,10 @@ const Duo: React.FC<{photo: string; aspect: number}> = ({photo, aspect}) => {
 // ---------- Topo: selo de data, logo e horário ----------
 const TopBar: React.FC<PartyFlyerProps> = (props) => {
   const frame = useCurrentFrame();
+  const period = useContext(BeatCtx);
   const {fps} = useVideoConfig();
   const p = spring({frame: frame - 6, fps, config: {damping: 18}});
-  const b = beat(frame);
+  const b = beat(frame, period);
   return (
     <div style={{position: 'absolute', top: 58, left: 60, width: 960, display: 'flex', alignItems: 'center', justifyContent: 'space-between', opacity: p, transform: `translateY(${(1 - p) * -40}px)`}}>
       <div style={{textAlign: 'center', lineHeight: 0.92}}>
@@ -332,6 +343,7 @@ const TopBar: React.FC<PartyFlyerProps> = (props) => {
 // ---------- Chamada de baixo ----------
 const Bottom: React.FC<PartyFlyerProps> = (props) => {
   const frame = useCurrentFrame();
+  const period = useContext(BeatCtx);
   const {fps} = useVideoConfig();
   const p = (d: number) => spring({frame: frame - TEXT - d, fps, config: {damping: 16, stiffness: 140}});
   const [first, ...rest] = props.band.toUpperCase().split(' ');
@@ -340,7 +352,7 @@ const Bottom: React.FC<PartyFlyerProps> = (props) => {
   const flip = (d: number) => `perspective(900px) rotateX(${(1 - p(d)) * -85}deg)`;
   const shine = ((frame - 70) % 110) / 40; // brilho atravessando o "ACÚSTICO"
   const shinePos = frame > 70 && shine <= 1 ? interpolate(shine, [0, 1], [-30, 130]) : -60;
-  const b = beat(frame);
+  const b = beat(frame, period);
   return (
     <>
       <div style={{position: 'absolute', top: 1070, width: '100%', textAlign: 'center', opacity: p(0), transform: flip(0), transformOrigin: '50% 100%'}}>
@@ -402,6 +414,7 @@ const Bottom: React.FC<PartyFlyerProps> = (props) => {
 // Brilho de luz atravessando de tempos em tempos
 const LightSweep: React.FC = () => {
   const frame = useCurrentFrame();
+  const period = useContext(BeatCtx);
   const t = ((frame - 80) % 100) / 30;
   if (frame < 80 || t > 1) return null;
   return (
@@ -423,6 +436,7 @@ const LightSweep: React.FC = () => {
 // Faixas de glitch e flash nas trocas e nos "socos"
 const Hits: React.FC = () => {
   const frame = useCurrentFrame();
+  const period = useContext(BeatCtx);
   const flash = Math.max(hit(frame, SWAPS, 3) * 0.45, hit(frame, PUNCHES, 3) * 0.3);
   const swap = SWAPS.find((s) => frame >= s - 2 && frame < s + 4);
   return (
@@ -494,6 +508,7 @@ export const FlyerParty: React.FC<PartyFlyerProps> = (props) => {
   const frame = useCurrentFrame();
   const end = interpolate(frame, [PARTY_FRAMES - 30, PARTY_FRAMES - 1], [0, 1], clamp);
   return (
+    <BeatCtx.Provider value={(30 * 60) / props.musicBpm}>
     <AbsoluteFill style={{background: '#000', overflow: 'hidden'}}>
       <Background />
       <World>
@@ -521,5 +536,6 @@ export const FlyerParty: React.FC<PartyFlyerProps> = (props) => {
       <AbsoluteFill style={{background: '#000', opacity: end}} />
       <PartySound music={props.music} file={props.musicFile} onset={props.musicOnset} />
     </AbsoluteFill>
+    </BeatCtx.Provider>
   );
 };
