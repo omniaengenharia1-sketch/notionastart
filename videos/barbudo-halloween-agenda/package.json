@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@fontsource/big-shoulders-display": "5.2.5",
+    "@fontsource/sedgwick-ave-display": "5.2.5",
     "@remotion/cli": "4.0.539",
     "react": "18.3.1",
     "react-dom": "18.3.1",
