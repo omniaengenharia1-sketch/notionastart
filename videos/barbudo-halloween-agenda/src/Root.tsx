@@ -60,11 +60,10 @@ export const RemotionRoot: React.FC = () => (
       height={1920}
       defaultProps={{
         band: 'LMC Acústico',
-        headline: 'É SEXTA',
+        headlines: ['É SEXTA', 'AO VIVO', 'É SEXTA'],
         weekdayShort: 'SEX',
         day: '30',
         monthShort: 'OUT',
-        dateLine: 'Sexta, 30/10',
         time: '20h',
         location: 'Praça Gastronômica de Arujá',
         pill: 'Chopp artesanal • Espetos • Música ao vivo',
