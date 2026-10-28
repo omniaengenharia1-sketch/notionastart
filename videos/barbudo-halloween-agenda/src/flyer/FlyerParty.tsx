@@ -343,10 +343,10 @@ const Bottom: React.FC<PartyFlyerProps> = (props) => {
   const b = beat(frame);
   return (
     <>
-      <div style={{position: 'absolute', top: 1325, width: '100%', textAlign: 'center', opacity: p(0), transform: flip(0), transformOrigin: '50% 100%'}}>
+      <div style={{position: 'absolute', top: 1070, width: '100%', textAlign: 'center', opacity: p(0), transform: flip(0), transformOrigin: '50% 100%'}}>
         <div style={{fontFamily: WIDE, fontWeight: 400, fontSize: 46, color: WHITE, letterSpacing: 4}}>SHOW AO VIVO COM</div>
       </div>
-      <div style={{position: 'absolute', top: 1385, width: '100%', textAlign: 'center', opacity: p(4), transform: `${flip(4)} translateX(${glitch}px)`, transformOrigin: '50% 100%'}}>
+      <div style={{position: 'absolute', top: 1130, width: '100%', textAlign: 'center', opacity: p(4), transform: `${flip(4)} translateX(${glitch}px)`, transformOrigin: '50% 100%'}}>
         <div
           style={{
             fontFamily: WIDE,
@@ -379,7 +379,7 @@ const Bottom: React.FC<PartyFlyerProps> = (props) => {
           </div>
         )}
       </div>
-      <div style={{position: 'absolute', top: 1640, left: 120, width: 840, display: 'flex', justifyContent: 'center'}}>
+      <div style={{position: 'absolute', top: 1385, left: 120, width: 840, display: 'flex', justifyContent: 'center'}}>
         <div
           style={{
             background: '#4a0000',
@@ -392,8 +392,8 @@ const Bottom: React.FC<PartyFlyerProps> = (props) => {
           <div style={heavy(38, WHITE, {letterSpacing: 2, whiteSpace: 'nowrap'})}>{props.location.toUpperCase()}</div>
         </div>
       </div>
-      <div style={{position: 'absolute', top: 1725, width: '100%', textAlign: 'center', opacity: p(14)}}>
-        <div style={thin(40, WHITE, {letterSpacing: 8, fontWeight: 400})}>{props.pill.toUpperCase()}</div>
+      <div style={{position: 'absolute', top: 1468, width: '100%', textAlign: 'center', opacity: p(14)}}>
+        <div style={thin(34, WHITE, {letterSpacing: 5, fontWeight: 400})}>{props.pill.toUpperCase()}</div>
       </div>
     </>
   );
@@ -513,7 +513,7 @@ export const FlyerParty: React.FC<PartyFlyerProps> = (props) => {
           <Sparks />
         </Layer>
       </World>
-      <AbsoluteFill style={{background: 'linear-gradient(180deg, rgba(26,0,0,0) 58%, rgba(26,0,0,0.88) 70%, #140000 80%)'}} />
+      <AbsoluteFill style={{background: 'linear-gradient(180deg, rgba(26,0,0,0) 44%, rgba(26,0,0,0.82) 56%, #140000 66%)'}} />
       <LightSweep />
       <TopBar {...props} />
       <Bottom {...props} />
