@@ -5,3 +5,4 @@ __pycache__/
 .venv/
 venv/
 video_src/
+video_out/
