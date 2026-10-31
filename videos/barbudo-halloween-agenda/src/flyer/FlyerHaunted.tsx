@@ -10,9 +10,7 @@ import {BatSilhouette, clamp, thin} from '../fx/kit';
 // e no final — quando a música pesa — o logo em 3D cai e a banda surge da neblina.
 
 export type HauntedFlyerProps = {
-  presents: string; // 'Chopp do Barbudo & Rangô apresentam'
   cards: {lines: string[]; size: number}[]; // telas de texto atravessadas pela câmera
-  tagline: string[]; // cartela preta no meio (frase de trailer)
   location: string;
   travel: string; // vídeo da câmera atravessando o cemitério
   travelSeconds: number;
@@ -28,20 +26,20 @@ export type HauntedFlyerProps = {
 };
 
 // ---------- Linha do tempo (frames, 30fps) ----------
-export const HAUNTED_FRAMES = 600;
-const REVEAL = 72; // trovão revela o cemitério
-const TAG_FROM = 214; // cartela preta
-const TAG_TO = 262;
-const FINAL = 456; // parte pesada da música: logo cai
-const BAND = 474;
-const INFO = 510;
+export const HAUNTED_FRAMES = 540;
+const REVEAL = 20; // trovão revela o cemitério
+const CUT_FROM = 166; // corte rápido no preto com trovão
+const CUT_TO = 186;
+const FINAL = 376; // parte pesada da música: logo cai
+const BAND = 392;
+const INFO = 428;
 // cada tela de texto: [chega, para, sai, some]
 const CARD_TIMES: [number, number, number, number][] = [
-  [80, 112, 186, 210],
-  [266, 292, 356, 380],
-  [380, 400, 432, FINAL],
+  [28, 62, 140, CUT_FROM],
+  [CUT_TO, 210, 275, 300],
+  [300, 320, 352, FINAL],
 ];
-const FLASHES = [REVEAL, REVEAL + 5, 160, TAG_TO - 10, TAG_TO - 5, 398, FINAL, FINAL + 4, 560];
+const FLASHES = [REVEAL, REVEAL + 5, 110, CUT_TO - 6, CUT_TO - 2, 318, FINAL, FINAL + 4, 480];
 const WHITE = COLORS.bone;
 const ease = (x: number) => 1 - Math.pow(1 - x, 3);
 
@@ -203,13 +201,13 @@ const Logo3D: React.FC<{src: string; aspect: number}> = ({src, aspect}) => {
   );
 };
 
-// ---------- Banda surgindo da neblina ----------
+// ---------- Banda (cintura pra cima) surgindo da neblina ----------
 const Band: React.FC<{photo: string; aspect: number}> = ({photo, aspect}) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
-  const W = 720;
+  const W = 1000;
   const H = Math.round(W / aspect);
-  const up = spring({frame: frame - BAND, fps, config: {damping: 18, stiffness: 55}});
+  const up = spring({frame: frame - BAND, fps, config: {damping: 20, stiffness: 50}});
   const lit = 1 + flashAt(frame) * 0.6;
   if (frame < BAND) return null;
   return (
@@ -217,13 +215,14 @@ const Band: React.FC<{photo: string; aspect: number}> = ({photo, aspect}) => {
       style={{
         position: 'absolute',
         left: 540 - W / 2,
-        top: 640,
+        top: 1385 - H,
         width: W,
         height: H,
         opacity: up,
-        transform: `translateY(${(1 - up) * 240}px) scale(${0.94 + 0.06 * up})`,
-        filter: `blur(${(1 - up) * 10}px)`,
-        WebkitMaskImage: 'linear-gradient(180deg, #000 90%, rgba(0,0,0,0.35) 100%)',
+        transform: `translateY(${(1 - up) * 180}px)`,
+        filter: `blur(${(1 - up) * 8}px)`,
+        // base some no escuro/neblina: ninguém "flutua"
+        WebkitMaskImage: 'linear-gradient(180deg, #000 55%, rgba(0,0,0,0.6) 75%, rgba(0,0,0,0) 97%)',
       }}
     >
       <Img
@@ -231,39 +230,19 @@ const Band: React.FC<{photo: string; aspect: number}> = ({photo, aspect}) => {
         style={{
           width: W,
           height: H,
-          filter: `brightness(${0.8 * lit}) contrast(1.14) saturate(0.7) drop-shadow(0 0 3px rgba(255,70,50,0.85)) drop-shadow(0 0 26px rgba(209,10,10,0.55))`,
+          filter: `brightness(${0.8 * lit}) contrast(1.14) saturate(0.7) drop-shadow(0 0 3px rgba(255,70,50,0.8)) drop-shadow(0 0 24px rgba(209,10,10,0.5))`,
         }}
       />
     </div>
   );
 };
 
-// ---------- Cartelas no preto ----------
-const Presents: React.FC<{text: string}> = ({text}) => {
+// ---------- Preto: abertura e corte rápido entre telas ----------
+const Blackouts: React.FC = () => {
   const frame = useCurrentFrame();
-  const o = interpolate(frame, [14, 30, REVEAL - 14, REVEAL - 2], [0, 1, 1, 0], clamp);
-  return (
-    <AbsoluteFill style={{background: '#000', opacity: frame < REVEAL ? 1 : 0, display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
-      <div style={{opacity: o, textAlign: 'center', width: 900}}>
-        <SerifLine text={text.toUpperCase()} size={34} seed="pr" weight={400} spacing={0.18} />
-      </div>
-    </AbsoluteFill>
-  );
-};
-
-const Tagline: React.FC<{lines: string[]}> = ({lines}) => {
-  const frame = useCurrentFrame();
-  if (frame < TAG_FROM || frame >= TAG_TO) return null;
-  const black = interpolate(frame, [TAG_FROM, TAG_FROM + 4, TAG_TO - 12, TAG_TO - 10], [0, 1, 1, 0], clamp);
-  return (
-    <AbsoluteFill style={{background: `rgba(0,0,0,${black})`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10}}>
-      {lines.map((l, i) => (
-        <div key={i} style={{opacity: interpolate(frame, [TAG_FROM + 6 + i * 10, TAG_FROM + 14 + i * 10], [0, 1], clamp) * black}}>
-          <SerifLine text={l.toUpperCase()} size={i === 0 ? 62 : 64} seed={`tg${i}`} weight={i === 0 ? 400 : 900} spacing={0.05} />
-        </div>
-      ))}
-    </AbsoluteFill>
-  );
+  const open = interpolate(frame, [REVEAL, REVEAL + 3], [1, 0], clamp);
+  const cut = interpolate(frame, [CUT_FROM - 2, CUT_FROM, CUT_TO - 6, CUT_TO - 4], [0, 1, 1, 0], clamp);
+  return <AbsoluteFill style={{background: '#000', opacity: Math.max(open, cut), pointerEvents: 'none'}} />;
 };
 
 // ---------- Rodapé final ----------
@@ -349,20 +328,20 @@ const FilmLook: React.FC = () => {
 const SFX: [number, string, number][] = [
   [0, 'ia/vento', 0.45],
   [REVEAL - 2, 'ia/trovao', 0.85],
+  [40, 'ia/sussurros', 0.45],
   [CARD_TIMES[0][0], 'whoosh', 0.35],
-  [130, 'ia/bruxa', 0.75],
-  [140, 'ia/vassoura', 0.6],
+  [88, 'ia/bruxa', 0.75],
+  [98, 'ia/vassoura', 0.6],
   [CARD_TIMES[0][2], 'whoosh', 0.55],
-  [TAG_FROM + 4, 'ia/sussurros', 0.5],
-  [TAG_TO - 12, 'ia/trovao', 0.8],
-  [300, 'ia/morcegos', 0.55],
+  [CUT_TO - 8, 'ia/trovao', 0.8],
+  [222, 'ia/morcegos', 0.55],
   [CARD_TIMES[1][2], 'whoosh', 0.55],
   [CARD_TIMES[2][0] + 14, 'ia/trovao', 0.5],
   [FINAL - 70, 'heartbeat', 0.6],
   [FINAL - 43, 'riser', 0.55],
   [FINAL - 14, 'ia/logo_hit', 0.9],
   [BAND, 'ia/fantasma', 0.45],
-  [552, 'ia/bruxa', 0.55],
+  [470, 'ia/bruxa', 0.55],
 ];
 
 const Sound: React.FC<{music: boolean; file: string; onset: number}> = ({music, file, onset}) => (
@@ -395,9 +374,9 @@ export const FlyerHaunted: React.FC<HauntedFlyerProps> = (props) => {
     <AbsoluteFill style={{background: '#000', overflow: 'hidden'}}>
       <AbsoluteFill style={{transform: `translate(${sx}px, ${sy}px) scale(1.02)`}}>
         <Footage {...props} />
-        <Witch at={128} />
-        <Bats at={298} />
-        <Bats at={530} />
+        <Witch at={86} />
+        <Bats at={220} />
+        <Bats at={450} />
         <Fog y={1150} opacity={0.16} speed={0.9} />
         {props.cards.map((c, i) => (
           <Card key={i} lines={c.lines} size={c.size} t={CARD_TIMES[i]} idx={i} />
@@ -407,10 +386,9 @@ export const FlyerHaunted: React.FC<HauntedFlyerProps> = (props) => {
         <Fog y={1430} opacity={0.3} speed={1.4} count={6} />
         <Info location={props.location} />
       </AbsoluteFill>
-      <Tagline lines={props.tagline} />
       <AbsoluteFill style={{background: '#f2ecff', opacity: flashAt(frame) * 0.8, mixBlendMode: 'screen', pointerEvents: 'none'}} />
       <FilmLook />
-      <Presents text={props.presents} />
+      <Blackouts />
       <AbsoluteFill style={{background: '#000', opacity: end}} />
       <Sound music={props.music} file={props.musicFile} onset={props.musicOnset} />
     </AbsoluteFill>

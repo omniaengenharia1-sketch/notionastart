@@ -85,13 +85,11 @@ export const RemotionRoot: React.FC = () => (
       width={1080}
       height={1920}
       defaultProps={{
-        presents: 'Chopp do Barbudo & Rangô apresentam',
         cards: [
-          {lines: ['Halloween', 'Estendido'], size: 128},
+          {lines: ['O Halloween', 'ainda não acabou...'], size: 74},
           {lines: ['Especialmente', 'nesse domingo'], size: 92},
           {lines: ['A partir', 'das 20h'], size: 120},
         ],
-        tagline: ['O Halloween', 'ainda não acabou...'],
         location: 'Praça Gastronômica de Arujá',
         travel: 'cenarios/cemiterio-travessia.mp4',
         travelSeconds: 10,
@@ -99,8 +97,8 @@ export const RemotionRoot: React.FC = () => (
         finaleTrimSeconds: 4,
         logo: 'logos/oven-rocket.png',
         logoAspect: 1400 / 1268,
-        photo: 'bandas/oven-rocket.png',
-        photoAspect: 1104 / 1062,
+        photo: 'bandas/oven-rocket-cintura.png',
+        photoAspect: 1104 / 660,
         music: true,
         musicFile: 'musica/michael-myers-norm.mp3',
         musicOnset: 17.7,
