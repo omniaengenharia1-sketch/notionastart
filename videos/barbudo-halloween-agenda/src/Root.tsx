@@ -96,6 +96,7 @@ export const RemotionRoot: React.FC = () => (
         travel2: 'cenarios/cemiterio-travessia-2.mp4',
         logo: 'logos/oven-rocket.png',
         logoAspect: 1400 / 1268,
+        killer: 'personagens/mascarado.png',
         photo: 'bandas/oven-rocket-cintura.png',
         photoAspect: 1104 / 660,
         music: true,

@@ -17,6 +17,7 @@ export type HauntedFlyerProps = {
   travel2: string; // continuação gerada a partir do último quadro de `travel` (emenda invisível)
   logo: string;
   logoAspect: number;
+  killer: string; // assassino mascarado recortado
   photo: string;
   photoAspect: number;
   music: boolean;
@@ -30,6 +31,7 @@ const REVEAL = 20; // trovão revela o cemitério
 const FINAL = 376; // parte pesada da música: logo cai
 const BAND = 392;
 const INFO = 428;
+const SLASH = FINAL - 8; // faca rasga a tela
 // cada tela de texto: [chega, para, sai, some]
 const CARD_TIMES: [number, number, number, number][] = [
   [28, 62, 140, 166],
@@ -295,6 +297,65 @@ const Bats: React.FC<{at: number}> = ({at}) => {
   );
 };
 
+// ---------- Assassino mascarado (aparece só nos clarões, estilo filme de slasher) ----------
+type Sighting = {from: number; to: number; x: number; bottom: number; height: number; fade?: boolean};
+const SIGHTINGS: Sighting[] = [
+  {from: 110, to: 117, x: 610, bottom: 1170, height: 300}, // lá no fundo da trilha, some no escuro
+  {from: 300, to: 309, x: 210, bottom: 2150, height: 1700}, // susto: colado na câmera
+  {from: 480, to: HAUNTED_FRAMES, x: 905, bottom: 1080, height: 330, fade: true}, // fica observando atrás da banda
+];
+const Killer: React.FC<{src: string}> = ({src}) => {
+  const frame = useCurrentFrame();
+  const s = SIGHTINGS.find((k) => frame >= k.from && frame < k.to);
+  if (!s) return null;
+  const W = Math.round(s.height * (571 / 1290));
+  const lit = flashAt(frame);
+  const o = s.fade ? interpolate(frame, [s.from, s.from + 3], [0, 1], clamp) : 1;
+  const jitter = s.fade ? 0 : (random(`kj${frame}`) - 0.5) * 10;
+  return (
+    <div style={{position: 'absolute', left: s.x - W / 2 + jitter, top: s.bottom - s.height, width: W, height: s.height, opacity: o}}>
+      <Img
+        src={staticFile(src)}
+        style={{width: W, height: s.height, filter: `brightness(${0.45 + lit * 0.9}) contrast(1.25) saturate(0.4) blur(${s.height < 400 ? 1 : 0}px)`}}
+      />
+    </div>
+  );
+};
+
+// ---------- Faca rasgando a tela antes do logo ----------
+const KnifeSlash: React.FC = () => {
+  const frame = useCurrentFrame();
+  const d = frame - SLASH;
+  if (d < 0 || d > 18) return null;
+  const draw = interpolate(d, [0, 4], [0, 1], {...clamp, easing: ease});
+  const o = interpolate(d, [6, 18], [1, 0], clamp);
+  const x1 = 1000, y1 = 560, x2 = 80, y2 = 1320;
+  const len = Math.hypot(x2 - x1, y2 - y1);
+  const ang = (Math.atan2(y2 - y1, x2 - x1) * 180) / Math.PI;
+  const L = len * draw;
+  // rasgo: fino nas pontas, grosso no meio, com borda clara de lâmina
+  const gash = `M0,0 Q${L * 0.5},-28 ${L},0 Q${L * 0.5},28 0,0 Z`;
+  return (
+    <AbsoluteFill style={{pointerEvents: 'none', opacity: o}}>
+      <svg width={1080} height={1920} style={{position: 'absolute'}}>
+        <g transform={`translate(${x1} ${y1}) rotate(${ang})`}>
+          <path d={gash} fill="#000" transform="translate(0 6)" opacity={0.6} />
+          <path d={gash} fill="#5a0000" />
+          <path d={`M0,0 Q${L * 0.5},-13 ${L},0 Q${L * 0.5},13 0,0 Z`} fill={COLORS.red} />
+          <path d={`M${L * 0.08},-1 Q${L * 0.5},-24 ${L * 0.92},-1`} stroke="rgba(255,235,230,0.9)" strokeWidth={2.5} fill="none" />
+          {new Array(10).fill(0).map((_, i) => {
+            const t = random(`gs${i}`);
+            const spread = d * (3 + random(`gv${i}`) * 5);
+            return t < draw ? (
+              <circle key={i} cx={L * t} cy={(random(`gy${i}`) > 0.5 ? 1 : -1) * (12 + spread)} r={2 + random(`gr${i}`) * 5} fill="#6a0000" />
+            ) : null;
+          })}
+        </g>
+      </svg>
+    </AbsoluteFill>
+  );
+};
+
 // ---------- Película: grão, riscos, poeira, luz tremendo ----------
 const FilmLook: React.FC = () => {
   const frame = useCurrentFrame();
@@ -332,9 +393,13 @@ const SFX: [number, string, number][] = [
   [CARD_TIMES[0][2], 'whoosh', 0.55],
   [180, 'ia/trovao', 0.7],
   [222, 'ia/morcegos', 0.55],
+  [262, 'ia/respiracao', 0.8],
+  [299, 'ia/susto', 1],
+  [SLASH, 'ia/faca', 0.9],
+  [478, 'ia/susto', 0.45],
   [CARD_TIMES[1][2], 'whoosh', 0.55],
   [CARD_TIMES[2][0] + 14, 'ia/trovao', 0.5],
-  [FINAL - 70, 'heartbeat', 0.6],
+  [FINAL - 70, 'heartbeat', 0.5],
   [FINAL - 43, 'riser', 0.55],
   [FINAL - 14, 'ia/logo_hit', 0.9],
   [BAND, 'ia/fantasma', 0.45],
@@ -374,6 +439,7 @@ export const FlyerHaunted: React.FC<HauntedFlyerProps> = (props) => {
         <Witch at={86} />
         <Bats at={220} />
         <Bats at={450} />
+        <Killer src={props.killer} />
         <Fog y={1150} opacity={0.16} speed={0.9} />
         {props.cards.map((c, i) => (
           <Card key={i} lines={c.lines} size={c.size} t={CARD_TIMES[i]} idx={i} />
@@ -383,6 +449,7 @@ export const FlyerHaunted: React.FC<HauntedFlyerProps> = (props) => {
         <Fog y={1430} opacity={0.3} speed={1.4} count={6} />
         <Info location={props.location} />
       </AbsoluteFill>
+      <KnifeSlash />
       <AbsoluteFill style={{background: '#f2ecff', opacity: flashAt(frame) * 0.8, mixBlendMode: 'screen', pointerEvents: 'none'}} />
       <FilmLook />
       <Blackouts />
