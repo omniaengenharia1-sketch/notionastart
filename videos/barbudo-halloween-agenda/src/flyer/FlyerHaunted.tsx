@@ -1,62 +1,75 @@
 import React from 'react';
 import {AbsoluteFill, Audio, Img, interpolate, OffthreadVideo, random, Sequence, spring, staticFile, useCurrentFrame, useVideoConfig} from 'remotion';
 import {COLORS} from '../agenda';
-import {BRUSH} from '../fonts';
-import {BatSilhouette, clamp, heavy, thin} from '../fx/kit';
+import {SERIF} from '../fonts';
+import {BatSilhouette, clamp, thin} from '../fx/kit';
 
-// Flyer "Halloween estendido": cenário 3D de cemitério gerado e animado por IA (câmera avançando),
-// logo da banda em 3D (com volume) voando até o centro, banda surgindo da neblina,
-// raios, morcegos e uma bruxa cruzando a lua.
+// Flyer "Halloween estendido" em clima de trailer de filme de terror:
+// cartela de abertura no preto, câmera atravessando o cemitério (vídeo gerado por IA)
+// com os textos vindo da neblina e passando pela câmera, cartela preta com trovão,
+// e no final — quando a música pesa — o logo em 3D cai e a banda surge da neblina.
 
 export type HauntedFlyerProps = {
-  title: [string, string];
-  subtitle: string; // 'Especialmente nesse domingo'
-  time: string; // 'A partir das 20h'
+  presents: string; // 'Chopp do Barbudo & Rangô apresentam'
+  cards: {lines: string[]; size: number}[]; // telas de texto atravessadas pela câmera
+  tagline: string[]; // cartela preta no meio (frase de trailer)
   location: string;
-  scene: string; // vídeo do cenário em /public
-  sceneSeconds: number; // duração do vídeo do cenário (é esticado para o flyer todo)
+  travel: string; // vídeo da câmera atravessando o cemitério
+  travelSeconds: number;
+  finale: string; // vídeo do final (castelo)
+  finaleTrimSeconds: number;
   logo: string;
   logoAspect: number;
   photo: string;
   photoAspect: number;
   music: boolean;
   musicFile: string;
-  musicOnset: number; // segundo da música que deve cair no raio que revela a cena
+  musicOnset: number; // segundo da música (parte pesada) que deve cair junto com a queda do logo
 };
 
-export const HAUNTED_FRAMES = 450;
-const REVEAL = 28; // raio revela o cemitério
-const TITLE = 38;
-const LOGO_IN = 78;
-const LOGO_HIT = 112;
-const BAND = 140;
-const INFO = 192;
-const WITCH = 268;
-const LOGO_FLIP = 332; // giro completo do logo (com raio)
-const FLASHES = [REVEAL, REVEAL + 5, 170, 335, 341, 402];
-const ease = (x: number) => 1 - Math.pow(1 - x, 3);
+// ---------- Linha do tempo (frames, 30fps) ----------
+export const HAUNTED_FRAMES = 600;
+const REVEAL = 72; // trovão revela o cemitério
+const TAG_FROM = 214; // cartela preta
+const TAG_TO = 262;
+const FINAL = 456; // parte pesada da música: logo cai
+const BAND = 474;
+const INFO = 510;
+// cada tela de texto: [chega, para, sai, some]
+const CARD_TIMES: [number, number, number, number][] = [
+  [80, 112, 186, 210],
+  [266, 292, 356, 380],
+  [380, 400, 432, FINAL],
+];
+const FLASHES = [REVEAL, REVEAL + 5, 160, TAG_TO - 10, TAG_TO - 5, 398, FINAL, FINAL + 4, 560];
 const WHITE = COLORS.bone;
+const ease = (x: number) => 1 - Math.pow(1 - x, 3);
 
 const flashAt = (frame: number) =>
   FLASHES.reduce((a, f) => {
     const d = frame - f;
-    return d < 0 || d > 7 ? a : Math.max(a, interpolate(d, [0, 1, 7], [0.85, 0.5, 0]));
+    return d < 0 || d > 7 ? a : Math.max(a, interpolate(d, [0, 1, 7], [0.9, 0.5, 0]));
   }, 0);
 
-// ---------- Cenário animado (esticado em câmera lenta) ----------
-const Scene: React.FC<{src: string; seconds: number}> = ({src, seconds}) => {
+// ---------- Cenários ----------
+const Footage: React.FC<HauntedFlyerProps> = (p) => {
   const frame = useCurrentFrame();
-  const rate = seconds / (HAUNTED_FRAMES / 30);
-  const push = interpolate(frame, [0, HAUNTED_FRAMES], [1.04, 1.14]);
-  const blackout = interpolate(frame, [REVEAL, REVEAL + 8], [1, 0], clamp);
+  const travelFrames = FINAL - REVEAL;
   return (
     <AbsoluteFill>
-      <AbsoluteFill style={{transform: `scale(${push})`}}>
-        <OffthreadVideo src={staticFile(src)} playbackRate={rate} muted style={{width: '100%', height: '100%', objectFit: 'cover'}} />
-      </AbsoluteFill>
-      {/* escurece a base para os textos */}
-      <AbsoluteFill style={{background: 'linear-gradient(180deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0) 22%, rgba(0,0,0,0) 55%, rgba(8,0,0,0.75) 78%, rgba(5,0,0,0.92) 100%)'}} />
-      <AbsoluteFill style={{background: '#000', opacity: blackout}} />
+      <Sequence from={REVEAL} durationInFrames={travelFrames} layout="none">
+        <AbsoluteFill style={{transform: 'scale(1.06)'}}>
+          <OffthreadVideo src={staticFile(p.travel)} playbackRate={(p.travelSeconds * 30) / travelFrames} muted style={{width: '100%', height: '100%', objectFit: 'cover'}} />
+        </AbsoluteFill>
+      </Sequence>
+      <Sequence from={FINAL} layout="none">
+        <AbsoluteFill style={{transform: `scale(${interpolate(frame, [FINAL, HAUNTED_FRAMES], [1.12, 1.04])})`}}>
+          <OffthreadVideo src={staticFile(p.finale)} trimBefore={Math.round(p.finaleTrimSeconds * 30)} muted style={{width: '100%', height: '100%', objectFit: 'cover'}} />
+        </AbsoluteFill>
+      </Sequence>
+      {/* gradação de filme de terror: frio, dessaturado, com o vermelho preservado */}
+      <AbsoluteFill style={{background: 'rgba(10,18,30,0.28)', mixBlendMode: 'multiply'}} />
+      <AbsoluteFill style={{background: 'linear-gradient(180deg, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0) 25%, rgba(0,0,0,0) 60%, rgba(5,0,0,0.85) 100%)'}} />
     </AbsoluteFill>
   );
 };
@@ -78,7 +91,7 @@ const Fog: React.FC<{y: number; opacity: number; speed: number; count?: number}>
               width: 1300,
               height: 420,
               borderRadius: '50%',
-              background: `radial-gradient(ellipse, rgba(225,215,220,${opacity}) 0%, rgba(200,190,200,0) 70%)`,
+              background: `radial-gradient(ellipse, rgba(215,210,220,${opacity}) 0%, rgba(200,190,200,0) 70%)`,
               filter: 'blur(26px)',
             }}
           />
@@ -88,31 +101,65 @@ const Fog: React.FC<{y: number; opacity: number; speed: number; count?: number}>
   );
 };
 
-// ---------- Título em pincel ----------
-const Title: React.FC<{lines: [string, string]}> = ({lines}) => {
+// Letra de projetor velho: pisca de leve e às vezes "escorrega" em vermelho
+const useProjector = (frame: number, seed: string) => {
+  const f = Math.floor(frame / 2);
+  const o = 0.86 + 0.14 * random(`${seed}o${f}`);
+  const split = random(`${seed}s${f}`) > 0.9 ? (random(`${seed}x${f}`) - 0.5) * 18 : 0;
+  return {o, split};
+};
+
+const SerifLine: React.FC<{text: string; size: number; seed: string; weight?: number; spacing?: number}> = ({text, size, seed, weight = 900, spacing = 0.06}) => {
   const frame = useCurrentFrame();
+  const {o, split} = useProjector(frame, seed);
+  const base: React.CSSProperties = {fontFamily: SERIF, fontWeight: weight, fontSize: size, lineHeight: 1.05, letterSpacing: size * spacing, whiteSpace: 'nowrap'};
   return (
-    <div style={{position: 'absolute', top: 105, width: '100%', textAlign: 'center', transform: 'rotate(-4deg)'}}>
-      {lines.map((l, i) => {
-        const w = interpolate(frame, [TITLE + i * 12, TITLE + i * 12 + 22], [0, 1], clamp);
-        return (
-          <div
-            key={i}
-            style={{
-              fontFamily: BRUSH,
-              fontSize: 132,
-              lineHeight: 1.02,
-              color: WHITE,
-              clipPath: `inset(-25% ${(1 - w) * 100}% -25% -5%)`,
-              textShadow: '0 0 34px rgba(209,10,10,0.95), 6px 8px 0 #000, 0 0 4px #000',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {l}
-          </div>
-        );
-      })}
+    <div style={{position: 'relative', opacity: o}}>
+      {split !== 0 && <div style={{...base, position: 'absolute', left: split, right: 0, color: COLORS.red, opacity: 0.85}}>{text}</div>}
+      <div style={{...base, position: 'relative', color: WHITE, textShadow: '0 0 30px rgba(209,10,10,0.75), 0 0 80px rgba(209,10,10,0.35), 0 6px 18px #000'}}>{text}</div>
     </div>
+  );
+};
+
+// ---------- Tela de texto: vem da neblina, para na frente e atravessa a câmera ----------
+const Card: React.FC<{lines: string[]; size: number; t: [number, number, number, number]; idx: number}> = ({lines, size, t, idx}) => {
+  const frame = useCurrentFrame();
+  const [a, b, c, d] = t;
+  if (frame < a || frame > d) return null;
+  let z: number;
+  let o: number;
+  if (frame < b) {
+    const k = ease(interpolate(frame, [a, b], [0, 1]));
+    z = interpolate(k, [0, 1], [-2200, 0]);
+    o = interpolate(frame, [a, a + 8], [0, 1], clamp);
+  } else if (frame < c) {
+    z = interpolate(frame, [b, c], [0, 90]);
+    o = 1;
+  } else {
+    const k = interpolate(frame, [c, d], [0, 1]);
+    z = interpolate(k * k, [0, 1], [90, 1100]);
+    o = 1 - k;
+  }
+  return (
+    <AbsoluteFill style={{perspective: 1000, perspectiveOrigin: '50% 48%'}}>
+      <div
+        style={{
+          position: 'absolute',
+          top: 620,
+          width: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          transform: `translateZ(${z}px)`,
+          opacity: o,
+          filter: `blur(${z > 300 ? (z - 300) / 60 : z < -900 ? (-z - 900) / 260 : 0}px)`,
+        }}
+      >
+        {lines.map((l, i) => (
+          <SerifLine key={i} text={l} size={i === 0 ? size : size * (lines.length > 1 ? 0.92 : 1)} seed={`c${idx}${i}`} />
+        ))}
+      </div>
+    </AbsoluteFill>
   );
 };
 
@@ -120,31 +167,22 @@ const Title: React.FC<{lines: [string, string]}> = ({lines}) => {
 const Logo3D: React.FC<{src: string; aspect: number}> = ({src, aspect}) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
-  const W = 440;
+  const W = 360;
   const H = Math.round(W / aspect);
-  const p = spring({frame: frame - LOGO_IN, fps, config: {damping: 14, stiffness: 55}});
+  const p = spring({frame: frame - FINAL + 14, fps, config: {damping: 13, stiffness: 70}});
   const z = interpolate(p, [0, 1], [-2600, 0]);
   const spin = interpolate(p, [0, 1], [540, 0]);
-  // volta completa de 360° junto com o raio do meio do vídeo
-  const flip = interpolate(frame, [LOGO_FLIP, LOGO_FLIP + 26], [0, 360], {...clamp, easing: (x) => x * x * (3 - 2 * x)});
-  const ry = spin + flip + (frame > LOGO_HIT ? Math.sin((frame - LOGO_HIT) / 26) * 38 : 0);
-  const rx = 8 + Math.sin(frame / 36) * 10;
+  const ry = spin + (frame > FINAL ? Math.sin((frame - FINAL) / 26) * 34 : 0);
+  const rx = 8 + Math.sin(frame / 36) * 9;
   const glow = 0.6 + 0.4 * Math.sin(frame / 9);
   const DEPTH = 26;
+  if (frame < FINAL - 14) return null;
   return (
-    <div style={{position: 'absolute', left: 540 - W / 2, top: 400, width: W, height: H, perspective: 1100, opacity: Math.min(1, p * 3)}}>
-      <div
-        style={{
-          position: 'absolute',
-          inset: -60,
-          borderRadius: '50%',
-          background: `radial-gradient(circle, rgba(209,10,10,${0.55 * glow * p}) 0%, rgba(209,10,10,0) 65%)`,
-          filter: 'blur(10px)',
-        }}
-      />
+    <div style={{position: 'absolute', left: 540 - W / 2, top: 300, width: W, height: H, perspective: 1100, opacity: Math.min(1, p * 3)}}>
+      <div style={{position: 'absolute', inset: -60, borderRadius: '50%', background: `radial-gradient(circle, rgba(209,10,10,${0.55 * glow * p}) 0%, rgba(209,10,10,0) 65%)`, filter: 'blur(10px)'}} />
       <div style={{position: 'absolute', inset: 0, transformStyle: 'preserve-3d', transform: `translateZ(${z}px) rotateX(${rx}deg) rotateY(${ry}deg)`}}>
         {new Array(DEPTH).fill(0).map((_, i) => {
-          const k = DEPTH - 1 - i; // desenha de trás pra frente
+          const k = DEPTH - 1 - i; // de trás pra frente
           return (
             <Img
               key={k}
@@ -156,7 +194,6 @@ const Logo3D: React.FC<{src: string; aspect: number}> = ({src, aspect}) => {
                 height: H,
                 transform: `translateZ(${-k * 2.6}px)`,
                 filter: k === 0 ? 'drop-shadow(0 0 18px rgba(255,60,40,0.6))' : `brightness(${0.18 + (0.25 * (DEPTH - k)) / DEPTH}) sepia(1) saturate(5) hue-rotate(-28deg)`,
-                backfaceVisibility: 'visible',
               }}
             />
           );
@@ -170,22 +207,23 @@ const Logo3D: React.FC<{src: string; aspect: number}> = ({src, aspect}) => {
 const Band: React.FC<{photo: string; aspect: number}> = ({photo, aspect}) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
-  const W = 880;
+  const W = 720;
   const H = Math.round(W / aspect);
-  const up = spring({frame: frame - BAND, fps, config: {damping: 18, stiffness: 60}});
+  const up = spring({frame: frame - BAND, fps, config: {damping: 18, stiffness: 55}});
   const lit = 1 + flashAt(frame) * 0.6;
+  if (frame < BAND) return null;
   return (
     <div
       style={{
         position: 'absolute',
         left: 540 - W / 2,
-        top: 795,
+        top: 640,
         width: W,
         height: H,
         opacity: up,
-        transform: `translateY(${(1 - up) * 260}px) scale(${0.94 + 0.06 * up})`,
+        transform: `translateY(${(1 - up) * 240}px) scale(${0.94 + 0.06 * up})`,
         filter: `blur(${(1 - up) * 10}px)`,
-        WebkitMaskImage: 'linear-gradient(180deg, #000 62%, rgba(0,0,0,0) 92%)',
+        WebkitMaskImage: 'linear-gradient(180deg, #000 90%, rgba(0,0,0,0.35) 100%)',
       }}
     >
       <Img
@@ -193,43 +231,61 @@ const Band: React.FC<{photo: string; aspect: number}> = ({photo, aspect}) => {
         style={{
           width: W,
           height: H,
-          filter: `brightness(${0.78 * lit}) contrast(1.12) saturate(0.72) sepia(0.18) drop-shadow(0 0 3px rgba(255,70,50,0.85)) drop-shadow(0 0 26px rgba(209,10,10,0.55))`,
+          filter: `brightness(${0.8 * lit}) contrast(1.14) saturate(0.7) drop-shadow(0 0 3px rgba(255,70,50,0.85)) drop-shadow(0 0 26px rgba(209,10,10,0.55))`,
         }}
       />
     </div>
   );
 };
 
-// ---------- Informações ----------
-const Info: React.FC<Pick<HauntedFlyerProps, 'subtitle' | 'time' | 'location'>> = ({subtitle, time, location}) => {
+// ---------- Cartelas no preto ----------
+const Presents: React.FC<{text: string}> = ({text}) => {
   const frame = useCurrentFrame();
-  const {fps} = useVideoConfig();
-  const p = (d: number) => spring({frame: frame - INFO - d, fps, config: {damping: 16, stiffness: 150}});
+  const o = interpolate(frame, [14, 30, REVEAL - 14, REVEAL - 2], [0, 1, 1, 0], clamp);
   return (
-    <>
-      <div style={{position: 'absolute', top: 1318, width: '100%', textAlign: 'center', opacity: p(0), transform: `translateY(${(1 - p(0)) * 30}px)`}}>
-        <div style={heavy(58, WHITE, {letterSpacing: 4, textShadow: '0 4px 16px #000'})}>{subtitle.toUpperCase()}</div>
+    <AbsoluteFill style={{background: '#000', opacity: frame < REVEAL ? 1 : 0, display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+      <div style={{opacity: o, textAlign: 'center', width: 900}}>
+        <SerifLine text={text.toUpperCase()} size={34} seed="pr" weight={400} spacing={0.18} />
       </div>
-      <div style={{position: 'absolute', top: 1396, width: '100%', display: 'flex', justifyContent: 'center'}}>
-        <div style={{background: COLORS.red, padding: '10px 34px 4px', transform: `scale(${p(6)}) rotate(-2deg)`, boxShadow: '0 0 40px rgba(209,10,10,0.6)'}}>
-          <div style={heavy(76, COLORS.ink)}>{time.toUpperCase()}</div>
-        </div>
-      </div>
-      <div style={{position: 'absolute', top: 1492, width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 18, opacity: p(12)}}>
-        <Img src={staticFile('logo-rango.png')} style={{width: 180}} />
-        <div style={thin(38, WHITE, {letterSpacing: 6})}>{location.toUpperCase()}</div>
-      </div>
-    </>
+    </AbsoluteFill>
   );
 };
 
-// ---------- Bruxa na vassoura cruzando a lua ----------
-const Witch: React.FC = () => {
+const Tagline: React.FC<{lines: string[]}> = ({lines}) => {
   const frame = useCurrentFrame();
-  const t = interpolate(frame, [WITCH, WITCH + 70], [0, 1], clamp);
+  if (frame < TAG_FROM || frame >= TAG_TO) return null;
+  const black = interpolate(frame, [TAG_FROM, TAG_FROM + 4, TAG_TO - 12, TAG_TO - 10], [0, 1, 1, 0], clamp);
+  return (
+    <AbsoluteFill style={{background: `rgba(0,0,0,${black})`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10}}>
+      {lines.map((l, i) => (
+        <div key={i} style={{opacity: interpolate(frame, [TAG_FROM + 6 + i * 10, TAG_FROM + 14 + i * 10], [0, 1], clamp) * black}}>
+          <SerifLine text={l.toUpperCase()} size={i === 0 ? 62 : 64} seed={`tg${i}`} weight={i === 0 ? 400 : 900} spacing={0.05} />
+        </div>
+      ))}
+    </AbsoluteFill>
+  );
+};
+
+// ---------- Rodapé final ----------
+const Info: React.FC<{location: string}> = ({location}) => {
+  const frame = useCurrentFrame();
+  const {fps} = useVideoConfig();
+  const p = spring({frame: frame - INFO, fps, config: {damping: 18, stiffness: 140}});
+  return (
+    <div style={{position: 'absolute', top: 1405, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, opacity: p, transform: `translateY(${(1 - p) * 30}px)`}}>
+      <Img src={staticFile('logo-rango.png')} style={{width: 280, filter: 'drop-shadow(0 0 14px rgba(209,10,10,0.7))'}} />
+      <div style={thin(36, WHITE, {letterSpacing: 7})}>{location.toUpperCase()}</div>
+    </div>
+  );
+};
+
+// ---------- Bruxa na vassoura e morcegos ----------
+const Witch: React.FC<{at: number}> = ({at}) => {
+  const frame = useCurrentFrame();
+  const t = interpolate(frame, [at, at + 66], [0, 1], clamp);
   if (t <= 0 || t >= 1) return null;
-  const x = interpolate(t, [0, 1], [-260, 1300]);
-  const y = 470 - Math.sin(t * Math.PI) * 180;
+  const x = interpolate(t, [0, 1], [-280, 1320]);
+  const y = 260 - Math.sin(t * Math.PI) * 120;
   return (
     <div style={{position: 'absolute', left: x, top: y, transform: `rotate(${-8 + Math.sin(frame / 4) * 3}deg)`}}>
       <svg width={300} height={160} viewBox="-180 -100 330 160" style={{overflow: 'visible'}}>
@@ -255,15 +311,7 @@ const Bats: React.FC<{at: number}> = ({at}) => {
   return (
     <>
       {[0, 1, 2, 3, 4, 5].map((i) => (
-        <div
-          key={i}
-          style={{
-            position: 'absolute',
-            left: interpolate(t, [0, 1], [1250 + i * 70, -400 - i * 90]),
-            top: 360 + i * 70 + Math.sin(t * 10 + i) * 30 - t * 120,
-            transform: 'scaleX(-1)',
-          }}
-        >
+        <div key={i} style={{position: 'absolute', left: interpolate(t, [0, 1], [1250 + i * 70, -400 - i * 90]), top: 300 + i * 70 + Math.sin(t * 10 + i) * 30 - t * 120, transform: 'scaleX(-1)'}}>
           <BatSilhouette width={90 + (i % 3) * 50} flap={Math.abs(Math.sin((frame + i * 3) * 0.8))} blur={i % 3 === 2 ? 3 : 0.5} />
         </div>
       ))}
@@ -271,26 +319,50 @@ const Bats: React.FC<{at: number}> = ({at}) => {
   );
 };
 
-const Flash: React.FC = () => {
+// ---------- Película: grão, riscos, poeira, luz tremendo ----------
+const FilmLook: React.FC = () => {
   const frame = useCurrentFrame();
-  return <AbsoluteFill style={{background: '#f4ecff', opacity: flashAt(frame) * 0.75, mixBlendMode: 'screen', pointerEvents: 'none'}} />;
+  const f = Math.floor(frame / 2);
+  const flicker = 0.06 * random(`fl${f}`);
+  return (
+    <AbsoluteFill style={{pointerEvents: 'none'}}>
+      <AbsoluteFill style={{background: '#000', opacity: flicker}} />
+      <svg width={1080} height={1920} style={{position: 'absolute', opacity: 0.22, mixBlendMode: 'overlay'}}>
+        <filter id="filmGrain">
+          <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves={2} seed={f % 9} />
+          <feColorMatrix type="saturate" values="0" />
+        </filter>
+        <rect width="100%" height="100%" filter="url(#filmGrain)" />
+      </svg>
+      {random(`sc${f}`) > 0.6 && <div style={{position: 'absolute', left: random(`scx${f}`) * 1080, top: 0, width: 2, height: 1920, background: 'rgba(240,235,225,0.22)'}} />}
+      {new Array(3).fill(0).map((_, i) =>
+        random(`du${f}${i}`) > 0.7 ? (
+          <div key={i} style={{position: 'absolute', left: random(`dx${f}${i}`) * 1080, top: random(`dy${f}${i}`) * 1920, width: 3 + random(`ds${f}${i}`) * 6, height: 3 + random(`dh${f}${i}`) * 10, borderRadius: '50%', background: 'rgba(0,0,0,0.7)'}} />
+        ) : null,
+      )}
+      <AbsoluteFill style={{background: 'radial-gradient(ellipse at 50% 45%, rgba(0,0,0,0) 50%, rgba(0,0,0,0.7) 100%)'}} />
+    </AbsoluteFill>
+  );
 };
 
 // ---------- Som ----------
 const SFX: [number, string, number][] = [
-  [0, 'ia/vento', 0.5],
-  [REVEAL - 2, 'ia/trovao', 0.9],
-  [TITLE, 'whoosh', 0.5],
-  [LOGO_IN, 'ia/logo_hit', 0.85],
-  [BAND, 'ia/fantasma', 0.5],
-  [168, 'ia/trovao', 0.55],
-  [WITCH - 18, 'ia/bruxa', 0.9],
-  [WITCH + 4, 'ia/vassoura', 0.7],
-  [200, 'ia/morcegos', 0.6],
-  [333, 'ia/trovao', 0.6],
-  [LOGO_FLIP - 4, 'whoosh', 0.6],
-  [372, 'ia/morcegos', 0.5],
-  [400, 'ia/bruxa', 0.55],
+  [0, 'ia/vento', 0.45],
+  [REVEAL - 2, 'ia/trovao', 0.85],
+  [CARD_TIMES[0][0], 'whoosh', 0.35],
+  [130, 'ia/bruxa', 0.75],
+  [140, 'ia/vassoura', 0.6],
+  [CARD_TIMES[0][2], 'whoosh', 0.55],
+  [TAG_FROM + 4, 'ia/sussurros', 0.5],
+  [TAG_TO - 12, 'ia/trovao', 0.8],
+  [300, 'ia/morcegos', 0.55],
+  [CARD_TIMES[1][2], 'whoosh', 0.55],
+  [CARD_TIMES[2][0] + 14, 'ia/trovao', 0.5],
+  [FINAL - 70, 'heartbeat', 0.6],
+  [FINAL - 43, 'riser', 0.55],
+  [FINAL - 14, 'ia/logo_hit', 0.9],
+  [BAND, 'ia/fantasma', 0.45],
+  [552, 'ia/bruxa', 0.55],
 ];
 
 const Sound: React.FC<{music: boolean; file: string; onset: number}> = ({music, file, onset}) => (
@@ -298,15 +370,15 @@ const Sound: React.FC<{music: boolean; file: string; onset: number}> = ({music, 
     {music && file ? (
       <Audio
         src={staticFile(file)}
-        trimBefore={Math.max(0, Math.round((onset - REVEAL / 30) * 30))}
-        volume={(f) => interpolate(f, [0, 8, HAUNTED_FRAMES - 45, HAUNTED_FRAMES - 1], [0, 0.75, 0.75, 0], clamp)}
+        trimBefore={Math.max(0, Math.round((onset - FINAL / 30) * 30))}
+        volume={(f) => interpolate(f, [0, 4, HAUNTED_FRAMES - 60, HAUNTED_FRAMES - 1], [0, 1, 1, 0], clamp)}
       />
     ) : (
-      <Audio src={staticFile('sfx/drone.wav')} volume={(f) => interpolate(f, [0, 10, HAUNTED_FRAMES - 45, HAUNTED_FRAMES - 1], [0, 0.4, 0.4, 0], clamp)} />
+      <Audio src={staticFile('sfx/drone.wav')} volume={(f) => interpolate(f, [0, 10, HAUNTED_FRAMES - 60, HAUNTED_FRAMES - 1], [0, 0.4, 0.4, 0], clamp)} />
     )}
     {SFX.map(([at, sfx, v], i) => (
       <Sequence key={i} from={at} layout="none" name={`som: ${sfx}`}>
-        <Audio src={staticFile(`sfx/${sfx}.wav`)} volume={v * (music ? 0.7 : 0.85)} />
+        <Audio src={staticFile(`sfx/${sfx}.wav`)} volume={v * 0.75} />
       </Sequence>
     ))}
   </>
@@ -314,27 +386,31 @@ const Sound: React.FC<{music: boolean; file: string; onset: number}> = ({music, 
 
 export const FlyerHaunted: React.FC<HauntedFlyerProps> = (props) => {
   const frame = useCurrentFrame();
-  const end = interpolate(frame, [HAUNTED_FRAMES - 30, HAUNTED_FRAMES - 1], [0, 1], clamp);
-  // tremida leve nos impactos
-  const shakeK = Math.max(0, 1 - Math.abs(frame - LOGO_HIT) / 10) * (frame >= LOGO_HIT ? 1 : 0);
-  const sx = (random(`hx${frame}`) - 0.5) * 18 * shakeK;
-  const sy = (random(`hy${frame}`) - 0.5) * 18 * shakeK;
+  const end = interpolate(frame, [HAUNTED_FRAMES - 40, HAUNTED_FRAMES - 1], [0, 1], clamp);
+  // câmera de mão (respira) + tremida nos impactos
+  const hit = Math.max(0, 1 - Math.abs(frame - FINAL) / 12) * (frame >= FINAL ? 1 : 0);
+  const sx = Math.sin(frame / 23) * 4 + (random(`hx${frame}`) - 0.5) * 22 * hit;
+  const sy = Math.cos(frame / 31) * 4 + (random(`hy${frame}`) - 0.5) * 22 * hit;
   return (
     <AbsoluteFill style={{background: '#000', overflow: 'hidden'}}>
-      <AbsoluteFill style={{transform: `translate(${sx}px, ${sy}px)`}}>
-        <Scene src={props.scene} seconds={props.sceneSeconds} />
-        <Witch />
-        <Bats at={200} />
-        <Bats at={372} />
-        <Fog y={1180} opacity={0.18} speed={0.8} />
+      <AbsoluteFill style={{transform: `translate(${sx}px, ${sy}px) scale(1.02)`}}>
+        <Footage {...props} />
+        <Witch at={128} />
+        <Bats at={298} />
+        <Bats at={530} />
+        <Fog y={1150} opacity={0.16} speed={0.9} />
+        {props.cards.map((c, i) => (
+          <Card key={i} lines={c.lines} size={c.size} t={CARD_TIMES[i]} idx={i} />
+        ))}
         <Logo3D src={props.logo} aspect={props.logoAspect} />
         <Band photo={props.photo} aspect={props.photoAspect} />
-        <Fog y={1420} opacity={0.32} speed={1.4} count={6} />
-        <Title lines={props.title} />
-        <Info subtitle={props.subtitle} time={props.time} location={props.location} />
+        <Fog y={1430} opacity={0.3} speed={1.4} count={6} />
+        <Info location={props.location} />
       </AbsoluteFill>
-      <Flash />
-      <AbsoluteFill style={{background: 'radial-gradient(ellipse at 50% 45%, rgba(0,0,0,0) 55%, rgba(0,0,0,0.6) 100%)', pointerEvents: 'none'}} />
+      <Tagline lines={props.tagline} />
+      <AbsoluteFill style={{background: '#f2ecff', opacity: flashAt(frame) * 0.8, mixBlendMode: 'screen', pointerEvents: 'none'}} />
+      <FilmLook />
+      <Presents text={props.presents} />
       <AbsoluteFill style={{background: '#000', opacity: end}} />
       <Sound music={props.music} file={props.musicFile} onset={props.musicOnset} />
     </AbsoluteFill>

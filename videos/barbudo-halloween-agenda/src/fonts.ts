@@ -6,6 +6,8 @@ export const FONT = '"BSD", "Arial Narrow", sans-serif';
 export const BRUSH = '"Sedgwick", cursive';
 // Unbounded: letra larga e moderna para flyers de festa
 export const WIDE = '"Unbounded", sans-serif';
+// Cinzel: serifada clássica de pôster/trailer de terror
+export const SERIF = '"Cinzel", serif';
 
 const handle = delayRender('Carregando fontes');
 Promise.all([
@@ -15,6 +17,9 @@ Promise.all([
   new FontFace('Sedgwick', `url(${staticFile('fonts/sedgwick.woff2')}) format('woff2')`).load(),
   ...[400, 800].map((w) =>
     new FontFace('Unbounded', `url(${staticFile(`fonts/unbounded-${w}.woff2`)}) format('woff2')`, {weight: String(w)}).load(),
+  ),
+  ...[400, 900].map((w) =>
+    new FontFace('Cinzel', `url(${staticFile(`fonts/cinzel-${w}.woff2`)}) format('woff2')`, {weight: String(w)}).load(),
   ),
 ])
   .then((faces) => {

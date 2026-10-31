@@ -85,19 +85,25 @@ export const RemotionRoot: React.FC = () => (
       width={1080}
       height={1920}
       defaultProps={{
-        title: ['Halloween', 'Estendido!'],
-        subtitle: 'Especialmente nesse domingo',
-        time: 'A partir das 20h',
+        presents: 'Chopp do Barbudo & Rangô apresentam',
+        cards: [
+          {lines: ['Halloween', 'Estendido'], size: 128},
+          {lines: ['Especialmente', 'nesse domingo'], size: 92},
+          {lines: ['A partir', 'das 20h'], size: 120},
+        ],
+        tagline: ['O Halloween', 'ainda não acabou...'],
         location: 'Praça Gastronômica de Arujá',
-        scene: 'cenarios/cemiterio-oven.mp4',
-        sceneSeconds: 10.04,
+        travel: 'cenarios/cemiterio-travessia.mp4',
+        travelSeconds: 10,
+        finale: 'cenarios/cemiterio-oven.mp4',
+        finaleTrimSeconds: 4,
         logo: 'logos/oven-rocket.png',
         logoAspect: 1400 / 1268,
         photo: 'bandas/oven-rocket.png',
-        photoAspect: 1900 / 1619,
-        music: false,
-        musicFile: '',
-        musicOnset: 0,
+        photoAspect: 1104 / 1062,
+        music: true,
+        musicFile: 'musica/michael-myers-norm.mp3',
+        musicOnset: 17.7,
       }}
     />
   </>

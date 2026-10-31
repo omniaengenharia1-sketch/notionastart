@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@fontsource/big-shoulders-display": "5.2.5",
+    "@fontsource/cinzel": "5.2.5",
     "@fontsource/sedgwick-ave-display": "5.2.5",
     "@fontsource/unbounded": "5.2.5",
     "@remotion/cli": "4.0.539",
