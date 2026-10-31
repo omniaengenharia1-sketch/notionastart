@@ -14,8 +14,7 @@ export type HauntedFlyerProps = {
   location: string;
   travel: string; // vídeo da câmera atravessando o cemitério
   travelSeconds: number;
-  finale: string; // vídeo do final (castelo)
-  finaleTrimSeconds: number;
+  travel2: string; // continuação gerada a partir do último quadro de `travel` (emenda invisível)
   logo: string;
   logoAspect: number;
   photo: string;
@@ -28,18 +27,16 @@ export type HauntedFlyerProps = {
 // ---------- Linha do tempo (frames, 30fps) ----------
 export const HAUNTED_FRAMES = 540;
 const REVEAL = 20; // trovão revela o cemitério
-const CUT_FROM = 166; // corte rápido no preto com trovão
-const CUT_TO = 186;
 const FINAL = 376; // parte pesada da música: logo cai
 const BAND = 392;
 const INFO = 428;
 // cada tela de texto: [chega, para, sai, some]
 const CARD_TIMES: [number, number, number, number][] = [
-  [28, 62, 140, CUT_FROM],
-  [CUT_TO, 210, 275, 300],
-  [300, 320, 352, FINAL],
+  [28, 62, 140, 166],
+  [166, 192, 255, 280],
+  [280, 300, 345, FINAL],
 ];
-const FLASHES = [REVEAL, REVEAL + 5, 110, CUT_TO - 6, CUT_TO - 2, 318, FINAL, FINAL + 4, 480];
+const FLASHES = [REVEAL, REVEAL + 5, 110, 300, FINAL, FINAL + 4, 480];
 const WHITE = COLORS.bone;
 const ease = (x: number) => 1 - Math.pow(1 - x, 3);
 
@@ -49,20 +46,21 @@ const flashAt = (frame: number) =>
     return d < 0 || d > 7 ? a : Math.max(a, interpolate(d, [0, 1, 7], [0.9, 0.5, 0]));
   }, 0);
 
-// ---------- Cenários ----------
+// ---------- Cenário: uma única travessia contínua (dois vídeos emendados no mesmo quadro) ----------
 const Footage: React.FC<HauntedFlyerProps> = (p) => {
   const frame = useCurrentFrame();
-  const travelFrames = FINAL - REVEAL;
+  const part1 = Math.round(p.travelSeconds * 30);
+  const settle = interpolate(frame, [FINAL, HAUNTED_FRAMES], [1.06, 1.1]);
   return (
     <AbsoluteFill>
-      <Sequence from={REVEAL} durationInFrames={travelFrames} layout="none">
+      <Sequence from={REVEAL} durationInFrames={part1} layout="none">
         <AbsoluteFill style={{transform: 'scale(1.06)'}}>
-          <OffthreadVideo src={staticFile(p.travel)} playbackRate={(p.travelSeconds * 30) / travelFrames} muted style={{width: '100%', height: '100%', objectFit: 'cover'}} />
+          <OffthreadVideo src={staticFile(p.travel)} muted style={{width: '100%', height: '100%', objectFit: 'cover'}} />
         </AbsoluteFill>
       </Sequence>
-      <Sequence from={FINAL} layout="none">
-        <AbsoluteFill style={{transform: `scale(${interpolate(frame, [FINAL, HAUNTED_FRAMES], [1.12, 1.04])})`}}>
-          <OffthreadVideo src={staticFile(p.finale)} trimBefore={Math.round(p.finaleTrimSeconds * 30)} muted style={{width: '100%', height: '100%', objectFit: 'cover'}} />
+      <Sequence from={REVEAL + part1} layout="none">
+        <AbsoluteFill style={{transform: `scale(${frame < FINAL ? 1.06 : settle})`}}>
+          <OffthreadVideo src={staticFile(p.travel2)} muted style={{width: '100%', height: '100%', objectFit: 'cover'}} />
         </AbsoluteFill>
       </Sequence>
       {/* gradação de filme de terror: frio, dessaturado, com o vermelho preservado */}
@@ -165,7 +163,7 @@ const Card: React.FC<{lines: string[]; size: number; t: [number, number, number,
 const Logo3D: React.FC<{src: string; aspect: number}> = ({src, aspect}) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
-  const W = 360;
+  const W = 540;
   const H = Math.round(W / aspect);
   const p = spring({frame: frame - FINAL + 14, fps, config: {damping: 13, stiffness: 70}});
   const z = interpolate(p, [0, 1], [-2600, 0]);
@@ -176,7 +174,7 @@ const Logo3D: React.FC<{src: string; aspect: number}> = ({src, aspect}) => {
   const DEPTH = 26;
   if (frame < FINAL - 14) return null;
   return (
-    <div style={{position: 'absolute', left: 540 - W / 2, top: 300, width: W, height: H, perspective: 1100, opacity: Math.min(1, p * 3)}}>
+    <div style={{position: 'absolute', left: 540 - W / 2, top: 235, width: W, height: H, perspective: 1300, opacity: Math.min(1, p * 3)}}>
       <div style={{position: 'absolute', inset: -60, borderRadius: '50%', background: `radial-gradient(circle, rgba(209,10,10,${0.55 * glow * p}) 0%, rgba(209,10,10,0) 65%)`, filter: 'blur(10px)'}} />
       <div style={{position: 'absolute', inset: 0, transformStyle: 'preserve-3d', transform: `translateZ(${z}px) rotateX(${rx}deg) rotateY(${ry}deg)`}}>
         {new Array(DEPTH).fill(0).map((_, i) => {
@@ -190,8 +188,8 @@ const Logo3D: React.FC<{src: string; aspect: number}> = ({src, aspect}) => {
                 inset: 0,
                 width: W,
                 height: H,
-                transform: `translateZ(${-k * 2.6}px)`,
-                filter: k === 0 ? 'drop-shadow(0 0 18px rgba(255,60,40,0.6))' : `brightness(${0.18 + (0.25 * (DEPTH - k)) / DEPTH}) sepia(1) saturate(5) hue-rotate(-28deg)`,
+                transform: `translateZ(${-k * 3.4}px)`,
+                filter: k === 0 ? 'drop-shadow(0 0 22px rgba(255,60,40,0.6))' : `brightness(${0.18 + (0.25 * (DEPTH - k)) / DEPTH}) sepia(1) saturate(5) hue-rotate(-28deg)`,
               }}
             />
           );
@@ -237,12 +235,11 @@ const Band: React.FC<{photo: string; aspect: number}> = ({photo, aspect}) => {
   );
 };
 
-// ---------- Preto: abertura e corte rápido entre telas ----------
+// ---------- Preto da abertura (o trovão revela o cemitério) ----------
 const Blackouts: React.FC = () => {
   const frame = useCurrentFrame();
   const open = interpolate(frame, [REVEAL, REVEAL + 3], [1, 0], clamp);
-  const cut = interpolate(frame, [CUT_FROM - 2, CUT_FROM, CUT_TO - 6, CUT_TO - 4], [0, 1, 1, 0], clamp);
-  return <AbsoluteFill style={{background: '#000', opacity: Math.max(open, cut), pointerEvents: 'none'}} />;
+  return <AbsoluteFill style={{background: '#000', opacity: open, pointerEvents: 'none'}} />;
 };
 
 // ---------- Rodapé final ----------
@@ -333,7 +330,7 @@ const SFX: [number, string, number][] = [
   [88, 'ia/bruxa', 0.75],
   [98, 'ia/vassoura', 0.6],
   [CARD_TIMES[0][2], 'whoosh', 0.55],
-  [CUT_TO - 8, 'ia/trovao', 0.8],
+  [180, 'ia/trovao', 0.7],
   [222, 'ia/morcegos', 0.55],
   [CARD_TIMES[1][2], 'whoosh', 0.55],
   [CARD_TIMES[2][0] + 14, 'ia/trovao', 0.5],

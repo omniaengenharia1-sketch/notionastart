@@ -92,9 +92,8 @@ export const RemotionRoot: React.FC = () => (
         ],
         location: 'Praça Gastronômica de Arujá',
         travel: 'cenarios/cemiterio-travessia.mp4',
-        travelSeconds: 10,
-        finale: 'cenarios/cemiterio-oven.mp4',
-        finaleTrimSeconds: 4,
+        travelSeconds: 241 / 24, // duração exata do vídeo (241 quadros a 24fps)
+        travel2: 'cenarios/cemiterio-travessia-2.mp4',
         logo: 'logos/oven-rocket.png',
         logoAspect: 1400 / 1268,
         photo: 'bandas/oven-rocket-cintura.png',
