@@ -90,6 +90,7 @@ export const RemotionRoot: React.FC = () => (
           {lines: ['Especialmente', 'nesse domingo'], size: 92},
           {lines: ['A partir', 'das 20h'], size: 120},
         ],
+        dateLine: 'Domingo • 01/11 • 20h',
         location: 'Praça Gastronômica de Arujá',
         travel: 'cenarios/cemiterio-travessia.mp4',
         travelSeconds: 241 / 24, // duração exata do vídeo (241 quadros a 24fps)

@@ -2,7 +2,7 @@ import React from 'react';
 import {AbsoluteFill, Audio, Img, interpolate, OffthreadVideo, random, Sequence, spring, staticFile, useCurrentFrame, useVideoConfig} from 'remotion';
 import {COLORS} from '../agenda';
 import {SERIF} from '../fonts';
-import {BatSilhouette, clamp, thin} from '../fx/kit';
+import {BatSilhouette, clamp, heavy, thin} from '../fx/kit';
 
 // Flyer "Halloween estendido" em clima de trailer de filme de terror:
 // cartela de abertura no preto, câmera atravessando o cemitério (vídeo gerado por IA)
@@ -11,6 +11,7 @@ import {BatSilhouette, clamp, thin} from '../fx/kit';
 
 export type HauntedFlyerProps = {
   cards: {lines: string[]; size: number}[]; // telas de texto atravessadas pela câmera
+  dateLine: string; // faixa sobre o corte da cintura (ex.: 'Domingo • 01/11 • 20h')
   location: string;
   travel: string; // vídeo da câmera atravessando o cemitério
   travelSeconds: number;
@@ -32,6 +33,7 @@ const FINAL = 376; // parte pesada da música: logo cai
 const BAND = 392;
 const INFO = 428;
 const SLASH = FINAL - 8; // faca rasga a tela
+const BAND_BOTTOM = 1352; // corte da cintura (coberto pela faixa)
 // cada tela de texto: [chega, para, sai, some]
 const CARD_TIMES: [number, number, number, number][] = [
   [28, 62, 140, 166],
@@ -165,7 +167,7 @@ const Card: React.FC<{lines: string[]; size: number; t: [number, number, number,
 const Logo3D: React.FC<{src: string; aspect: number}> = ({src, aspect}) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
-  const W = 540;
+  const W = 500;
   const H = Math.round(W / aspect);
   const p = spring({frame: frame - FINAL + 14, fps, config: {damping: 13, stiffness: 70}});
   const z = interpolate(p, [0, 1], [-2600, 0]);
@@ -176,7 +178,7 @@ const Logo3D: React.FC<{src: string; aspect: number}> = ({src, aspect}) => {
   const DEPTH = 26;
   if (frame < FINAL - 14) return null;
   return (
-    <div style={{position: 'absolute', left: 540 - W / 2, top: 235, width: W, height: H, perspective: 1300, opacity: Math.min(1, p * 3)}}>
+    <div style={{position: 'absolute', left: 540 - W / 2, top: 190, width: W, height: H, perspective: 1300, opacity: Math.min(1, p * 3)}}>
       <div style={{position: 'absolute', inset: -60, borderRadius: '50%', background: `radial-gradient(circle, rgba(209,10,10,${0.55 * glow * p}) 0%, rgba(209,10,10,0) 65%)`, filter: 'blur(10px)'}} />
       <div style={{position: 'absolute', inset: 0, transformStyle: 'preserve-3d', transform: `translateZ(${z}px) rotateX(${rx}deg) rotateY(${ry}deg)`}}>
         {new Array(DEPTH).fill(0).map((_, i) => {
@@ -205,7 +207,7 @@ const Logo3D: React.FC<{src: string; aspect: number}> = ({src, aspect}) => {
 const Band: React.FC<{photo: string; aspect: number}> = ({photo, aspect}) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
-  const W = 1000;
+  const W = 1180;
   const H = Math.round(W / aspect);
   const up = spring({frame: frame - BAND, fps, config: {damping: 20, stiffness: 50}});
   const lit = 1 + flashAt(frame) * 0.6;
@@ -215,14 +217,13 @@ const Band: React.FC<{photo: string; aspect: number}> = ({photo, aspect}) => {
       style={{
         position: 'absolute',
         left: 540 - W / 2,
-        top: 1385 - H,
+        top: BAND_BOTTOM - H,
         width: W,
         height: H,
         opacity: up,
         transform: `translateY(${(1 - up) * 180}px)`,
         filter: `blur(${(1 - up) * 8}px)`,
         // base some no escuro/neblina: ninguém "flutua"
-        WebkitMaskImage: 'linear-gradient(180deg, #000 55%, rgba(0,0,0,0.6) 75%, rgba(0,0,0,0) 97%)',
       }}
     >
       <Img
@@ -245,15 +246,33 @@ const Blackouts: React.FC = () => {
 };
 
 // ---------- Rodapé final ----------
-const Info: React.FC<{location: string}> = ({location}) => {
+const Info: React.FC<{location: string; dateLine: string}> = ({location, dateLine}) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
+  const strip = spring({frame: frame - BAND - 6, fps, config: {damping: 18, stiffness: 120}});
   const p = spring({frame: frame - INFO, fps, config: {damping: 18, stiffness: 140}});
   return (
-    <div style={{position: 'absolute', top: 1405, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, opacity: p, transform: `translateY(${(1 - p) * 30}px)`}}>
-      <Img src={staticFile('logo-rango.png')} style={{width: 280, filter: 'drop-shadow(0 0 14px rgba(209,10,10,0.7))'}} />
-      <div style={thin(36, WHITE, {letterSpacing: 7})}>{location.toUpperCase()}</div>
-    </div>
+    <>
+      {/* faixa sólida cobrindo o corte da cintura da banda (estilo flyer La Fortune) */}
+      <div style={{position: 'absolute', top: BAND_BOTTOM - 46, width: '100%', display: 'flex', justifyContent: 'center'}}>
+        <div
+          style={{
+            width: 880,
+            textAlign: 'center',
+            background: COLORS.red,
+            padding: '16px 0 8px',
+            clipPath: `inset(0 ${(1 - strip) * 50}% 0 ${(1 - strip) * 50}%)`,
+            boxShadow: '0 0 50px rgba(209,10,10,0.55), 0 10px 0 #3a0000',
+          }}
+        >
+          <div style={heavy(80, COLORS.ink, {letterSpacing: 3})}>{dateLine.toUpperCase()}</div>
+        </div>
+      </div>
+      <div style={{position: 'absolute', top: BAND_BOTTOM + 95, width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 22, opacity: p, transform: `translateY(${(1 - p) * 24}px)`}}>
+        <Img src={staticFile('logo-rango.png')} style={{width: 210, filter: 'drop-shadow(0 0 14px rgba(209,10,10,0.7))'}} />
+        <div style={thin(34, WHITE, {letterSpacing: 5})}>{location.toUpperCase()}</div>
+      </div>
+    </>
   );
 };
 
@@ -447,7 +466,7 @@ export const FlyerHaunted: React.FC<HauntedFlyerProps> = (props) => {
         <Logo3D src={props.logo} aspect={props.logoAspect} />
         <Band photo={props.photo} aspect={props.photoAspect} />
         <Fog y={1430} opacity={0.3} speed={1.4} count={6} />
-        <Info location={props.location} />
+        <Info location={props.location} dateLine={props.dateLine} />
       </AbsoluteFill>
       <KnifeSlash />
       <AbsoluteFill style={{background: '#f2ecff', opacity: flashAt(frame) * 0.8, mixBlendMode: 'screen', pointerEvents: 'none'}} />
