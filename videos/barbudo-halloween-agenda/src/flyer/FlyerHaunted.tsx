@@ -13,10 +13,9 @@ export type HauntedFlyerProps = {
   cards: {lines: string[]; size: number}[]; // telas de texto atravessadas pela câmera
   dateLine: string; // faixa sobre o corte da cintura (ex.: 'Domingo • 01/11 • 20h')
   location: string;
-  travel: string; // vídeo da câmera atravessando o cemitério
-  travelSeconds: number;
-  travel2: string; // continuação gerada a partir do último quadro de `travel` (emenda invisível)
+  travel: string; // travessia completa do cemitério (as duas partes geradas por IA já emendadas, 30fps)
   logo: string;
+  logoSide: string; // silhueta vermelho-escuro para a espessura 3D
   logoAspect: number;
   killer: string; // assassino mascarado recortado
   photo: string;
@@ -53,18 +52,12 @@ const flashAt = (frame: number) =>
 // ---------- Cenário: uma única travessia contínua (dois vídeos emendados no mesmo quadro) ----------
 const Footage: React.FC<HauntedFlyerProps> = (p) => {
   const frame = useCurrentFrame();
-  const part1 = Math.round(p.travelSeconds * 30);
-  const settle = interpolate(frame, [FINAL, HAUNTED_FRAMES], [1.06, 1.1]);
+  const scale = frame < FINAL ? 1.06 : interpolate(frame, [FINAL, HAUNTED_FRAMES], [1.06, 1.1]);
   return (
     <AbsoluteFill>
-      <Sequence from={REVEAL} durationInFrames={part1} layout="none">
-        <AbsoluteFill style={{transform: 'scale(1.06)'}}>
+      <Sequence from={REVEAL} layout="none">
+        <AbsoluteFill style={{transform: `scale(${scale})`}}>
           <OffthreadVideo src={staticFile(p.travel)} muted style={{width: '100%', height: '100%', objectFit: 'cover'}} />
-        </AbsoluteFill>
-      </Sequence>
-      <Sequence from={REVEAL + part1} layout="none">
-        <AbsoluteFill style={{transform: `scale(${frame < FINAL ? 1.06 : settle})`}}>
-          <OffthreadVideo src={staticFile(p.travel2)} muted style={{width: '100%', height: '100%', objectFit: 'cover'}} />
         </AbsoluteFill>
       </Sequence>
       {/* gradação de filme de terror: frio, dessaturado, com o vermelho preservado */}
@@ -164,7 +157,7 @@ const Card: React.FC<{lines: string[]; size: number; t: [number, number, number,
 };
 
 // ---------- Logo da banda em 3D (cópias empilhadas em profundidade = volume) ----------
-const Logo3D: React.FC<{src: string; aspect: number}> = ({src, aspect}) => {
+const Logo3D: React.FC<{src: string; sideSrc: string; aspect: number}> = ({src, sideSrc, aspect}) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
   const W = 500;
@@ -186,14 +179,15 @@ const Logo3D: React.FC<{src: string; aspect: number}> = ({src, aspect}) => {
           return (
             <Img
               key={k}
-              src={staticFile(src)}
+              // camadas de trás usam a silhueta já pintada (sem filtro por camada: render leve)
+              src={staticFile(k === 0 ? src : sideSrc)}
               style={{
                 position: 'absolute',
                 inset: 0,
                 width: W,
                 height: H,
                 transform: `translateZ(${-k * 3.4}px)`,
-                filter: k === 0 ? 'drop-shadow(0 0 22px rgba(255,60,40,0.6))' : `brightness(${0.18 + (0.25 * (DEPTH - k)) / DEPTH}) sepia(1) saturate(5) hue-rotate(-28deg)`,
+                opacity: k === 0 ? 1 : 0.55 + (0.45 * (DEPTH - k)) / DEPTH,
               }}
             />
           );
@@ -463,7 +457,7 @@ export const FlyerHaunted: React.FC<HauntedFlyerProps> = (props) => {
         {props.cards.map((c, i) => (
           <Card key={i} lines={c.lines} size={c.size} t={CARD_TIMES[i]} idx={i} />
         ))}
-        <Logo3D src={props.logo} aspect={props.logoAspect} />
+        <Logo3D src={props.logo} sideSrc={props.logoSide} aspect={props.logoAspect} />
         <Band photo={props.photo} aspect={props.photoAspect} />
         <Fog y={1430} opacity={0.3} speed={1.4} count={6} />
         <Info location={props.location} dateLine={props.dateLine} />
