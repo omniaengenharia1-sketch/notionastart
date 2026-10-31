@@ -254,13 +254,13 @@ const Info: React.FC<{location: string; dateLine: string}> = ({location, dateLin
   return (
     <>
       {/* faixa sólida cobrindo o corte da cintura da banda (estilo flyer La Fortune) */}
-      <div style={{position: 'absolute', top: BAND_BOTTOM - 46, width: '100%', display: 'flex', justifyContent: 'center'}}>
+      <div style={{position: 'absolute', top: BAND_BOTTOM - 70, left: 0, width: 1080}}>
         <div
           style={{
-            width: 880,
+            width: 1080,
             textAlign: 'center',
             background: COLORS.red,
-            padding: '16px 0 8px',
+            padding: '28px 0 20px',
             clipPath: `inset(0 ${(1 - strip) * 50}% 0 ${(1 - strip) * 50}%)`,
             boxShadow: '0 0 50px rgba(209,10,10,0.55), 0 10px 0 #3a0000',
           }}
@@ -268,7 +268,7 @@ const Info: React.FC<{location: string; dateLine: string}> = ({location, dateLin
           <div style={heavy(80, COLORS.ink, {letterSpacing: 3})}>{dateLine.toUpperCase()}</div>
         </div>
       </div>
-      <div style={{position: 'absolute', top: BAND_BOTTOM + 95, width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 22, opacity: p, transform: `translateY(${(1 - p) * 24}px)`}}>
+      <div style={{position: 'absolute', top: BAND_BOTTOM + 105, width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 22, opacity: p, transform: `translateY(${(1 - p) * 24}px)`}}>
         <Img src={staticFile('logo-rango.png')} style={{width: 210, filter: 'drop-shadow(0 0 14px rgba(209,10,10,0.7))'}} />
         <div style={thin(34, WHITE, {letterSpacing: 5})}>{location.toUpperCase()}</div>
       </div>
