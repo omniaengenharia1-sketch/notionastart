@@ -3,6 +3,7 @@ import {Composition} from 'remotion';
 import './fonts';
 import {FPS, TIMELINE} from './agenda';
 import {AgendaHalloween} from './AgendaHalloween';
+import {FlyerHaunted, HAUNTED_FRAMES} from './flyer/FlyerHaunted';
 import {FlyerParty, PARTY_FRAMES} from './flyer/FlyerParty';
 import {FLYER_FRAMES, FlyerShow} from './flyer/FlyerShow';
 
@@ -73,6 +74,30 @@ export const RemotionRoot: React.FC = () => (
         musicFile: 'musica/vicios-e-virtudes.mp3',
         musicOnset: 6.74, // entrada da banda cai quando a dupla aparece
         musicBpm: 123,
+      }}
+    />
+    {/* flyer "Halloween estendido" do Oven Rocket (domingo) */}
+    <Composition
+      id="FlyerOvenRocket"
+      component={FlyerHaunted}
+      durationInFrames={HAUNTED_FRAMES}
+      fps={FPS}
+      width={1080}
+      height={1920}
+      defaultProps={{
+        title: ['Halloween', 'Estendido!'],
+        subtitle: 'Especialmente nesse domingo',
+        time: 'A partir das 20h',
+        location: 'Praça Gastronômica de Arujá',
+        scene: 'cenarios/cemiterio-oven.mp4',
+        sceneSeconds: 10.04,
+        logo: 'logos/oven-rocket.png',
+        logoAspect: 1400 / 1268,
+        photo: 'bandas/oven-rocket.png',
+        photoAspect: 1900 / 1619,
+        music: false,
+        musicFile: '',
+        musicOnset: 0,
       }}
     />
   </>
