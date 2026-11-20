@@ -67,9 +67,9 @@ mir = cv2.GaussianBlur(mir, (5, 5), 0)
 
 # blinks: (eye ellipses in orig coords), blink times (s)
 eyes_green = [((80, 564), (10, 4)), ((115, 577), (6, 3))]
-eyes_suit = [((800, 586), (10, 4))]
-blink_green, blink_suit, blink_client = [1.6, 5.9], [3.1, 6.8], [2.4, 6.2]
-eyes_client = [((600, 668), (14, 4)), ((655, 676), (11, 3))]
+eyes_suit = [((800, 586), (10, 4)), ((831, 588), (7, 3))]
+blink_green, blink_suit, blink_client = [1.8, 5.6], [3.2, 6.9], [2.5, 6.2]
+eyes_client = [((608, 663), (17, 5))]
 
 def ease(t): return 0.5 - 0.5 * math.cos(math.pi * t)
 
@@ -77,21 +77,28 @@ def blink_amount(t, times):
     a = 0.0
     for b in times:
         d = abs(t - b)
-        if d < 0.09: a = max(a, 1 - d / 0.09)
+        if d < 0.07: a = max(a, 1.0)
+        elif d < 0.30: a = max(a, 0.5 + 0.5 * math.cos(math.pi * (d - 0.07) / 0.23))
     return a
 
 def draw_blink(frame, eyes, amt):
     if amt <= 0: return
     for (cx, cy), (ax, ay) in eyes:
         cx2, cy2, ax2, ay2 = cx * SS, cy * SS, ax * SS, ay * SS
-        skin = frame[int(cy2 - ay2 * 3.2):int(cy2 - ay2 * 2.2), int(cx2 - ax2 * .6):int(cx2 + ax2 * .6)].reshape(-1, 3)
-        col = np.median(skin, axis=0)
+        ring = np.zeros(frame.shape[:2], np.uint8)
+        cv2.ellipse(ring, (int(cx2), int(cy2)), (int(ax2 * 2.0), int(ay2 * 3.0)), 0, 0, 360, 255, -1)
+        cv2.ellipse(ring, (int(cx2), int(cy2)), (int(ax2 * 1.3), int(ay2 * 1.8)), 0, 0, 360, 0, -1)
+        px = frame[ring > 0]
+        hv = cv2.cvtColor(np.clip(px, 0, 255).astype(np.uint8).reshape(-1, 1, 3), cv2.COLOR_BGR2HSV).reshape(-1, 3)
+        ok = (hv[:, 2] > 110) & (hv[:, 1] > 50)
+        sel = px[ok] if ok.sum() > 10 else px
+        vv = sel.sum(1); col = np.median(sel[vv >= np.percentile(vv, 40)], axis=0) * 0.93
         m = np.zeros(frame.shape[:2], np.float32)
         cv2.ellipse(m, (int(cx2), int(cy2)), (int(ax2 * 1.15), int(ay2 * 1.4 * amt) + 1), 0, 0, 360, 1, -1)
         m = cv2.GaussianBlur(m, (5, 5), 0)[..., None]
         frame[:] = frame * (1 - m) + col * m
         if amt > 0.6:
-            cv2.ellipse(frame, (int(cx2), int(cy2 + ay2 * 0.3)), (int(ax2 * 1.05), int(ay2 * 0.5)), 0, 10, 170, (40, 30, 30), max(1, SS))
+            cv2.ellipse(frame, (int(cx2), int(cy2 + ay2 * 0.3)), (int(ax2 * 1.05), int(ay2 * 0.5)), 0, 10, 170, (28, 32, 48), max(1, SS))
 
 proc = subprocess.Popen(['ffmpeg', '-v', 'error', '-y', '-f', 'rawvideo', '-pix_fmt', 'bgr24', '-s', f'{OW}x{OH}', '-r', str(FPS), '-i', '-',
                          '-c:v', 'libx264', '-preset', 'slow', '-crf', '15', '-pix_fmt', 'yuv420p', out], stdin=subprocess.PIPE)
@@ -105,19 +112,6 @@ for i in range(N):
     for m, A, f, ph in ((palmL, 3.2, 0.42, 0), (palmM, 2.4, 0.5, 1.3), (palmR, 2.6, 0.45, 2.1)):
         dx += m * (A * SS * gust) * np.sin(w * f * t + ph + Y / (SS * 60.0))
         dy += m * (0.6 * SS) * np.sin(w * f * 1.7 * t + ph)
-    # Pamela hands working on the hair system (small circular motions)
-    dx += g_handR * (2.6 * SS * math.sin(w * t / 1.4))
-    dy += g_handR * (1.8 * SS * math.sin(w * t / 1.4 + 1.2))
-    dx += g_handL * (2.4 * SS * math.sin(w * t / 1.7 + 2.0))
-    dy += g_handL * (1.6 * SS * math.cos(w * t / 1.7 + 0.5))
-    dy += g_pamHead * (1.4 * SS * math.sin(w * t / 2.6)); dx += g_pamHead * (0.8 * SS * math.sin(w * t / 3.9))
-    dy += g_pamBody * (1.2 * SS * math.sin(w * t / 4.0))
-    # clients: breathing and subtle head moves
-    dy += g_cliBody * (1.5 * SS * math.sin(w * t / 4.4 + 1))
-    dx += g_cliHead * (1.2 * SS * math.sin(w * t / 5.0)); dy += g_cliHead * (0.8 * SS * math.sin(w * t / 3.3))
-    dy += g_cliHands * (1.0 * SS * math.sin(w * t / 3.0 + .7))
-    dx += g_green * (1.3 * SS * math.sin(w * t / 6.0 + 2)); dy += g_green * (0.6 * SS * math.sin(w * t / 4.1))
-    dx += g_suit * (1.1 * SS * math.sin(w * t / 5.5 + 1)); dy += g_suit * (0.7 * SS * math.sin(w * t / 4.6 + 2))
     dx *= sign_keep; dy *= sign_keep
     fr = cv2.remap(img, X - dx, Y - dy, cv2.INTER_CUBIC, borderMode=cv2.BORDER_REFLECT)
 
