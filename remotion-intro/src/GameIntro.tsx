@@ -1,5 +1,6 @@
 import React from 'react';
 import {AbsoluteFill, Img, OffthreadVideo, Sequence, interpolate, spring, staticFile, useCurrentFrame, useVideoConfig, Easing} from 'remotion';
+import {PDLogo} from './PDLogo';
 import '@fontsource/montserrat/600.css';
 import '@fontsource/montserrat/800.css';
 
@@ -49,8 +50,10 @@ const Logo: React.FC = () => {
     <AbsoluteFill style={{backgroundColor: '#050008'}}>
       <AbsoluteFill style={{background: `radial-gradient(circle at 50% 45%, rgba(255,63,164,${0.28 * glow}) 0%, rgba(120,30,200,${0.18 * glow}) 35%, rgba(0,0,0,0) 65%)`}} />
       <AbsoluteFill style={{alignItems: 'center', justifyContent: 'center'}}>
-        <Img src={staticFile('logo.png')} style={{width: 860, opacity: s, transform: `scale(${scale}) translateY(-80px)`,
-          filter: `drop-shadow(0 0 ${30 * glow}px rgba(255,63,164,0.55)) drop-shadow(0 0 ${60 * glow}px rgba(255,150,60,0.25))`}} />
+        <div style={{opacity: s, transform: `scale(${scale}) translateY(-90px)`,
+          filter: `drop-shadow(0 0 ${30 * glow}px rgba(255,63,164,0.55)) drop-shadow(0 0 ${60 * glow}px rgba(255,150,60,0.25))`}}>
+          <PDLogo width={900} />
+        </div>
       </AbsoluteFill>
       {pressOn && (
         <div style={{position: 'absolute', left: 0, right: 0, bottom: 360, textAlign: 'center', fontFamily: uiFont, fontWeight: 800, fontSize: 46,
