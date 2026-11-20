@@ -24,7 +24,7 @@ const Loading: React.FC = () => {
     <AbsoluteFill style={{backgroundColor: 'black'}}>
       <Img src={staticFile('salao_still.jpg')} style={{width: '100%', height: '100%', objectFit: 'cover', transform: `scale(${zoom})`, filter: 'blur(14px) brightness(0.45) saturate(1.3)'}} />
       <AbsoluteFill style={{background: 'linear-gradient(to bottom, rgba(20,0,40,0.2), rgba(10,0,25,0.85))'}} />
-      <div style={{position: 'absolute', left: 80, right: 80, bottom: 220, fontFamily: uiFont}}>
+      <div style={{position: 'absolute', left: 90, right: 90, top: 900, fontFamily: uiFont}}>
         <div style={{display: 'flex', justifyContent: 'space-between', color: 'white', fontSize: 30, fontWeight: 800, letterSpacing: 8, marginBottom: 20, textShadow: '0 2px 10px rgba(0,0,0,.6)'}}>
           <span>CARREGANDO{dots}</span><span>{Math.round(p)}%</span>
         </div>
@@ -50,13 +50,13 @@ const Logo: React.FC = () => {
     <AbsoluteFill style={{backgroundColor: '#050008'}}>
       <AbsoluteFill style={{background: `radial-gradient(circle at 50% 45%, rgba(255,63,164,${0.28 * glow}) 0%, rgba(120,30,200,${0.18 * glow}) 35%, rgba(0,0,0,0) 65%)`}} />
       <AbsoluteFill style={{alignItems: 'center', justifyContent: 'center'}}>
-        <div style={{opacity: s, transform: `scale(${scale}) translateY(-90px)`,
+        <div style={{opacity: s, transform: `scale(${scale * 0.92}) translateY(-170px)`,
           filter: `drop-shadow(0 0 ${30 * glow}px rgba(255,63,164,0.55)) drop-shadow(0 0 ${60 * glow}px rgba(255,150,60,0.25))`}}>
-          <PDLogo width={900} />
+          <PDLogo />
         </div>
       </AbsoluteFill>
       {pressOn && (
-        <div style={{position: 'absolute', left: 0, right: 0, bottom: 360, textAlign: 'center', fontFamily: uiFont, fontWeight: 800, fontSize: 46,
+        <div style={{position: 'absolute', left: 0, right: 0, bottom: 520, textAlign: 'center', fontFamily: uiFont, fontWeight: 800, fontSize: 46,
           letterSpacing: 10, color: 'white', opacity: blink, textShadow: `0 0 18px ${orange}, 0 0 6px ${pink}, 0 3px 8px rgba(0,0,0,.8)`}}>
           ▶ PRESS START
         </div>
